@@ -168,3 +168,4 @@ MainPipeline/
 ContinuousBigram/data/*
 ContinuousBigram/label/*
 ContinuousBigram/ext/*
+ContinuousBigram/logs/*
