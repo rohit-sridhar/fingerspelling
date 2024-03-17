@@ -1,0 +1,9 @@
+data vector has size 60
+Reading HMM definition from /root/fingerspelling/ContinuousBigram/hmmdefs/4state-pca60
+Reading labels from master label file /root/fingerspelling/ContinuousBigram/mlf/labels.mlf_tri_internal
+Writing results to the file /root/fingerspelling/ContinuousBigram/ext/result.mlf_letter
+Utilities located in directory: /gt2k/utils
+Trace Level is set at 1
+HTK executables located: /usr/local/bin/HERest /usr/local/bin/HParse /usr/local/bin/HCompV /usr/local/bin/HResults
+Using data files listed in /root/fingerspelling/ContinuousBigram/datafiles
+Using /gt2k/utils/prepare to prepare data for HTK
