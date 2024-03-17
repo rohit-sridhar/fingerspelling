@@ -15,4 +15,7 @@ The run docker script (`scripts/run_docker.sh`) can list, remove, launch and run
 
 `./scripts/run_docker.sh` takes at most four commands. The first option is the command to be run (`ls`, `run`, `launch`, or `rm`). The second option (not required for `ls`) specifies the container name.  The third option (not required for `ls`, `rm` or `run`) is the root directory mentioned in the previous paragraph andthe fourth option (not required at all) copies a file or folder into the root folder of the container.
 
-First check if a container is already launched, using `scripts/run_docker.sh {ROOT} ls`. 
+First check if a container is already launched, using `scripts/run_docker.sh ls`. If it is running, you can either open it by running `scripts/run_docker.sh run {CONTAINER_NAME}` or remove it by running `scripts/run_docker.sh rm {CONTAINER_NAME}`. If it isn't running, launch it by running `scripts/run_docker.sh launch {CONTAINER_NAME} {ROOT}`, where `{ROOT}` is the root directory mentioned in the first paragraph.
+
+## Training the Model
+Coming Soon
