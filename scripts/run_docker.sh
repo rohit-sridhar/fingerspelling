@@ -16,7 +16,7 @@ else
         sudo docker rm $2
     elif [ "$1" == "launch" ]; then
         if [ "$3" == "" ]; then
-            echo "Specify a local root for local path mounts when calling launch."
+            echo "Specify a local root for local path mounts when calling launch. (third arg)"
             exit 1
         fi
         
@@ -40,19 +40,16 @@ else
                 --name $2 rohitsridhar91/asl_sign_recognizer:v1.2
         elif [ "$2" == "fingerspelling" ]; then
             continuous_bigram_path="$root/hmm_modeling/fingerspelling/ContinuousBigram"
+            # continuous_bigram_ebisu_path="$root/hmm_modeling/fingerspelling/ContinuousBigram.ebisu"
+            # continuous_bigram_hotei_path="$root/hmm_modeling/fingerspelling/ContinuousBigram.hotei"
             continuous_bigram_ss_path="$root/hmm_modeling/silentspeller/ContinuousBigram"
+            main_pipeline_ss_path="$root/hmm_modeling/silentspeller/MainPipeline"
             
             sudo docker run \
                 -dit \
                 -v "$continuous_bigram_ss_path":/root/silentspeller/ContinuousBigram \
+                -v "$main_pipeline_ss_path":/root/silentspeller/MainPipeline \
                 -v "$continuous_bigram_path":/root/fingerspelling/ContinuousBigram \
-                --name $2 rohitsridhar91/asl_sign_recognizer:v1.2
-        elif [ "$2" == "fingerspelling_matthew" ]; then
-            continuous_bigram_path_matthew="$root/hmm_modeling/matthew/ContinuousBigram"
-            
-            sudo docker run \
-                -dit \
-                -v "$continuous_bigram_path_matthew":/root/fingerspelling/ContinuousBigram \
                 --name $2 rohitsridhar91/asl_sign_recognizer:v1.2
         fi
         

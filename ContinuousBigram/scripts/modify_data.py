@@ -12,14 +12,14 @@ def parse_args():
     parser.add_argument(
         "--data_loc",
         type=str,
-        default="./data/data_all",
+        required=True,
         help="Original data location (for all methods). Must end with /data (for naming convention)."
     )
     
     parser.add_argument(
         "--new_data_loc",
         type=str,
-        default="./data/data_thr6",
+        required=True,
         help="Location to store new data (for all methods). Must end with /data (for naming convention)."
     )
     
@@ -40,9 +40,9 @@ def parse_args():
     parser.add_argument(
         "--method",
         type=str,
-        choices=["duplication", "interpolation", "fpl_threshold", "dim_select", "remove_z"],
-        default="duplication",
-        help="Method for modifying frames."
+        choices=["duplication", "interpolation", "fpl_threshold", "dim_select", "remove_z", "copy"],
+        required=True,
+        help="Method for modifying data."
     )
 
     parser.add_argument(
@@ -76,17 +76,20 @@ def parse_args():
     
     return parser.parse_args()
 
+# Make dir and overwrite if path exists already
 def _make_dir(dir_loc):
     if os.path.exists(dir_loc):
         shutil.rmtree(dir_loc)
     os.makedirs(dir_loc)
 
+# Remove trailing slash from a path
 def _rm_trailing_slash(path):
     if path is not None and path.endswith('/'):
         return path[:-1]
     else:
         return path
 
+# Checks args and makes modifications.
 def _check_args(args):
     args.data_loc = _rm_trailing_slash(args.data_loc)
     args.new_data_loc = _rm_trailing_slash(args.new_data_loc)
@@ -212,6 +215,9 @@ def remove_z(datafile, new_datafile):
     with open(new_datafile, 'w') as f:
         f.writelines(new_frames)
 
+def copy(datafile, new_datafile):
+    os.link(datafile, new_datafile)
+
 if __name__ == "__main__":
     args = parse_args()
     print(args)
@@ -234,4 +240,6 @@ if __name__ == "__main__":
             dim_select(datafile, new_datafile, args.dims_kept)
         elif args.method == "remove_z":
             remove_z(datafile, new_datafile)
+        elif args.method == "copy":
+            copy(datafile, new_datafile)
 

@@ -1,8 +1,9 @@
 import argparse
 import os
 
+from utils import *
+
 WRITTEN = set()
-SPACE = '_'
 
 #################### GENERAL HELPERS ####################
 
@@ -29,7 +30,7 @@ def parse_args():
 # Initialize the tri letter dictionary with sil/enter/exit vars
 def initialize_dict(dict_loc):
     with open(dict_loc, 'w') as f:
-        f.writelines(['sil sil\n', f'{SPACE} {SPACE}\n'])
+        f.writelines([f'{SIL} {SIL}\n', f'{SPACE} {SPACE}\n'])
 
 # Write a single dictionary entry to file (triletter only)
 def write_entry_to_file(entry, dict_loc):
@@ -93,7 +94,6 @@ def add_letter_to_dict(word, dict_loc):
 #################### WORD LEVEL FUNCTIONS ####################
 
 # Main Word Level Wrapper that aggregated triletter contexts for word dict
-
 def get_full_word_entry(word, dict_loc):
     entries = [word]
     first_triletter = process_first_triletter(word, dict_loc, letter=False)
@@ -107,6 +107,7 @@ def get_full_word_entry(word, dict_loc):
     entries.append(last_triletter)
     return entries
 
+# Adds all triletters for a given word to the dict
 def add_word_to_dict(word, dict_loc):
     if len(word) == 1:
         write_single_entry(word, dict_loc)
@@ -117,16 +118,18 @@ def add_word_to_dict(word, dict_loc):
 
 # Ingests the whole label file into the dict
 def ingest_label_file(label_filepath, dict_loc, dict_type):
-    label_arr = []
-    with open(label_filepath, 'r') as f:
-        for line in f:
-            char = line.strip()
-            if char == "sil" or char == SPACE:
-                label_arr.append(" ")
-            else:
-                label_arr.append(char)
-            
-    tokens = ''.join(label_arr).strip().split()
+    # label_arr = []
+    # with open(label_filepath, 'r') as f:
+    #     for line in f:
+    #         char = line.strip()
+    #         if char == SIL or char == SPACE:
+    #             label_arr.append(" ")
+    #         else:
+    #             label_arr.append(char)
+    #         
+    # tokens = ''.join(label_arr).strip().split()
+
+    tokens = collect_tokens(label_filepath)
     for word in tokens:
         if dict_type == "letter":
             add_letter_to_dict(word, dict_loc)
@@ -138,10 +141,10 @@ if __name__ == "__main__":
     print(args)
     dict_loc = 'dict/dict_tri2letter' if args.dict_type == 'letter' else 'dict/dict_tri2word'
 
-    label_files = os.listdir(args.label_loc)
+    # label_files = os.listdir(args.label_loc)
+    label_files = get_label_files(args.label_loc)
     initialize_dict(dict_loc)
     
     for label_file in label_files:
-        label_filepath = os.path.join(args.label_loc, label_file)
-        ingest_label_file(label_filepath, dict_loc, args.dict_type)
+        ingest_label_file(label_file, dict_loc, args.dict_type)
 

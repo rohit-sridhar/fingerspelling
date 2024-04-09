@@ -34,7 +34,7 @@ MIN_VARIANCE=0.01				# don't let the
 						# this value during
 						# HMM training
 
-INSERT_PENALTY=100.0	#Penalize model for too many word insertion/deletion
+INSERT_PENALTY=5.0	#Penalize model for too many word insertion/deletion
 						#If too many deletions, increase
 						#If too many insertions, decrease
 
@@ -44,8 +44,8 @@ SAMPLE_PERIOD=1000
 
 MULTI_PROCESS="yes"
 # THREADS=8           # For Hotei
-THREADS=32        # For Ebisu
-# THREADS=96        # For Benten
+# THREADS=32        # For Ebisu
+THREADS=96        # For Benten
 
 #PRUNING_THRESHOLD="50 50 500" #Threshold for alpha-beta pruning, of form "start step-size end"
 PRUNING_THRESHOLD=0
@@ -64,7 +64,7 @@ INITIALIZE_HMM=yes				# if you have a good initial
 						# otherwise, it is better
 						# to let HTK initialize for you
 						#
-GEN_TRAIN_TEST=no				# whether or not to generate
+GEN_TRAIN_TEST=yes				# whether or not to generate
 						# new test/train sets. if
 						# you have made your own
 						# or wish to reuse old sets,
@@ -95,8 +95,8 @@ VALIDATION_ITERATIONS=10 #Number of repeats or folds
 
 DATAFILES_LIST=${PRJ}/datafiles			# list of all data files
 
-GRAMMARFILE=${PRJ}/grammar/grammar_letter_isolated			# the grammar definition
-GRAMMARFILE_WORD=${PRJ}/grammar/grammar_word_isolated
+GRAMMARFILE=${PRJ}/grammar/grammar_letter_3gram
+GRAMMARFILE_WORD=${PRJ}/grammar/grammar_word_3gram
 
 DICTFILE=${PRJ}/dict/dict_tri2letter # Use tri2letter for triletter config, letter2letter for letter
 DICTFILE_WORD=${PRJ}/dict/dict_tri2word
@@ -145,8 +145,8 @@ OUTPUT_MLF=${EXT_DIR}/result.mlf_letter		# where HTK stores results
 						# .ext files
 OUTPUT_MLF_WORD=${EXT_DIR}/result.mlf_word
 
-LOG_RESULTS=${PRJ}/results/dim30/thr8/hresults.log_letter_pos100ip
-LOG_RESULTS_WORD=${PRJ}/results/dim30/thr8/hresults.log_word_pos100ip
+LOG_RESULTS=${PRJ}/results/dim8/thr8/grl3gw3g/hresults.log_letter_pos5ip
+LOG_RESULTS_WORD=${PRJ}/results/dim8/thr8/grl3gw3g/hresults.log_word_pos5ip
 
 HMM_TEMP_DIR=${PRJ}/models			# directory for storing
 						# intermediate models during

@@ -2,6 +2,8 @@ import os
 import matplotlib.pyplot as plt
 import argparse
 
+from utils import *
+
 LAB_PATH = "./ext/data/"
 DATA_PATH = "./data_original/"
 
@@ -32,22 +34,25 @@ def parse_args():
     return parser.parse_args()
 
 ########## FRAMES PER LETTER ANALYSIS ##########
-
+# Get files in a data path (leave out the extensions)
 def get_files(data_path):
     files = os.listdir(data_path)
     files = list(set([os.path.splitext(f)[0] for f in files]))
     return files
 
+# Get label count by file
 def count_lines(f):
     with open(f, 'r') as handle:
         label_count = len(handle.readlines())
     
     return label_count
 
+# Count frames in data file
 def count_frames(f):
     with open(f, 'r') as handle:
         print(handle.readlines())
 
+# Get frames per label (letter) for a given file
 def get_file_frames_per_letter(f, frames_per_label, data_path, label_path):
     label_file = os.path.join(label_path, f + ".lab")
     data_file = os.path.join(data_path, f)
@@ -60,6 +65,7 @@ def get_file_frames_per_letter(f, frames_per_label, data_path, label_path):
 
     frames_per_label.append(num_frames / num_labels)
 
+# Plot frames per letter for all files in data path/label path
 def analyze_frames_per_letter(data_path, label_path):
     files = get_files(data_path)
     
@@ -75,22 +81,15 @@ def analyze_frames_per_letter(data_path, label_path):
     plt.close()
 
 ########## PHRASES ANALYSIS ##########
-def collect_tokens(label_path, tokens):
-    with open(label_path, 'r') as f:
-        labels = f.readlines()
-    
-    labels = [l.strip() for l in labels]
-    labels = ''.join(labels[1:-1]).split('_')
-    tokens.update(labels)
-
+# Look at all labels and print out the tokens
 def analyze_phrases(label_dir):
-    label_files = os.listdir(label_dir)
+    label_files = get_label_files(label_dir)
     tokens = set()
     
     for label_file in label_files:
         label_path = os.path.join(label_dir, label_file)
-        collect_tokens(label_path, tokens)
-    
+        labels = collect_tokens(label_path, tokens)
+        tokens.update(labels)
     print(sorted(list(tokens)))
 
 if __name__ == "__main__":

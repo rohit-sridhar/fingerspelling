@@ -57,16 +57,19 @@ def check_args():
     elif args.edit_type != "remove":
         raise ValueError("New Label must not be None if edit_type is replace or repl_body")
 
+# Add newline to label if there isn't one already
 def add_newline(label):
     if not(label.endswith("\n")):
         label += "\n"
     return label
 
+# Write new label file to path
 def write_new_labfile(labels, labfile):
     new_labpath = os.path.join(args.new_label_loc, labfile)
     with open(new_labpath, "w") as f:
         f.writelines(labels)
 
+# Edit label file based on edit type
 def edit_labfile(label_path):
     with open(label_path, 'r') as lab:
         labels = lab.readlines()
