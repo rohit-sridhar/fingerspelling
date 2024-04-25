@@ -24,7 +24,7 @@ UTIL_DIR=/gt2k/utils
                         #
 						#
 # VECTOR_LENGTH=60				# number of elements in your
-VECTOR_LENGTH=8				# number of elements in your
+VECTOR_LENGTH=20				# number of elements in your
 						# feature vector. This is the
 						# number of observations per
 						# state for the HMMs.
@@ -34,7 +34,7 @@ MIN_VARIANCE=0.01				# don't let the
 						# this value during
 						# HMM training
 
-INSERT_PENALTY=5.0	#Penalize model for too many word insertion/deletion
+INSERT_PENALTY=-10	#Penalize model for too many word insertion/deletion
 						#If too many deletions, increase
 						#If too many insertions, decrease
 
@@ -44,8 +44,8 @@ SAMPLE_PERIOD=1000
 
 MULTI_PROCESS="yes"
 # THREADS=8           # For Hotei
-# THREADS=32        # For Ebisu
-THREADS=96        # For Benten
+THREADS=32        # For Ebisu
+# THREADS=96        # For Benten
 
 #PRUNING_THRESHOLD="50 50 500" #Threshold for alpha-beta pruning, of form "start step-size end"
 PRUNING_THRESHOLD=0
@@ -53,9 +53,18 @@ PRUNING_THRESHOLD=0
 HMM_TOPOLOGY_DIR=${PRJ}/hmmdefs
 
 # general HMM_TOPOLOGIES
-# HMM_LOCATION=$HMM_TOPOLOGY_DIR/12state-pca16	#text hmm topology file
-HMM_LOCATION=$HMM_TOPOLOGY_DIR/4state-pca8    #text hmm topology file
+HMM_LOCATION=$HMM_TOPOLOGY_DIR/6state-pca20-gmm4
 HMM_ALL=$HMM_LOCATION
+HMM_SIL=$HMM_TOPOLOGY_DIR/3state-pca20-sil-skip-loop
+HMM_SP=$HMM_TOPOLOGY_DIR/1state-pca20-sp
+
+ENTER="sil0"
+EXIT="sil1"
+SP="_"
+
+BIGRAM_LETTER=yes   # Whether a bigram word net should be used (letter level)
+BIGRAM_WORD=no   # Whether a bigram word net should be used (letter level)
+CUSTOM_SILSP=yes   # Whether HMM_SIL/HMM_SP should be used
 
 # whether or not to initialize the starting model in a generic way:
 INITIALIZE_HMM=yes				# if you have a good initial
@@ -95,29 +104,59 @@ VALIDATION_ITERATIONS=10 #Number of repeats or folds
 
 DATAFILES_LIST=${PRJ}/datafiles			# list of all data files
 
-GRAMMARFILE=${PRJ}/grammar/grammar_letter_3gram
-GRAMMARFILE_WORD=${PRJ}/grammar/grammar_word_3gram
+GRAMMARFILE=${PRJ}/grammar/grammar_letter_isolated
+GRAMMARFILE_WORD=${PRJ}/grammar/grammar_word_isolated
 
-DICTFILE=${PRJ}/dict/dict_tri2letter # Use tri2letter for triletter config, letter2letter for letter
+###### USE FOR TRILETTER ######
+DICTFILE=${PRJ}/dict/dict_tri2letter
 DICTFILE_WORD=${PRJ}/dict/dict_tri2word
+
+###### USE FOR SINGLE LETTER ######
+# DICTFILE=${PRJ}/dict/dict_letter2letter
 # DICTFILE_WORD=${PRJ}/dict/dict_letter2word
+
+###### USE FOR ALIGNMNENT ######
 DICTFILE_ALIGN=${PRJ}/dict/dict_tri2tri # Dictionary used during forced alignment
 
+###### USE TO MODEL LETTERS/WORDS WITHOUT SPACE ######
 # TOKENS_ORIGINAL=${PRJ}/commands/commands_letter_isolated # used for building model
 # TOKENS_WORD=${PRJ}/commands/commands_word_isolated
-TOKENS_ORIGINAL=${PRJ}/commands/commands_letter
-TOKENS=${PRJ}/commands/commands_tri_internal
-TOKENS_WORD=${PRJ}/commands/commands_word
 
+###### 
+# USAGE:
+# TOKENS_ORIGINAL is used to initialize letter models. Triletter modeling uses the 
+# TOKENS file during triletter iterations.
+######
+TOKENS_ORIGINAL=${PRJ}/commands/commands_letter
+
+###### USE FOR TRILETTER MODELING #####
+TOKENS=${PRJ}/commands/commands_tri_internal
+TOKENS_WORD=${PRJ}/commands/commands_word   # (I think this should be changed to have triletters ... ?)
+
+###### USE FOR SINGLE LETTER MODELING ######
+# TOKENS=${PRJ}/commands/commands_letter
+# TOKENS_WORD=${PRJ}/commands/commands_word
+
+###### 
+# USAGE:
+# MLF_LOCATION_ORIGINAL is used for initial training steps on isolated letters.
+# Triletter modeling uses the MLF_LOCATION file for training.
+######
 MLF_LOCATION_ORIGINAL=${PRJ}/mlf/labels.mlf_letter # used for building model and results
+
+###### USE FOR TRILETTER ######
 MLF_LOCATION=${PRJ}/mlf/labels.mlf_tri_internal
 MLF_LOCATION_WORD=${PRJ}/mlf/labels.mlf_word
+
+###### USE FOR SINGLE LETTER ######
+# MLF_LOCATION=${PRJ}/mlf/labels.mlf_letter
+# MLF_LOCATION_WORD=${PRJ}/mlf/labels.mlf_word # (I think this should be changed to have triletters ... ?)
 
 MLF_LOCATION_GEN=${PRJ}/mlf/gen # Generated MLFs
 
 WORD_LATTICE=${PRJ}/word.lattice
 
-HEDFILE1=${PRJ}/mktri1.hed
+HEDFILE1=${PRJ}/mktri1_silsp.hed
 HEDFILE2=${PRJ}/mktri2.hed
 STATS=${PRJ}/stats
 						#
@@ -145,8 +184,8 @@ OUTPUT_MLF=${EXT_DIR}/result.mlf_letter		# where HTK stores results
 						# .ext files
 OUTPUT_MLF_WORD=${EXT_DIR}/result.mlf_word
 
-LOG_RESULTS=${PRJ}/results/dim8/thr8/grl3gw3g/hresults.log_letter_pos5ip
-LOG_RESULTS_WORD=${PRJ}/results/dim8/thr8/grl3gw3g/hresults.log_word_pos5ip
+LOG_RESULTS=${PRJ}/results/dim20/thr8/grliwi/sten/hresults.log_letter_neg10ip_6state-pca20-gmm4_20its_5tri-its_silsp_bglsp
+LOG_RESULTS_WORD=${PRJ}/results/dim20/thr8/grliwi/sten/hresults.log_word_neg10ip_6state-pca20-gmm4_20its_5tri-its_silsp_bglsp
 
 HMM_TEMP_DIR=${PRJ}/models			# directory for storing
 						# intermediate models during

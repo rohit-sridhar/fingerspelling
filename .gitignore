@@ -160,6 +160,7 @@ cython_debug/
 #.idea/
 
 # Local project files
+ContinuousBigram.*/
 ContinuousBigramFixed/
 IsolatedBigram/
 MainPipeline/
@@ -174,3 +175,6 @@ ContinuousBigram/logs/*
 ContinuousBigram/trainsets/*
 ContinuousBigram/testsets/*
 ContinuousBigram/results/*
+ContinuousBigram/all-extfiles
+ContinuousBigram/datafiles
+

@@ -60,10 +60,6 @@ for m in `cat $DATA_LIST_FILE`; do	# for each data file listed
     start_time=0
     ind=1
 	for k in `cat $labname`; do
-		if [[ $k = "SKIP" ]]; then
-			ind=ind+1
-			continue
-		fi
 		end_time=total_time*ind/num_labels
 		echo $start_time $end_time $k
         # echo $k

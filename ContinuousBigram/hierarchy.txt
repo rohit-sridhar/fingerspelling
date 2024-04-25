@@ -1,3 +1,47 @@
+Folder Hierarchy
+
 data dim
 threshold (fpl)
 grammar (grliwi; grliwph; grlwdwph)
+
+Dim explanations
+8: Only thumb and forefinger; without z coords (top and bottom)
+12: Only thumb and forefinger; with z coords (top and bottom)
+16: Only middle finger missing; without z coords (top and bottom)
+20: All fingers; without z coords (top and bottom)
+24: Only middle finger missing; with z coords (top and bottom)
+30: All fingers; with z coords (top and bottom)
+60: All landmarks; with z coords
+
+Defaults:
+hmmdef: 4state-pca20
+num_its: 20
+num_tri_its: 5
+
+Initial Training Notes:
+HCompV: TOKENS_ORIGINAL_SKSP, MLF_LOCATION_ORIGINAL_SKSP
+HInit: TOKENS_ORIGINAL_SKSP, MLF_LOCATION_ORIGINAL_SKSP
+HRest: TOKENS_ORIGINAL_SKSP, MLF_LOCATION_ORIGINAL_SKSP
+HERest: TOKENS_ORIGINAL_SKSP, MLF_LOCATION_ORIGINAL_SKSP
+
+Triletter Training Notes:
+HHEd: TOKENS_ORIGINAL
+HERest: TOKENS, MLF_LOCATION
+HHEd: TOKENS
+HERest: TOKENS, MLF_LOCATION
+
+Testing Notes:
+HVite: TOKENS, MLF_LOCATION, DICTFILE
+HVite (word): TOKENS, MLF_LOCATION, DICTFILE_WORD
+HResults: TOKENS_ORIGINAL, MLF_LOCATION_ORIGINAL
+HResults (word): TOKENS_WORD, MLF_LOCATION_WORD 
+
+Notes on modifications:
+mktri1.hed was modified to modify sil and sp models (mktri1_silsp.hed is new variant. mktri1_orig.hed is the original)
+mktri2.hed was modified to use data driven clustering instead of tree clustering (mktri2.hed.bk is the original)
+
+Things TO DO:
+-- Curently the data folders do not need to be split out by grammar options. Instead pass grammar as an arg to grid_search
+    -- and add it to the filename. This involves renaming all existing files.
+-- Also we shouldn't have to keep preparing the ext data. A folder hierarchy that parallels the data folder should exist with ext files.
+-- Sync the benten and hotei folders with this one using github. Do it tonight!

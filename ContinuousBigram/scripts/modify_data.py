@@ -40,7 +40,7 @@ def parse_args():
     parser.add_argument(
         "--method",
         type=str,
-        choices=["duplication", "interpolation", "fpl_threshold", "dim_select", "remove_z", "copy"],
+        choices=["duplication", "interpolation", "fpl_threshold", "dim_select", "remove_z", "copy", "normalize"],
         required=True,
         help="Method for modifying data."
     )
@@ -224,6 +224,7 @@ if __name__ == "__main__":
     _check_args(args)
 
     files = os.listdir(args.data_loc)
+    
     for f in tqdm(files):
         datafile = os.path.join(args.data_loc, f)
         new_datafile = os.path.join(args.new_data_loc, f)

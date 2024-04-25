@@ -22,6 +22,10 @@
 DATA_LIST_FILE=$1 
 EXT_DIR=$2
 OPTIONS_FILE=$3
+SKIP_SPACE=$4
+
+ENTER="sil0"
+EXIT="sil1"
 
 . ${OPTIONS_FILE}
 
@@ -64,22 +68,26 @@ for m in `cat $DATA_LIST_FILE`; do	# for each data file listed
 			extra=extra+1
 			continue
 		fi
-		if [[ $str != "" && ( $k = "sil" || $k = "_" ) ]]; then
+		if [[ $str != "" && ( $k = $ENTER || $k = $EXIT || $k = "_" ) ]]; then
 			end_time=total_time*ind/num_labels
 			echo $start_time $end_time $str
             # echo $str
 			start_time=total_time*ind/num_labels
 			str=""
-		fi	
+		fi
 		str="${str}${k}"
 		ind=ind+1+extra
 		extra=0
-		if [[ $k = "sil"  || $k = "_" ]]; then
-			end_time=total_time*ind/num_labels
-			echo $start_time $end_time $str
+		if [[ $k = $ENTER || $k = $EXIT || $k = "_" ]]; then
+            end_time=total_time*ind/num_labels
+            if [[ $SKIP_SPACE = "1" && $k = "_" ]]; then
+                :
+            else
+		        echo $start_time $end_time $str
+		        start_time=total_time*ind/num_labels
+            fi
             # echo $str
-			start_time=total_time*ind/num_labels
-			str=""
+            str=""
 		fi		
 	done
 	echo "."			# data seperator

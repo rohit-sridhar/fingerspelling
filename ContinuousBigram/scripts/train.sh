@@ -122,10 +122,20 @@ done
 #ls ${EXT_DIR}/*.ext > $DATA_SAMPLES
 find ${EXT_DIR}/ | grep "\.ext$" | sort $SORT_OPTION > $DATA_SAMPLES
 
+if [[ $BIGRAM_LETTER = "yes" ]]; then
+    ${HTKBIN}HLStats -b bigram.letter -s $ENTER $EXIT -o commands/commands_letter mlf/labels.mlf_letter
+    ${HTKBIN}HBuild -n bigram.letter -s $ENTER $EXIT commands/commands_letter ${WORD_LATTICE}
+else
+    ${HTKBIN}HParse -l ${GRAMMARFILE} ${WORD_LATTICE}
+fi
 
-${HTKBIN}HParse ${GRAMMARFILE} ${WORD_LATTICE}
 if [[ $WORD_LEVEL = "yes" ]] || [[ $WORD_LEVEL = "1" ]]; then
-	${HTKBIN}HParse ${GRAMMARFILE_WORD} ${WORD_LATTICE}_word
+    if [[ $BIGRAM_WORD = "yes" ]]; then
+        ${HTKBIN}HLStats -b bigram.word -s $ENTER $EXIT -o commands/commands_word_isolated mlf/labels.mlf_word_sksp
+        ${HTKBIN}HBuild -n bigram.word -s $ENTER $EXIT commands/commands_word_isolated ${WORD_LATTICE}_word
+    else
+	    ${HTKBIN}HParse -l ${GRAMMARFILE_WORD} ${WORD_LATTICE}_word
+    fi
 fi
 
 MIN_CYCLES=1
@@ -218,6 +228,8 @@ echo "*****************************************************"
 #    (if not given will overwrite the HMMs)
 # parameters= HHM file to start with
 ###############################################################################
+# Uses the MLF with single letters
+###############################################################################
 
 typeset -l INITIALIZE_HMM	# make sure it is all lowercase
 if [[ "${INITIALIZE_HMM}" == "yes" ]] ||
@@ -241,6 +253,16 @@ if [[ "${INITIALIZE_HMM}" == "yes" ]] ||
     if [[ $MULTI_PROCESS = "yes" ]]; then
         pid=()
 	    for n in $(cat ${TOKENS_ORIGINAL}); do
+            if [[ $CUSTOM_SILSP != "yes" ]]; then
+                HMM_LOCATION=$HMM_ALL
+            elif [[ $n = $ENTER || $n = $EXIT ]]; then
+                HMM_LOCATION=$HMM_SIL
+            elif [[ $n = $SP ]]; then
+                HMM_LOCATION=$HMM_SP
+            else
+                HMM_LOCATION=$HMM_ALL
+            fi
+
             ${HTKBIN}HCompV -A -T $TRACE_LEVEL -v ${MIN_VARIANCE} -S $TRAINING -l $n 	\
 	    		-I $MLF_LOCATION_ORIGINAL -o $n -m -M $HMM_TRAINING.0  	\
 	    		$HMM_LOCATION &
@@ -259,7 +281,7 @@ if [[ "${INITIALIZE_HMM}" == "yes" ]] ||
         
         pid=()
 	    for n in $(cat ${TOKENS_ORIGINAL}); do
-		    ${HTKBIN}HRest  -A  -m 1 -T $TRACE_LEVEL -t -i 30 -v ${MIN_VARIANCE}  -l $n \
+            ${HTKBIN}HRest  -A  -m 1 -T $TRACE_LEVEL -t -i 30 -v ${MIN_VARIANCE}  -l $n \
 		    	-M $HMM_TRAINING.2/ -S $TRAINING 	\
 		    	-I $MLF_LOCATION_ORIGINAL $HMM_TRAINING.1/$n &
             pid+=("$!")
@@ -267,6 +289,16 @@ if [[ "${INITIALIZE_HMM}" == "yes" ]] ||
         wait "${pid[@]}"
     else
 	    for n in $(cat ${TOKENS_ORIGINAL}); do
+            if [[ $CUSTOM_SILSP != "yes" ]]; then
+                HMM_LOCATION=$HMM_ALL
+            elif [[ $n = $ENTER || $n = $EXIT ]]; then
+                HMM_LOCATION=$HMM_SIL
+            elif [[ $n = $SP ]]; then
+                HMM_LOCATION=$HMM_SP
+            else
+                HMM_LOCATION=$HMM_ALL
+            fi
+
             ${HTKBIN}HCompV -A -T $TRACE_LEVEL -v ${MIN_VARIANCE} -S $TRAINING -l $n 	\
 	    		-I $MLF_LOCATION_ORIGINAL -o $n -m -M $HMM_TRAINING.0  	\
 	    		$HMM_LOCATION
@@ -305,6 +337,9 @@ echo "*****************************************************"
 # -o replace file extentions by .ext
 # -v f This sets the minimum variance (i.e. diagonal element of the
 # covariance matrix) to the real value f (default value 0.0). 
+###############################################################################
+# Uses the MLF with single letters
+# Uses the Tokens file with single letters
 ###############################################################################
 
 
@@ -400,6 +435,11 @@ do
     fi
 	hmm_count=$((hmm_count+1))
 done
+
+###############################################################################
+# Uses the MLF with triletters
+# Uses the Tokens file with triletters
+###############################################################################
 
 if [[ $TRILETTER = "yes" ]] || [[ $TRILETTER = "1" ]]; then
 	last_iteration=$((NUM_HMM_DIR-TRI_ITERATIONS-3))
@@ -576,6 +616,12 @@ echo "*****************************************************"
 # parameters= hmms to use (should correspond to our words)
 ###############################################################################
 
+###############################################################################
+# Uses the MLF with triletters
+# Uses the Tokens file with triletters
+# Uses the Dict file with triletters (For both word and letter)
+###############################################################################
+
 if [[ $MULTI_PROCESS = "yes" ]]; then
 	num_lines=`cat $TESTING | wc -l` #   compute the num lines in test file
     threads=$((num_lines/THREADS))
@@ -637,23 +683,26 @@ echo "*****************************************************"
 # -d N : if correct answer is within the top N-Best consider it correctly
 #	 classified
 # parameters= MLF file to load
-############################################################################## 
+###############################################################################
+# Uses the MLF with triletters
+# Uses the Tokens file with triletters
+###############################################################################
 if [[ $MULTI_PROCESS = "yes" ]]; then
     output_mlfs=`find / -type f -wholename "$OUTPUT_MLF.*"`
-    ${HTKBIN}HResults -A -e "???" sil -T $TRACE_LEVEL -t -I $MLF_LOCATION_ORIGINAL \
+    ${HTKBIN}HResults -A -e "???" $ENTER -e "???" $EXIT -T $TRACE_LEVEL -t -I $MLF_LOCATION_ORIGINAL \
      	-p $TOKENS_ORIGINAL $output_mlfs >> $LOG_RESULTS
     
     if [[ $WORD_LEVEL = "yes" ]] || [[ $WORD_LEVEL = "1" ]]; then
         output_mlfs_word=`find / -type f -wholename "$OUTPUT_MLF_WORD.*"`
-    	${HTKBIN}HResults -A -e "???" sil -e "???" _ -T $TRACE_LEVEL -t -I $MLF_LOCATION_WORD \
+    	${HTKBIN}HResults -A -e "???" $ENTER -e "???" $EXIT -e "???" _ -T $TRACE_LEVEL -t -I $MLF_LOCATION_WORD \
     		$TOKENS_WORD $output_mlfs_word >> $LOG_RESULTS_WORD
     fi
 else
-    ${HTKBIN}HResults -A -e "???" sil -T $TRACE_LEVEL -t -I $MLF_LOCATION_ORIGINAL \
+    ${HTKBIN}HResults -A -e "???" $ENTER -e "???" $EXIT -T $TRACE_LEVEL -t -I $MLF_LOCATION_ORIGINAL \
      	-p $TOKENS_ORIGINAL $OUTPUT_MLF >> $LOG_RESULTS	
     
     if [[ $WORD_LEVEL = "yes" ]] || [[ $WORD_LEVEL = "1" ]]; then
-    	${HTKBIN}HResults -A -e "???" sil -e "???" _ -T $TRACE_LEVEL -t -I $MLF_LOCATION_WORD \
+    	${HTKBIN}HResults -A -e "???" $ENTER -e "???" $EXIT -e "???" _ -T $TRACE_LEVEL -t -I $MLF_LOCATION_WORD \
     		$TOKENS_WORD $OUTPUT_MLF_WORD >> $LOG_RESULTS_WORD
     fi
 fi
@@ -683,7 +732,7 @@ if [[ $TRAIN_TEST_VALIDATION = "LEAVE_ONE_OUT" ]] || [[ $TRAIN_TEST_VALIDATION =
 	echo "OVERALL RESULTS" >> ${LOG_RESULTS}
 	echo "==========================================================" >> ${LOG_RESULTS}
 
-	${HTKBIN}HResults -A -e "???" sil -T $TRACE_LEVEL -t -I $MLF_LOCATION_ORIGINAL \
+	${HTKBIN}HResults -A -e "???" $ENTER -e "???" $EXIT -T $TRACE_LEVEL -t -I $MLF_LOCATION_ORIGINAL \
 		-p $TOKENS_ORIGINAL ${BASE_OUTPUT_MLF}-all >> $LOG_RESULTS
 
 	if [[ $WORD_LEVEL = "yes" ]] || [[ $WORD_LEVEL = "1" ]]; then
@@ -695,7 +744,7 @@ if [[ $TRAIN_TEST_VALIDATION = "LEAVE_ONE_OUT" ]] || [[ $TRAIN_TEST_VALIDATION =
 		echo "==========================================================" >> ${LOG_RESULTS_WORD}
 		echo "OVERALL RESULTS" >> ${LOG_RESULTS_WORD}
 		echo "==========================================================" >> ${LOG_RESULTS_WORD}
-		${HTKBIN}HResults -A -e "???" sil -e "???" _ -T $TRACE_LEVEL -t -I $MLF_LOCATION_WORD \
+		${HTKBIN}HResults -A -e "???" $ENTER -e "???" $EXIT -e "???" _ -T $TRACE_LEVEL -t -I $MLF_LOCATION_WORD \
 			$TOKENS_WORD ${BASE_OUTPUT_MLF_WORD}-all >> ${LOG_RESULTS_WORD}
 	fi
 fi

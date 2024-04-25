@@ -1,5 +1,7 @@
-WB !ENTER
-WB !EXIT
 WB sil
+WB sil0
+WB sil1
 NB sil
+NB sil0
+NB sil1
 TC

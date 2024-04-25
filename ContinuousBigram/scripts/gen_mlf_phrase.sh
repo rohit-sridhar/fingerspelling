@@ -35,6 +35,9 @@ integer ind=0
 integer extra=0
 str=""
 
+ENTER="sil0"
+EXIT="sil1"
+
 echo "#!MLF!#"			# write the header for the file
 
 for m in `cat $DATA_LIST_FILE`; do	# for each data file listed
@@ -64,17 +67,17 @@ for m in `cat $DATA_LIST_FILE`; do	# for each data file listed
 			extra=extra+1
 			continue
 		fi
-		if [[ ( 1 -lt $ind && $ind -lt $((num_labels-2)) ) && $k = "sil" ]]; then
-			k="_"
-		fi	
-		if [[ $k = "sil"  || $k = "!ENTER" || $k = "!EXIT" ]]; then
+		# if [[ ( 1 -lt $ind && $ind -lt $((num_labels-2)) ) && $k = "sil0" ]]; then
+		#   k="_"
+		# fi	
+		if [[ $k = $ENTER  || $k = $EXIT ]]; then
 			str=$str
 		else
 			str="${str}${k}"
 		fi
 		ind=ind+1+extra
 		extra=0
-		if [[ $k = "!EXIT" ]]; then
+		if [[ $k = $EXIT ]]; then
 			end_time=total_time*ind/num_labels
 			echo $start_time $end_time $str
             # echo $str

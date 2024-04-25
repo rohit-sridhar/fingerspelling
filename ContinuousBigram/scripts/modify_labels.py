@@ -38,8 +38,8 @@ def parse_args():
         "--edit_type",
         type=str,
         default=None,
-        choices=["replace", "remove", "repl_body"],
-        help="Replace one label with another. Remove removes the label. repl_body replaces every label except the head/tail."
+        choices=["replace", "remove", "repl_body", "repl_head", "repl_tail"],
+        help="Replace one label with another. Remove removes the label. repl_body replaces every label except the head/tail. repl_head/repl_tail replace the head/tail respectively."
     )
 
     return parser.parse_args()
@@ -55,7 +55,7 @@ def check_args():
     if args.new_label is not None:
         args.new_label = add_newline(args.new_label)
     elif args.edit_type != "remove":
-        raise ValueError("New Label must not be None if edit_type is replace or repl_body")
+        raise ValueError("New Label must not be None if edit_type is replace, repl_body or repl_head/repl_tail.")
 
 # Add newline to label if there isn't one already
 def add_newline(label):
@@ -77,10 +77,16 @@ def edit_labfile(label_path):
     labels[-1] = add_newline(labels[-1])
 
     new_labels = []
-    if args.edit_type == "repl_body":
-        head_tail = (labels[0], labels[-1])
+    if args.edit_type == "repl_head":
+        new_labels.append(args.new_label)
+        labels = labels[1:]
+    elif args.edit_type == "repl_tail":
+        tail = args.new_label
+        labels = labels[:-1]
+    elif args.edit_type == "repl_body":
+        new_labels.append(labels[0])
+        tail = labels[-1]
         labels = labels[1:-1]
-        new_labels.append(head_tail[0])
     
     for i in range(len(labels)):
         if labels[i] == args.old_label:
@@ -88,13 +94,16 @@ def edit_labfile(label_path):
                 new_labels.append(args.new_label)
             elif args.edit_type == "remove":
                 continue
+            else:
+                new_labels.append(labels[i])
         else:
             new_labels.append(labels[i])
     
-    if args.edit_type == "repl_body":
-        new_labels.append(head_tail[1])
+    if args.edit_type == "repl_body" or args.edit_type == "repl_tail":
+        new_labels.append(tail)
     
     print(new_labels)
+    print()
     return new_labels
 
 if __name__ == "__main__":

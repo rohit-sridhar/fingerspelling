@@ -20,7 +20,7 @@ def parse_args():
     parser.add_argument(
         "--n_gram",
         type=int,
-        default=None,
+        default=1,
         help="Generates n gram grammar. For n = 1, it is an isolated word grammar. For n = None, it uses the whole phrase."
     )
     
@@ -41,12 +41,12 @@ def get_grammar_file():
     else:
         suffix = "phrase" if args.grammar_type == "word" else "word"
     
-    return os.path.join(root, '_'.join([root, args.grammar_type, suffix]))
+    return os.path.join(root, SPACE.join([root, args.grammar_type, suffix]))
 
 
 ########## WORD LEVEL GRAMMAR HELPERS ##########
 # Get a sorted list of all tokens in the label directory. Does not include
-# SPACE or SIL
+# SPACE or ENTER/EXIT
 def get_tokens(n_gram):
     tokens = set()
     files = get_label_files(args.label_loc)
@@ -63,14 +63,14 @@ def get_tokens(n_gram):
 
 # Gets phrases from the label files
 def get_phrases():
-    phrases = []
+    phrases = set()
     files = get_label_files(args.label_loc)
 
     for label_file in files:
         phrase = collect_tokens(label_file)
-        phrases.append(f" {SPACE} ".join(phrase))
+        phrases.add(f" {SPACE} ".join(phrase))
     
-    return phrases
+    return list(phrases)
 
 
 ########## LETTER LEVEL GRAMMAR HELPERS ##########
@@ -91,13 +91,13 @@ def get_letters(n_gram):
 # Gets phrases from the label files
 def get_words():
     tokens = get_tokens(1)  # Pass n gram 1 to just get tokens
-    words = []
+    words = set()
 
     for token in tokens:
         word = ' '.join([*token])
-        words.append(word)
+        words.add(word)
     
-    return words
+    return list(words)
 
 ########## WORD LEVEL GRAMMAR WRITERS ##########
 # Grammar for 1 gram
@@ -105,7 +105,7 @@ def write_word_grammar(tokens, grammar_file):
     token_options = ' | '.join(tokens)
     
     line_1 = f"$word = {token_options};\n"
-    line_2 = f"({SIL} {{ $word {SPACE} }} $word {SIL})\n"
+    line_2 = f"({ENTER} {{ $word {SPACE} }} $word {EXIT})\n"
     
     with open(grammar_file, 'w') as f:
         f.writelines([line_1, "\n", line_2])
@@ -115,7 +115,7 @@ def write_word_grammar_phrase(phrases, grammar_file):
     phrase_options = ' | '.join(phrases)
 
     line_1 = f"$phrase = {phrase_options};\n"
-    line_2 = f"({SIL} $phrase {SIL})\n"
+    line_2 = f"({ENTER} $phrase {EXIT})\n"
 
     with open(grammar_file, 'w') as f:
         f.writelines([line_1, "\n", line_2])
@@ -125,7 +125,7 @@ def write_letter_grammar(letters, grammar_file):
     letter_options = ' | '.join(letters)
 
     line_1 = f"$char = {letter_options};\n"
-    line_2 = f"({SIL} < $char > {SIL})\n"
+    line_2 = f"({ENTER} < $char > {EXIT})\n"
     
     with open(grammar_file, 'w') as f:
         f.writelines([line_1, "\n", line_2])

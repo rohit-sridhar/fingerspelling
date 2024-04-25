@@ -26,5 +26,3 @@ TI T_w {(*-w+*,w+*,*-w).transP}
 TI T_x {(*-x+*,x+*,*-x).transP}
 TI T_y {(*-y+*,y+*,*-y).transP}
 TI T_z {(*-z+*,z+*,*-z).transP}
-TI T_!ENTER {(*-!ENTER+*,!ENTER+*,*-!ENTER).transP}
-TI T_!EXIT {(*-!EXIT+*,!EXIT+*,*-!EXIT).transP}
