@@ -166,15 +166,14 @@ IsolatedBigram/
 MainPipeline/
 
 # Don't include data or labels
-ContinuousBigram/data/*
-ContinuousBigram/label/*
-ContinuousBigram/ext/*
-ContinuousBigram/logs/*
-ContinuousBigram/models/*
-ContinuousBigram/logs/*
-ContinuousBigram/trainsets/*
-ContinuousBigram/testsets/*
-ContinuousBigram/results/*
+ContinuousBigram/data
+ContinuousBigram/label
+ContinuousBigram/ext
+ContinuousBigram/logs
+ContinuousBigram/models
+ContinuousBigram/trainsets
+ContinuousBigram/testsets
+ContinuousBigram/results
 ContinuousBigram/all-extfiles
 ContinuousBigram/datafiles
 
