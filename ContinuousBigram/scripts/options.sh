@@ -184,8 +184,8 @@ OUTPUT_MLF=${EXT_DIR}/result.mlf_letter		# where HTK stores results
 						# .ext files
 OUTPUT_MLF_WORD=${EXT_DIR}/result.mlf_word
 
-LOG_RESULTS=${PRJ}/results/dim20/thr8/grliwi/sten/hresults.log_letter_neg10ip_6state-pca20-gmm4_20its_5tri-its_silsp_bglsp
-LOG_RESULTS_WORD=${PRJ}/results/dim20/thr8/grliwi/sten/hresults.log_word_neg10ip_6state-pca20-gmm4_20its_5tri-its_silsp_bglsp
+LOG_RESULTS=${PRJ}/results/dim20/thr8/grliwi/sten/hresults.log_letter_neg10ip_6state-pca20-gmm4_20its_5tri-its_silsp_bgl
+LOG_RESULTS_WORD=${PRJ}/results/dim20/thr8/grliwi/sten/hresults.log_word_neg10ip_6state-pca20-gmm4_20its_5tri-its_silsp_bgl
 
 HMM_TEMP_DIR=${PRJ}/models			# directory for storing
 						# intermediate models during

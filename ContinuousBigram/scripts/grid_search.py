@@ -200,7 +200,7 @@ def get_name_ext(ip, num_its, num_tri_its, hmmdef):
         name_ext += "_silsp"
     
     if args.use_bg_letter:
-        name_ext += "_bglsp"
+        name_ext += "_bgl"
     
     if args.use_bg_word:
         name_ext += "_bgw"

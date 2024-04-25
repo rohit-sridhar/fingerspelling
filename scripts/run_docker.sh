@@ -40,8 +40,8 @@ else
                 --name $2 rohitsridhar91/asl_sign_recognizer:v1.2
         elif [ "$2" == "fingerspelling" ]; then
             continuous_bigram_path="$root/hmm_modeling/fingerspelling/ContinuousBigram"
-            continuous_bigram_benten_path="$root/hmm_modeling/fingerspelling/ContinuousBigram.benten"
-            continuous_bigram_hotei_path="$root/hmm_modeling/fingerspelling/ContinuousBigram.hotei"
+            continuous_bigram_benten_path="$root/hmm_modeling/fingerspelling.benten/ContinuousBigram"
+            continuous_bigram_hotei_path="$root/hmm_modeling/fingerspelling.hotei/ContinuousBigram"
             
             sudo docker run \
                 -dit \
