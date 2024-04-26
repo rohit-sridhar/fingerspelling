@@ -176,4 +176,11 @@ ContinuousBigram/testsets
 ContinuousBigram/results
 ContinuousBigram/all-extfiles
 ContinuousBigram/datafiles
-
+ContinuousBigram/mlf
+ContinuousBigram/dict
+ContinuousBigram/grammar
+ContinuousBigram/commands
+ContinuousBigram/word.lattice
+ContinuousBigram/bigram.letter
+ContinuousBigram/word.lattice_word
+ContinuousBigram/bigram.word
