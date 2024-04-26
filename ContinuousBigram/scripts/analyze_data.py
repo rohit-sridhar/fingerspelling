@@ -77,7 +77,7 @@ def analyze_frames_per_letter(data_path, label_path):
         get_file_frames_per_letter(f, frames_per_label, data_path, label_path)
     
     plt.hist(frames_per_label)
-    plt.savefig('frames_per_label.png')
+    plt.savefig('output/frames_per_label.png')
     plt.close()
 
 ########## PHRASES ANALYSIS ##########

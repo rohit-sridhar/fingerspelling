@@ -24,9 +24,6 @@ EXT_DIR=$2
 OPTIONS_FILE=$3
 SKIP_SPACE=$4
 
-ENTER="sil"
-EXIT="sil"
-
 . ${OPTIONS_FILE}
 
 integer frame_duration=$SAMPLE_PERIOD           # each frame is about 2000ns in HTK
@@ -68,7 +65,7 @@ for m in `cat $DATA_LIST_FILE`; do	# for each data file listed
 			extra=extra+1
 			continue
 		fi
-		if [[ $str != "" && ( $k = $ENTER || $k = $EXIT || $k = "_" ) ]]; then
+		if [[ $str != "" && ( $k = $ENTER || $k = $EXIT || $k = $SP ) ]]; then
 			end_time=total_time*ind/num_labels
 			echo $start_time $end_time $str
             # echo $str
@@ -78,9 +75,9 @@ for m in `cat $DATA_LIST_FILE`; do	# for each data file listed
 		str="${str}${k}"
 		ind=ind+1+extra
 		extra=0
-		if [[ $k = $ENTER || $k = $EXIT || $k = "_" ]]; then
+		if [[ $k = $ENTER || $k = $EXIT || $k = $SP ]]; then
             end_time=total_time*ind/num_labels
-            if [[ $SKIP_SPACE = "1" && $k = "_" ]]; then
+            if [[ $SKIP_SPACE = "1" && $k = $SP ]]; then
                 :
             else
 		        echo $start_time $end_time $str

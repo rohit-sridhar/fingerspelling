@@ -1,4 +1,4 @@
-RO 100.0 stats
+RO 100.0 output/stats
 TC 350 "ST_sil_2_" {("sil","*-sil+*","sil+*","*-sil").state[2]}
 TC 350 "ST_a_2_" {("a","*-a+*","a+*","*-a").state[2]}
 TC 350 "ST_b_2_" {("b","*-b+*","b+*","*-b").state[2]}

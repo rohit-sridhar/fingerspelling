@@ -230,7 +230,7 @@ def get_grammar_filepaths(grammar_type):
 
 def get_bool_arg_info():
     custom_silsp = "yes" if not(args.no_custom_silsp) else "no"
-    hedfile1 = "${PRJ}/mktri1_silsp.hed" if not(args.no_custom_silsp) else "${PRJ}/mktri1_orig.hed"
+    hedfile1 = "${PRJ}/instr/mktri1_silsp.hed" if not(args.no_custom_silsp) else "${PRJ}/instr/mktri1_orig.hed"
     use_bgl = "yes" if args.use_bg_letter else "no"
     use_bgw = "yes" if args.use_bg_word else "no"
 

@@ -23,6 +23,7 @@
 DATA_LIST_FILE=$1 
 EXT_DIR=$2
 OPTIONS_FILE=$3
+SKIP_SPACE=$4
 
 . ${OPTIONS_FILE}
 
@@ -61,10 +62,14 @@ for m in `cat $DATA_LIST_FILE`; do	# for each data file listed
     ind=1
 	for k in `cat $labname`; do
 		end_time=total_time*ind/num_labels
-		echo $start_time $end_time $k
-        # echo $k
-		start_time=total_time*ind/num_labels
-		ind=ind+1
+		if [[ $SKIP_SPACE = "1" && $k = $SP ]]; then
+            :
+        else
+            echo $start_time $end_time $k
+            # echo $k
+		    start_time=total_time*ind/num_labels
+		fi
+        ind=ind+1
 	done
 	echo "."			# data seperator
 done

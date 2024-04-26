@@ -34,7 +34,7 @@ MIN_VARIANCE=0.01				# don't let the
 						# this value during
 						# HMM training
 
-INSERT_PENALTY=-13.0	#Penalize model for too many word insertion/deletion
+INSERT_PENALTY=-10	#Penalize model for too many word insertion/deletion
 						#If too many deletions, increase
 						#If too many insertions, decrease
 
@@ -53,7 +53,7 @@ PRUNING_THRESHOLD=0
 HMM_TOPOLOGY_DIR=${PRJ}/hmmdefs
 
 # general HMM_TOPOLOGIES
-HMM_LOCATION=$HMM_TOPOLOGY_DIR/3state-pca20-gmm4-skip123
+HMM_LOCATION=$HMM_TOPOLOGY_DIR/6state-pca20-gmm4
 HMM_ALL=$HMM_LOCATION
 HMM_SIL=$HMM_TOPOLOGY_DIR/3state-pca20-sil-skip-loop
 HMM_SP=$HMM_TOPOLOGY_DIR/1state-pca20-sp
@@ -102,7 +102,7 @@ SORT_OPTION="-V" #Use this for alphabetic data order and sampling
 	
 VALIDATION_ITERATIONS=10 #Number of repeats or folds
 
-DATAFILES_LIST=${PRJ}/datafiles			# list of all data files
+DATAFILES_LIST=${PRJ}/output/datafiles			# list of all data files
 
 GRAMMARFILE=${PRJ}/grammar/grammar_letter_isolated
 GRAMMARFILE_WORD=${PRJ}/grammar/grammar_word_isolated
@@ -128,6 +128,7 @@ DICTFILE_ALIGN=${PRJ}/dict/dict_tri2tri # Dictionary used during forced alignmen
 # TOKENS file during triletter iterations.
 ######
 TOKENS_ORIGINAL=${PRJ}/commands/commands_letter
+TOKENS_WORD_SKSP=${PRJ}/commands/commands_word_isolated
 
 ###### USE FOR TRILETTER MODELING #####
 TOKENS=${PRJ}/commands/commands_tri_internal
@@ -143,6 +144,7 @@ TOKENS_WORD=${PRJ}/commands/commands_word   # (I think this should be changed to
 # Triletter modeling uses the MLF_LOCATION file for training.
 ######
 MLF_LOCATION_ORIGINAL=${PRJ}/mlf/labels.mlf_letter # used for building model and results
+MLF_LOCATION_WORD_SKSP=${PRJ}/mlf/labels.mlf_word_sksp
 
 ###### USE FOR TRILETTER ######
 MLF_LOCATION=${PRJ}/mlf/labels.mlf_tri_internal
@@ -154,11 +156,13 @@ MLF_LOCATION_WORD=${PRJ}/mlf/labels.mlf_word
 
 MLF_LOCATION_GEN=${PRJ}/mlf/gen # Generated MLFs
 
-WORD_LATTICE=${PRJ}/word.lattice
+WORD_LATTICE=${PRJ}/output/word.lattice
+BIGRAM_LETTER_FILE=${PRJ}/output/bigram.letter
+BIGRAM_WORD_FILE=${PRJ}/output/bigram.word
 
-HEDFILE1=${PRJ}/mktri1_silsp.hed
-HEDFILE2=${PRJ}/mktri2.hed
-STATS=${PRJ}/stats
+HEDFILE1=${PRJ}/instr/mktri1_silsp.hed
+HEDFILE2=${PRJ}/instr/mktri2.hed
+STATS=${PRJ}/output/stats
 						#
 						#
 GEN_EXT_FILES=no				# yes or no: generate .ext data
@@ -184,8 +188,8 @@ OUTPUT_MLF=${EXT_DIR}/result.mlf_letter		# where HTK stores results
 						# .ext files
 OUTPUT_MLF_WORD=${EXT_DIR}/result.mlf_word
 
-LOG_RESULTS=${PRJ}/results/dim20/thr0/grliwi/hresults.log_letter_neg13ip_3state-pca20-gmm4-skip123_20its_5tri-its_silsp
-LOG_RESULTS_WORD=${PRJ}/results/dim20/thr0/grliwi/hresults.log_word_neg13ip_3state-pca20-gmm4-skip123_20its_5tri-its_silsp
+LOG_RESULTS=${PRJ}/results/dim20/thr8/grliwi/hresults.log_letter_neg10ip_6state-pca20-gmm4_20its_5tri-its_silsp
+LOG_RESULTS_WORD=${PRJ}/results/dim20/thr8/grliwi/hresults.log_word_neg10ip_6state-pca20-gmm4_20its_5tri-its_silsp
 
 HMM_TEMP_DIR=${PRJ}/models			# directory for storing
 						# intermediate models during

@@ -123,16 +123,16 @@ done
 find ${EXT_DIR}/ | grep "\.ext$" | sort $SORT_OPTION > $DATA_SAMPLES
 
 if [[ $BIGRAM_LETTER = "yes" ]]; then
-    ${HTKBIN}HLStats -b bigram.letter -s $ENTER $EXIT -o commands/commands_letter mlf/labels.mlf_letter
-    ${HTKBIN}HBuild -n bigram.letter -s $ENTER $EXIT commands/commands_letter ${WORD_LATTICE}
+    ${HTKBIN}HLStats -b $BIGRAM_LETTER_FILE -s $ENTER $EXIT -o $TOKENS_ORIGINAL $MLF_LOCATION_ORIGINAL
+    ${HTKBIN}HBuild -n $BIGRAM_LETTER_FILE -s $ENTER $EXIT $TOKENS_ORIGINAL ${WORD_LATTICE}
 else
     ${HTKBIN}HParse -l ${GRAMMARFILE} ${WORD_LATTICE}
 fi
 
 if [[ $WORD_LEVEL = "yes" ]] || [[ $WORD_LEVEL = "1" ]]; then
     if [[ $BIGRAM_WORD = "yes" ]]; then
-        ${HTKBIN}HLStats -b bigram.word -s $ENTER $EXIT -o commands/commands_word_isolated mlf/labels.mlf_word_sksp
-        ${HTKBIN}HBuild -n bigram.word -s $ENTER $EXIT commands/commands_word_isolated ${WORD_LATTICE}_word
+        ${HTKBIN}HLStats -b $BIGRAM_WORD_FILE -s $ENTER $EXIT -o $TOKENS_WORD_SKSP $MLF_LOCATION_WORD_SKSP
+        ${HTKBIN}HBuild -n $BIGRAM_WORD_FILE -s $ENTER $EXIT $TOKENS_WORD_SKSP ${WORD_LATTICE}_word
     else
 	    ${HTKBIN}HParse -l ${GRAMMARFILE_WORD} ${WORD_LATTICE}_word
     fi

@@ -35,9 +35,6 @@ integer ind=0
 integer extra=0
 str=""
 
-ENTER="sil"
-EXIT="sil"
-
 echo "#!MLF!#"			# write the header for the file
 
 for m in `cat $DATA_LIST_FILE`; do	# for each data file listed

@@ -8,31 +8,41 @@
 #### file. That is simple to generate (26 letters + sil + space).
 
 echo "Housekeeping ...."
-find $2/* -type f | sort -V  > datafiles
+find $2/* -type f | sort -V  > output/datafiles
 rm -rf ext/data/
 rm -f ext/done
 mkdir ext/data/
 cp -r $3/* ext/data/
 
 OPTIONS_FILE=$1
+. $OPTIONS_FILE
 
 echo "Generating ext files ...."
 scripts/gen_ext_files.sh $OPTIONS_FILE
-find ext/data/*.ext -type f | xargs readlink -f | sort -V > all-extfiles
+find ext/data/*.ext -type f | xargs readlink -f | sort -V > output/all-extfiles
 
 echo "Generating mlf (letter/word/phrase) files ...."
-scripts/gen_mlf_split.sh datafiles ext $OPTIONS_FILE > mlf/labels.mlf_letter
-scripts/gen_mlf_word.sh datafiles ext $OPTIONS_FILE > mlf/labels.mlf_word
-scripts/gen_mlf_word.sh datafiles ext $OPTIONS_FILE "1" > mlf/labels.mlf_word_sksp
-scripts/gen_mlf_phrase.sh datafiles ext $OPTIONS_FILE > mlf/labels.mlf_phrase
+scripts/gen_mlf_split.sh $DATAFILES_LIST ext $OPTIONS_FILE > mlf/labels.mlf_letter
+scripts/gen_mlf_split.sh $DATAFILES_LIST ext $OPTIONS_FILE "1" > mlf/labels.mlf_letter_sksp
+scripts/gen_mlf_word.sh $DATAFILES_LIST ext $OPTIONS_FILE > mlf/labels.mlf_word
+scripts/gen_mlf_word.sh $DATAFILES_LIST ext $OPTIONS_FILE "1" > mlf/labels.mlf_word_sksp
+scripts/gen_mlf_phrase.sh $DATAFILES_LIST ext $OPTIONS_FILE > mlf/labels.mlf_phrase
 
 echo "Generating commands (word, tri, cross) and MLF (tri/cross) files ...."
-touch mkcmd_word.led
-HLEd -n commands/commands_word mkcmd_word.led mlf/labels.mlf_word
-HLEd -n commands/commands_word_isolated mkcmd_word.led mlf/labels.mlf_word_sksp
-HLEd -n commands/commands_tri_internal -i mlf/labels.mlf_tri_internal mktri_internal.led mlf/labels.mlf_letter
-HLEd -n commands/commands_tri_cross -i mlf/labels.mlf_tri_cross mktri_cross.led mlf/labels.mlf_letter
-rm -f mkcmd_word.led
+touch instr/mkcmd_word.led
+touch instr/mkcmd_letter.led
+
+HLEd -n commands/commands_word instr/mkcmd_word.led mlf/labels.mlf_word
+HLEd -n commands/commands_word_isolated instr/mkcmd_word.led mlf/labels.mlf_word_sksp
+
+HLEd -n commands/commands_letter instr/mkcmd_letter.led mlf/labels.mlf_letter
+HLEd -n commands/commands_letter_isolated instr/mkcmd_letter.led mlf/labels.mlf_letter_sksp
+
+HLEd -n commands/commands_tri_internal -i mlf/labels.mlf_tri_internal instr/mktri_internal.led mlf/labels.mlf_letter
+HLEd -n commands/commands_tri_cross -i mlf/labels.mlf_tri_cross instr/mktri_cross.led mlf/labels.mlf_letter
+
+rm -f instr/mkcmd_word.led
+rm -f instr/mkcmd_letter.led
 
 echo "Generating single letter/word context grammar files ...."
 python scripts/gen_grammar.py --label_loc $3/ --grammar_type letter
