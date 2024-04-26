@@ -35,8 +35,8 @@ integer ind=0
 integer extra=0
 str=""
 
-ENTER="sil0"
-EXIT="sil1"
+ENTER="sil"
+EXIT="sil"
 
 echo "#!MLF!#"			# write the header for the file
 

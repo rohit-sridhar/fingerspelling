@@ -3,8 +3,8 @@ import os
 from glob import glob
 
 SPACE = '_'
-ENTER = 'sil0'
-EXIT = 'sil1'
+ENTER = 'sil'
+EXIT = 'sil'
 
 ########## Utils functions for python scripts ##########
 

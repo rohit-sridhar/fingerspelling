@@ -24,8 +24,8 @@ EXT_DIR=$2
 OPTIONS_FILE=$3
 SKIP_SPACE=$4
 
-ENTER="sil0"
-EXIT="sil1"
+ENTER="sil"
+EXIT="sil"
 
 . ${OPTIONS_FILE}
 
