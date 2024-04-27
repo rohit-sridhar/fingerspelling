@@ -23,8 +23,8 @@ else
         root="$3"
         
         mb_pipe_path="$root/Mobile-Data-Processing-Pipeline"
+        pop_sign_data_path="$root/sign_language_videos/mediapipe"
         islr_path="$root/hmm_modeling/islr/ContinuousBigram"
-        phrase_data_path="$root/sign_language_videos/phrase_data"
         
         if [ "$2" == "islr" ]; then
             sudo docker run \
@@ -32,11 +32,13 @@ else
                 -v "$mb_pipe_path":/root/Mobile-Data-Processing-Pipeline \
                 -v "$islr_path":/root/islr/ContinuousBigram \
                 --name $2 rohitsridhar91/asl_sign_recognizer:v1.2
-        elif [ "$2" == "phrase" ]; then
+        elif [ "$2" == "popsign_experiments" ]; then
+            popsign_path="$root/hmm_modeling/popsign/ContinuousBigram"
             sudo docker run \
                 -dit \
                 -v "$mb_pipe_path":/root/Mobile-Data-Processing-Pipeline \
-                -v "$phrase_data_path":/root/phrase_data \
+                -v "$popsign_path":/root/popsign/ContinuousBigram \
+                -v "$pop_sign_data_path":/root/mediapipe \
                 --name $2 rohitsridhar91/asl_sign_recognizer:v1.2
         elif [ "$2" == "fingerspelling" ]; then
             continuous_bigram_path="$root/hmm_modeling/fingerspelling/ContinuousBigram"
