@@ -30,19 +30,19 @@ else
             
             sudo docker run \
                 -dit \
-                -v "$mb_pipe_path":/root/Mobile-Data-Processing-Pipeline \
-                -v "$islr_path":/root/islr/ContinuousBigram \
+                -v "$mb_pipe_path":"$mb_pipe_path" \
+                -v "$islr_path":"$islr_path" \
                 --name $2 rohitsridhar91/asl_sign_recognizer:v1.2
         elif [ "$2" == "popsign_experiments" ]; then
             popsign_path="$root/hmm_modeling/popsign/ContinuousBigram"
-            pop_sign_data_path="$root/sign_language_videos/mediapipe"
+            popsign_data_path="$root/sign_language_videos/mediapipe"
             
             sudo docker run \
                 -dit \
-                -v "$mb_pipe_path":/root/Mobile-Data-Processing-Pipeline \
-                -v "$continuous_bigram_path":/root/fingerspelling/ContinuousBigram \
-                -v "$popsign_path":/root/popsign/ContinuousBigram \
-                -v "$pop_sign_data_path":/root/mediapipe \
+                -v "$mb_pipe_path":"$mb_pipe_path" \
+                -v "$continuous_bigram_path":"$continuous_bigram_path" \
+                -v "$popsign_path":"$popsign_path" \
+                -v "$popsign_data_path":"$popsign_data_path" \
                 --name $2 rohitsridhar91/asl_sign_recognizer:v1.2
         elif [ "$2" == "fingerspelling" ]; then
             continuous_bigram_benten_path="$root/hmm_modeling/fingerspelling.benten/ContinuousBigram"
@@ -50,9 +50,9 @@ else
             
             sudo docker run \
                 -dit \
-                -v "$continuous_bigram_path":/root/fingerspelling/ContinuousBigram \
-                -v "$continuous_bigram_benten_path":/root/fingerspelling/ContinuousBigram.benten \
-                -v "$continuous_bigram_hotei_path":/root/fingerspelling/ContinuousBigram.hotei \
+                -v "$continuous_bigram_path":"$continuous_bigram_path" \
+                -v "$continuous_bigram_benten_path":"$continuous_bigram_benten_path" \
+                -v "$continuous_bigram_hotei_path":"$continuous_bigram_hotei_path" \
                 --name $2 rohitsridhar91/asl_sign_recognizer:v1.2
         fi
         
