@@ -9,3 +9,9 @@ ln -s $1/dict $2/dict
 ln -s $1/grammar $2/grammar
 ln -s $1/mlf $2/mlf
 
+mkdir $1/ext
+mkdir $1/models
+mkdir $1/output
+touch trainsets/training-extfiles
+touch testsets/testing-extfiles
+
