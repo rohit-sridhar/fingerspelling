@@ -14,6 +14,6 @@ mkdir $2/models
 mkdir $2/output
 mkdir $2/trainsets
 mkdir $2/testsets
-touch $2/trainsets/training-extfiles
-touch $2/testsets/testing-extfiles
+touch $2/trainsets/training-extfiles0
+touch $2/testsets/testing-extfiles0
 
