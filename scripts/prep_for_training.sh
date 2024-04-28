@@ -12,6 +12,8 @@ ln -s $1/mlf $2/mlf
 mkdir $2/ext
 mkdir $2/models
 mkdir $2/output
-touch trainsets/training-extfiles
-touch testsets/testing-extfiles
+mkdir $2/trainsets
+mkdir $2/testsets
+touch $2/trainsets/training-extfiles
+touch $2/testsets/testing-extfiles
 
