@@ -1,6 +1,8 @@
 import os
 import argparse
 
+from tqdm import tqdm
+
 global args
 
 def parse_args():
@@ -102,8 +104,6 @@ def edit_labfile(label_path):
     if args.edit_type == "repl_body" or args.edit_type == "repl_tail":
         new_labels.append(tail)
     
-    print(new_labels)
-    print()
     return new_labels
 
 if __name__ == "__main__":
@@ -114,7 +114,7 @@ if __name__ == "__main__":
     filelist = os.listdir(args.old_label_loc)
     filelist.sort()
     
-    for labfile in filelist:
+    for labfile in tqdm(filelist):
         label_path = os.path.join(args.old_label_loc, labfile)
         new_labels = edit_labfile(label_path)
         write_new_labfile(new_labels, labfile)

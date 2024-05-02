@@ -247,13 +247,14 @@ def get_subdirs(filepath):
 # Get the subdirectories of the data file (leave out root and filename)
 def get_subdirectories(data_file, label_file):
     data_subdirs = get_subdirs(data_file)
-    label_subdirs = get_subdirs(label_file)
+    # label_subdirs = get_subdirs(label_file)
     
-    for subdir in data_subdirs:
-        if subdir in label_subdirs:
-            label_subdirs.remove(subdir)
+    # for subdir in data_subdirs:
+    #     if subdir in label_subdirs:
+    #         label_subdirs.remove(subdir)
 
-    subdirs = os.path.join(*(data_subdirs + label_subdirs))
+    # subdirs = os.path.join(*(data_subdirs + label_subdirs))
+    subdirs = os.path.join(*(data_subdirs))
     return subdirs
 
 # Helper to edit the options file with new hyperparam (for 1 param)
