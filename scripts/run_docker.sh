@@ -23,10 +23,10 @@ else
         root="$3"
         
         mb_pipe_path="$root/Mobile-Data-Processing-Pipeline"
-        continuous_bigram_path="$root/hmm_modeling/fingerspelling/ContinuousBigram"
+        continuous_bigram_path="$root/hmm_modeling/fingerspelling"
         
         if [ "$2" == "islr" ]; then
-            islr_path="$root/hmm_modeling/islr/ContinuousBigram"
+            islr_path="$root/hmm_modeling/islr"
             
             sudo docker run \
                 -dit \
@@ -34,7 +34,7 @@ else
                 -v "$islr_path":"$islr_path" \
                 --name $2 rohitsridhar91/asl_sign_recognizer:v1.2
         elif [ "$2" == "popsign_experiments" ]; then
-            popsign_path="$root/hmm_modeling/popsign/ContinuousBigram"
+            popsign_path="$root/hmm_modeling/popsign"
             popsign_data_path="$root/sign_language_videos/mediapipe"
             
             sudo docker run \
@@ -45,8 +45,8 @@ else
                 -v "$popsign_data_path":"$popsign_data_path" \
                 --name $2 rohitsridhar91/asl_sign_recognizer:v1.2
         elif [ "$2" == "fingerspelling" ]; then
-            continuous_bigram_benten_path="$root/hmm_modeling/fs.benten/ContinuousBigram"
-            continuous_bigram_hotei_path="$root/hmm_modeling/fs.hotei/ContinuousBigram"
+            continuous_bigram_benten_path="$root/hmm_modeling/fs.benten"
+            continuous_bigram_hotei_path="$root/hmm_modeling/fs.hotei"
             
             sudo docker run \
                 -dit \
@@ -64,11 +64,4 @@ else
         echo "Specify either launch (create the container), run (resume the existing container), rm (remove existing container), or ls"
     fi
 fi
-
-# root="/home/lab-workstation/ServerData"
-
-# parquet_path="$root/parquet"
-
-# continuous_bigram_dim8_path="$root/hmm_modeling/fingerspelling/ContinuousBigram.dim8"
-# continuous_bigram_dim12_path="$root/hmm_modeling/fingerspelling/ContinuousBigram.dim12"
 
