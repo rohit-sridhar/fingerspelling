@@ -44,8 +44,8 @@ SAMPLE_PERIOD=1000
 
 MULTI_PROCESS="no"
 # THREADS=8           # For Hotei
-THREADS=32        # For Ebisu
-# THREADS=96        # For Benten
+# THREADS=32        # For Ebisu
+THREADS=96        # For Benten
 
 #PRUNING_THRESHOLD="50 50 500" #Threshold for alpha-beta pruning, of form "start step-size end"
 PRUNING_THRESHOLD=0

@@ -54,10 +54,18 @@ for m in `cat $DATA_LIST_FILE`; do	# for each data file listed
 	   labname="`pwd`/${EXT_DIR}/$fname.lab"
 	fi
 	echo "\"$labname\"" | sed -e "s|//|/|g"  # output the label filename
-	num_lines=`cat $m | wc -l` #   compute the num lines per file
+	# echo `cat $m`
+    num_lines=`cat $m | wc -l` #   compute the num lines per file
 	num_labels=`cat $labname | wc -l`
 	total_time=num_lines*frame_duration #   total time = #_frames * duration
       					  #   write start/stop time w/ label
+    # Writing the following X lines for debugging.
+    # total_time_str="Total Time: ${total_time}"
+    # num_lines_str="Num Lines: ${num_lines}"
+    # frame_duration_str="Frame Duration: ${frame_duration}"
+    # echo $total_time_str
+    # echo $num_lines_str
+    # echo $frame_duration_str
     start_time=0
     ind=1
 	for k in `cat $labname`; do
