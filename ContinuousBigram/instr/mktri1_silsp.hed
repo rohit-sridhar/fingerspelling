@@ -1,5 +1,4 @@
 CL commands/commands_tri_internal
-TI T_sil {(*-sil+*,sil+*,*-sil).transP}
 TI T_a {(*-a+*,a+*,*-a).transP}
 TI T_b {(*-b+*,b+*,*-b).transP}
 TI T_c {(*-c+*,c+*,*-c).transP}
@@ -26,4 +25,6 @@ TI T_w {(*-w+*,w+*,*-w).transP}
 TI T_x {(*-x+*,x+*,*-x).transP}
 TI T_y {(*-y+*,y+*,*-y).transP}
 TI T_z {(*-z+*,z+*,*-z).transP}
-TI silst {sil0.state[3],sil1.state[3],_.state[2]}
+TI silst1 {sil0.state[1],sil1.state[1]}
+TI silst2 {sil0.state[2],sil1.state[2]}
+TI silst3 {sil0.state[3],sil1.state[3],_.state[2]}

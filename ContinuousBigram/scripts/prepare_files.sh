@@ -33,8 +33,8 @@ echo "Generating mlf word files ...."
 python scripts/gen_mlf.py --ext_loc ./ext/data/ --datafiles_list ./output/datafiles --mlf_file ./mlf/labels.mlf_word --mlf_type word
 python scripts/gen_mlf.py --ext_loc ./ext/data/ --datafiles_list ./output/datafiles --mlf_file ./mlf/labels.mlf_word_sksp --mlf_type word --skip_space
 
-echo "Generating mlf phrase files ...."
-scripts/gen_mlf_phrase.sh $DATAFILES_LIST ext $OPTIONS_FILE > mlf/labels.mlf_phrase
+# echo "Generating mlf phrase files ...."
+# scripts/gen_mlf_phrase.sh $DATAFILES_LIST ext $OPTIONS_FILE > mlf/labels.mlf_phrase
 
 echo "Generating commands (word, tri, cross) and MLF (tri/cross) files ...."
 touch instr/mkcmd_word.led
@@ -59,3 +59,4 @@ python scripts/gen_grammar.py --label_loc $3/ --grammar_type word
 echo "Generating dict (tri2letter/tri2word) files ...."
 python scripts/gen_tri_dict.py --label_loc $3/ --dict_type letter --dict_loc dict/dict_tri2letter
 python scripts/gen_tri_dict.py --label_loc $3/ --dict_type word --dict_loc dict/dict_tri2word
+

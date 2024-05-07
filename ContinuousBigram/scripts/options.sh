@@ -34,7 +34,7 @@ MIN_VARIANCE=0.01				# don't let the
 						# this value during
 						# HMM training
 
-INSERT_PENALTY=-13.0	#Penalize model for too many word insertion/deletion
+INSERT_PENALTY=-10	#Penalize model for too many word insertion/deletion
 						#If too many deletions, increase
 						#If too many insertions, decrease
 
@@ -42,7 +42,7 @@ GRAMMAR_SCALE_FACTOR=0
 
 SAMPLE_PERIOD=1000
 
-MULTI_PROCESS="no"
+MULTI_PROCESS="yes"
 # THREADS=8           # For Hotei
 # THREADS=32        # For Ebisu
 THREADS=96        # For Benten
@@ -53,7 +53,7 @@ PRUNING_THRESHOLD=0
 HMM_TOPOLOGY_DIR=${PRJ}/hmmdefs
 
 # general HMM_TOPOLOGIES
-HMM_LOCATION=$HMM_TOPOLOGY_DIR/3state-pca20-gmm4
+HMM_LOCATION=$HMM_TOPOLOGY_DIR/6state-pca20-gmm4
 HMM_ALL=$HMM_LOCATION
 HMM_SIL=$HMM_TOPOLOGY_DIR/3state-pca20-sil-skip-loop
 HMM_SP=$HMM_TOPOLOGY_DIR/1state-pca20-sp
@@ -102,7 +102,10 @@ SORT_OPTION="-V" #Use this for alphabetic data order and sampling
 	
 VALIDATION_ITERATIONS=10 #Number of repeats or folds
 
+TT_NAME_SCRIPT=$SCRIPTS_DIR/gen_train_test_name.sh      # make consistent names
+
 DATAFILES_LIST=${PRJ}/output/datafiles			# list of all data files
+DATA_SAMPLES=${PRJ}/output/all-extfiles
 
 GRAMMARFILE=${PRJ}/grammar/grammar_letter_isolated
 GRAMMARFILE_WORD=${PRJ}/grammar/grammar_word_isolated
@@ -188,8 +191,8 @@ OUTPUT_MLF=${EXT_DIR}/result.mlf_letter		# where HTK stores results
 						# .ext files
 OUTPUT_MLF_WORD=${EXT_DIR}/result.mlf_word
 
-LOG_RESULTS=${PRJ}/results/dim20/thr0/grliwi/hresults.log_letter_neg13ip_3state-pca20-gmm4_20its_5tri-its_silsp
-LOG_RESULTS_WORD=${PRJ}/results/dim20/thr0/grliwi/hresults.log_word_neg13ip_3state-pca20-gmm4_20its_5tri-its_silsp
+LOG_RESULTS=${PRJ}/results/dim20/thr8/grliwi/hresults.log_letter_neg10ip_6state-pca20-gmm4_20its_5tri-its_silsp.TST
+LOG_RESULTS_WORD=${PRJ}/results/dim20/thr8/grliwi/hresults.log_word_neg10ip_6state-pca20-gmm4_20its_5tri-its_silsp.TST
 
 HMM_TEMP_DIR=${PRJ}/models			# directory for storing
 						# intermediate models during

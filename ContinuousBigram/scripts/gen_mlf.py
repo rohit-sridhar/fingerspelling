@@ -69,7 +69,6 @@ def get_label_ts(labels, total_duration, num_labels):
             i = i + 1
         else:
             i = i + len(label.strip())
-        print(i)
         end_time = total_duration * (i / num_labels)
         label_ts.append((str(int(start_time)), str(int(end_time))))
         start_time = end_time
@@ -113,9 +112,7 @@ def get_label_info(data_file):
     total_duration = args.sample_period * num_lines 
     label_path = os.path.abspath(label_file)
     
-    print(label_path)
     label_ts = get_label_ts(labels, total_duration, num_labels)
-    print()
     return label_path, labels, label_ts
 
 # Generate the letter level mlf
