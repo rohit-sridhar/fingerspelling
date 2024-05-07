@@ -9,6 +9,7 @@ RESULTS_ROOT = "results/"
 OPTIONS_FILE = "./scripts/options.sh"
 TRAIN_FILE = "./scripts/train.sh"
 PREPARE_FILE = "./scripts/prepare_files.sh"
+HEDFILE2 = "./instr/mktri2.hed"
 
 TOT_PREPARE = "./scripts/cv/test_on_train.sh"
 EXT_FILE_LIST = "all-extfiles"
@@ -95,6 +96,14 @@ def parse_args():
         nargs='+',
         default=[-10],
         help="All the Insertion Penalty vals to test. Higher penalizes deletions. Lower penalizes insertions. 0 is the center."
+    )
+    
+    parser.add_argument(
+        "--tc",
+        type=int,
+        nargs='+',
+        default=[50],
+        help="HHEd cluster f value for TC command in instr/mktri2.hed."
     )
     
     parser.add_argument(
@@ -187,14 +196,14 @@ def check_args():
             raise ValueError("Label files must end with /label (last subdir).")
     
 # Get the name extension for the results/output file
-def get_name_ext(ip, num_its, num_tri_its, hmmdef):
+def get_name_ext(ip, tc, num_its, num_tri_its, hmmdef):
     ip_int = abs(int(ip))
     if ip > 0:
-        name_ext = f"pos{ip_int}ip_{hmmdef}_{num_its}its_{num_tri_its}tri-its"
+        name_ext = f"pos{ip_int}ip_{hmmdef}_{num_its}its_{num_tri_its}tri-its_tc{tc}"
     elif ip < 0:
-        name_ext = f"neg{ip_int}ip_{hmmdef}_{num_its}its_{num_tri_its}tri-its"
+        name_ext = f"neg{ip_int}ip_{hmmdef}_{num_its}its_{num_tri_its}tri-its_tc{tc}"
     else:
-        name_ext = f"{ip_int}ip_{hmmdef}_{num_its}its_{num_tri_its}tri-its"
+        name_ext = f"{ip_int}ip_{hmmdef}_{num_its}its_{num_tri_its}tri-its_tc{tc}"
     
     if not(args.no_custom_silsp):
         name_ext += "_silsp"
@@ -258,25 +267,28 @@ def get_subdirectories(data_file, label_file):
     return subdirs
 
 # Helper to edit the options file with new hyperparam (for 1 param)
-def edit_options_file(re_search, re_repl):
-    with open(OPTIONS_FILE, 'r') as f:
+def edit_file(re_search, re_repl, file_to_edit):
+    with open(file_to_edit, 'r') as f:
         lines = f.readlines()
      
     for i in range(len(lines)):
         lines[i] = re.sub(re_search, re_repl, lines[i])
     
-    with open(OPTIONS_FILE, 'w') as f:
+    with open(file_to_edit, 'w') as f:
         f.writelines(lines)
     
 # Edit options file with all new hyperparams (calls helper above)
-def edit_options(ip, num_its, num_tri_its, hmmdef, grammar_type, subdirs):
-    name_ext = get_name_ext(ip, num_its, num_tri_its, hmmdef)
+def edit_options(ip, tc, num_its, num_tri_its, hmmdef, grammar_type, subdirs):
+    name_ext = get_name_ext(ip, tc, num_its, num_tri_its, hmmdef)
     letter_results, word_results = get_hresults_filepaths(name_ext, subdirs)
     letter_grammar, word_grammar = get_grammar_filepaths(grammar_type)
     custom_silsp, hedfile1, use_bgl, use_bgw = get_bool_arg_info()
     
     ip_search = IP_VARNAME + "\s*=\s*-?[0-9]+(\.[0-9]+)*"
     ip_repl = IP_VARNAME + f"={ip}"
+
+    tc_search = "^TC [0-9]+"
+    tc_repl = f"TC {tc}"
     
     num_its_search = NUM_ITS_VARNAME + "\s*=\s*[0-9]+"
     num_its_repl = NUM_ITS_VARNAME + f"={num_its}"
@@ -311,18 +323,19 @@ def edit_options(ip, num_its, num_tri_its, hmmdef, grammar_type, subdirs):
     word_grammar_search = GRAMMAR_WORD_VARNAME + "\s*=\s*\$\{PRJ\}\/.*grammar_.*"
     word_grammar_repl = GRAMMAR_WORD_VARNAME + f"={word_grammar}"
 
-    edit_options_file(ip_search, ip_repl)
-    edit_options_file(num_its_search, num_its_repl)
-    edit_options_file(num_tri_its_search, num_tri_its_repl)
-    edit_options_file(hmmdef_search, hmmdef_repl)
-    edit_options_file(letter_results_search, letter_results_repl)
-    edit_options_file(word_results_search, word_results_repl)
-    edit_options_file(letter_grammar_search, letter_grammar_repl)
-    edit_options_file(word_grammar_search, word_grammar_repl)
-    edit_options_file(hedfile1_search, hedfile1_repl)
-    edit_options_file(custom_silsp_search, custom_silsp_repl)
-    edit_options_file(use_bgl_search, use_bgl_repl)
-    edit_options_file(use_bgw_search, use_bgw_repl)
+    edit_file(ip_search, ip_repl, OPTIONS_FILE)
+    edit_file(tc_search, tc_repl, HEDFILE2)
+    edit_file(num_its_search, num_its_repl, OPTIONS_FILE)
+    edit_file(num_tri_its_search, num_tri_its_repl, OPTIONS_FILE)
+    edit_file(hmmdef_search, hmmdef_repl, OPTIONS_FILE)
+    edit_file(letter_results_search, letter_results_repl, OPTIONS_FILE)
+    edit_file(word_results_search, word_results_repl, OPTIONS_FILE)
+    edit_file(letter_grammar_search, letter_grammar_repl, OPTIONS_FILE)
+    edit_file(word_grammar_search, word_grammar_repl, OPTIONS_FILE)
+    edit_file(hedfile1_search, hedfile1_repl, OPTIONS_FILE)
+    edit_file(custom_silsp_search, custom_silsp_repl, OPTIONS_FILE)
+    edit_file(use_bgl_search, use_bgl_repl, OPTIONS_FILE)
+    edit_file(use_bgw_search, use_bgw_repl, OPTIONS_FILE)
     
     subprocess.run(["grep", IP_VARNAME, OPTIONS_FILE])
     subprocess.run(["grep", NUM_ITS_VARNAME, OPTIONS_FILE])
@@ -339,7 +352,7 @@ def edit_options(ip, num_its, num_tri_its, hmmdef, grammar_type, subdirs):
 
 # Runs the train model script
 def train_model(ip, num_its, num_tri_its, subdirs):
-    name_ext = get_name_ext(ip, num_its, num_tri_its, hmmdef)
+    name_ext = get_name_ext(ip, tc, num_its, num_tri_its, hmmdef)
     
     output_dir = os.path.join(OUTPUT_ROOT, subdirs)
     _make_dir(output_dir)
@@ -380,9 +393,10 @@ if __name__ == "__main__":
 
         for ip in args.ip_values:
             for hmmdef in args.hmmdefs:
-                for num_its in args.num_its:
-                    for num_tri_its in args.num_tri_its:
-                        edit_options(ip, num_its, num_tri_its, hmmdef, grammar_type, subdirs)
-                        train_model(ip, num_its, num_tri_its, subdirs)
-                        print()
+                for tc in args.tc:
+                    for num_its in args.num_its:
+                        for num_tri_its in args.num_tri_its:
+                            edit_options(ip, tc, num_its, num_tri_its, hmmdef, grammar_type, subdirs)
+                            train_model(ip, num_its, num_tri_its, subdirs)
+                            print()
 
