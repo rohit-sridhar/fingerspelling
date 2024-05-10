@@ -46,3 +46,5 @@ Things TO DO:
 -- Also we shouldn't have to keep preparing the ext data. A folder hierarchy that parallels the data folder should exist with ext files.
 -- Sync the benten and hotei folders with this one using github. Do it tonight! (DONE)
     -- Make sure to symlink logs/results/label/data folders across instances of the repo
+-- A folder hierarchy paralleling the data folder should exist in the model/grammar/dict/mlf/commands folders as well.
+

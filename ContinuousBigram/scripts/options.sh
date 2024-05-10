@@ -42,7 +42,7 @@ GRAMMAR_SCALE_FACTOR=0
 
 SAMPLE_PERIOD=1000
 
-MULTI_PROCESS="yes"
+MULTI_PROCESS="no"
 # THREADS=8           # For Hotei
 # THREADS=32        # For Ebisu
 THREADS=96        # For Benten
@@ -193,8 +193,8 @@ OUTPUT_MLF=${EXT_DIR}/result.mlf_letter		# where HTK stores results
 						# .ext files
 OUTPUT_MLF_WORD=${EXT_DIR}/result.mlf_word
 
-LOG_RESULTS=${PRJ}/results/dim20/thr1/grliwi/hresults.log_letter_neg10ip_3state-pca20-gmm4_20its_5tri-its_tc50_silsp
-LOG_RESULTS_WORD=${PRJ}/results/dim20/thr1/grliwi/hresults.log_word_neg10ip_3state-pca20-gmm4_20its_5tri-its_tc50_silsp
+LOG_RESULTS=${PRJ}/results/dim20/thr1/grliwi/hresults.log_letter_neg10ip_3state-pca20-gmm4_20its_5tri-its_tc50_silsp.TST
+LOG_RESULTS_WORD=${PRJ}/results/dim20/thr1/grliwi/hresults.log_word_neg10ip_3state-pca20-gmm4_20its_5tri-its_tc50_silsp.TST
 
 HMM_TEMP_DIR=${PRJ}/models			# directory for storing
 						# intermediate models during
