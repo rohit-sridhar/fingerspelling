@@ -142,7 +142,7 @@ def parse_args():
         "--label_files",
         type=str,
         nargs='+',
-        default=['./label/thr8/label'],
+        default=['./label/thr8/sten/label'],
         help="All the different datasets to test. (must end with /label)"
     )
     
