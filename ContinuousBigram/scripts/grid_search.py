@@ -126,7 +126,7 @@ def parse_args():
         "--hmmdefs",
         type=str,
         nargs='+',
-        default=['6state-pca20-gmm4'],
+        default=['3state-pca20-gmm4'],
         help="HMM Def files to test on."
     )
     
@@ -134,7 +134,7 @@ def parse_args():
         "--data_files",
         type=str,
         nargs='+',
-        default=['./data/dim20/thr8/grliwi/data'],
+        default=['./data/dim20/thr0/grliwi/data'],
         help="All the different datasets to test. (must end with /data)"
     )
 
@@ -142,7 +142,7 @@ def parse_args():
         "--label_files",
         type=str,
         nargs='+',
-        default=['./label/thr8/sten/label'],
+        default=['./label/thr0/sten/label'],
         help="All the different datasets to test. (must end with /label)"
     )
     

@@ -44,8 +44,8 @@ SAMPLE_PERIOD=1000
 
 MULTI_PROCESS="yes"
 # THREADS=8           # For Hotei
-THREADS=32        # For Ebisu
-# THREADS=96        # For Benten
+# THREADS=32        # For Ebisu
+THREADS=96        # For Benten
 
 #PRUNING_THRESHOLD="50 50 500" #Threshold for alpha-beta pruning, of form "start step-size end"
 PRUNING_THRESHOLD=0
@@ -53,7 +53,7 @@ PRUNING_THRESHOLD=0
 HMM_TOPOLOGY_DIR=${PRJ}/hmmdefs
 
 # general HMM_TOPOLOGIES
-HMM_LOCATION=$HMM_TOPOLOGY_DIR/6state-pca20-gmm4
+HMM_LOCATION=$HMM_TOPOLOGY_DIR/3state-pca20-gmm4
 HMM_ALL=$HMM_LOCATION
 HMM_SIL=$HMM_TOPOLOGY_DIR/3state-pca20-sil-skip-loop
 HMM_SP=$HMM_TOPOLOGY_DIR/1state-pca20-sp
@@ -131,6 +131,7 @@ DICTFILE_ALIGN=${PRJ}/dict/dict_tri2tri # Dictionary used during forced alignmen
 # TOKENS file during triletter iterations.
 ######
 TOKENS_ORIGINAL=${PRJ}/commands/commands_letter
+TOKENS_ORIGINAL_SKSP=${PRJ}/commands/commands_letter_isolated
 TOKENS_WORD_SKSP=${PRJ}/commands/commands_word_isolated
 
 ###### USE FOR TRILETTER MODELING #####
@@ -147,6 +148,7 @@ TOKENS_WORD=${PRJ}/commands/commands_word   # (I think this should be changed to
 # Triletter modeling uses the MLF_LOCATION file for training.
 ######
 MLF_LOCATION_ORIGINAL=${PRJ}/mlf/labels.mlf_letter # used for building model and results
+MLF_LOCATION_ORIGINAL_SKSP=${PRJ}/mlf/labels.mlf_letter_sksp # used for building model and results
 MLF_LOCATION_WORD_SKSP=${PRJ}/mlf/labels.mlf_word_sksp
 
 ###### USE FOR TRILETTER ######
@@ -191,8 +193,8 @@ OUTPUT_MLF=${EXT_DIR}/result.mlf_letter		# where HTK stores results
 						# .ext files
 OUTPUT_MLF_WORD=${EXT_DIR}/result.mlf_word
 
-LOG_RESULTS=${PRJ}/results/dim20/thr8/grliwi/hresults.log_letter_neg10ip_6state-pca20-gmm4_20its_5tri-its_tc50_silsp
-LOG_RESULTS_WORD=${PRJ}/results/dim20/thr8/grliwi/hresults.log_word_neg10ip_6state-pca20-gmm4_20its_5tri-its_tc50_silsp
+LOG_RESULTS=${PRJ}/results/dim20/thr1/grliwi/hresults.log_letter_neg10ip_3state-pca20-gmm4_20its_5tri-its_tc50_silsp
+LOG_RESULTS_WORD=${PRJ}/results/dim20/thr1/grliwi/hresults.log_word_neg10ip_3state-pca20-gmm4_20its_5tri-its_tc50_silsp
 
 HMM_TEMP_DIR=${PRJ}/models			# directory for storing
 						# intermediate models during
