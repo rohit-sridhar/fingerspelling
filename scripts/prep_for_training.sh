@@ -16,4 +16,7 @@ mkdir $2/trainsets
 mkdir $2/testsets
 touch $2/trainsets/training-extfiles0
 touch $2/testsets/testing-extfiles0
-
+cp -r $1/commands $2/
+cp -r $1/dict $2/
+cp -r $1/grammar $2/
+cp -r $1/mlf $2/
