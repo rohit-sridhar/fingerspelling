@@ -193,8 +193,8 @@ OUTPUT_MLF=${EXT_DIR}/result.mlf_letter		# where HTK stores results
 						# .ext files
 OUTPUT_MLF_WORD=${EXT_DIR}/result.mlf_word
 
-LOG_RESULTS=${PRJ}/results/dim20/thr1/grliwi/hresults.log_letter_neg10ip_3state-pca20-gmm4_20its_5tri-its_tc50_silsp.TST
-LOG_RESULTS_WORD=${PRJ}/results/dim20/thr1/grliwi/hresults.log_word_neg10ip_3state-pca20-gmm4_20its_5tri-its_tc50_silsp.TST
+LOG_RESULTS=${PRJ}/results/dim20/thr1/grliwi/hresults.log_letter_neg10ip_3state-pca20-gmm4_20its_5tri-its_tc50_silsp
+LOG_RESULTS_WORD=${PRJ}/results/dim20/thr1/grliwi/hresults.log_word_neg10ip_3state-pca20-gmm4_20its_5tri-its_tc50_silsp
 
 HMM_TEMP_DIR=${PRJ}/models			# directory for storing
 						# intermediate models during
@@ -223,7 +223,7 @@ TESTING_BASENAME="${TESTING_DIR}/testing-extfiles"	# all lists of testing files
 						# will be named this with an
 					    	# index number appended to it.
 						#
-TRACE_LEVEL=1					# level of debugging
+TRACE_LEVEL=2					# level of debugging
 						#
 ${HTKBIN=}					# check to see if the path of
 	#example:  ${HTKBIN=/usr/local/bin/}	# HTK is set as an environment

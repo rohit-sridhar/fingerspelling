@@ -51,8 +51,6 @@ else
             sudo docker run \
                 -dit \
                 -v "$continuous_bigram_path":"$continuous_bigram_path" \
-                -v "$continuous_bigram_benten_path":"$continuous_bigram_benten_path" \
-                -v "$continuous_bigram_hotei_path":"$continuous_bigram_hotei_path" \
                 --name $2 rohitsridhar91/asl_sign_recognizer:v1.2
         fi
         
