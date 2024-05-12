@@ -45,12 +45,14 @@ else
                 -v "$popsign_data_path":"$popsign_data_path" \
                 --name $2 rohitsridhar91/asl_sign_recognizer:v1.2
         elif [ "$2" == "fingerspelling" ]; then
-            continuous_bigram_benten_path="$root/hmm_modeling/fs.benten"
-            continuous_bigram_hotei_path="$root/hmm_modeling/fs.hotei"
+            # continuous_bigram_benten_path="$root/hmm_modeling/fs.benten"
+            # continuous_bigram_hotei_path="$root/hmm_modeling/fs.hotei"
+            continuous_bigram_ebisu_path="$root/hmm_modeling/fs.ebisu"
             
             sudo docker run \
                 -dit \
                 -v "$continuous_bigram_path":"$continuous_bigram_path" \
+                -v "$continuous_bigram_ebisu_path":"$continuous_bigram_ebisu_path" \
                 --name $2 rohitsridhar91/asl_sign_recognizer:v1.2
         fi
         
