@@ -1,5 +1,7 @@
 #!/bin/bash
 
+VERSION="v1.3"
+
 if [ "$1" == "ls" ]; then
     sudo docker ps -a
     exit 0
@@ -32,7 +34,7 @@ else
                 -dit \
                 -v "$mb_pipe_path":"$mb_pipe_path" \
                 -v "$islr_path":"$islr_path" \
-                --name $2 rohitsridhar91/asl_sign_recognizer:v1.2
+                --name $2 rohitsridhar91/asl_sign_recognizer:$VERSION
         elif [ "$2" == "popsign_experiments" ]; then
             popsign_path="$root/hmm_modeling/popsign"
             popsign_data_path="$root/sign_language_videos/mediapipe"
@@ -43,7 +45,7 @@ else
                 -v "$continuous_bigram_path":"$continuous_bigram_path" \
                 -v "$popsign_path":"$popsign_path" \
                 -v "$popsign_data_path":"$popsign_data_path" \
-                --name $2 rohitsridhar91/asl_sign_recognizer:v1.2
+                --name $2 rohitsridhar91/asl_sign_recognizer:$VERSION
         elif [ "$2" == "fingerspelling" ]; then
             # continuous_bigram_benten_path="$root/hmm_modeling/fs.benten"
             # continuous_bigram_hotei_path="$root/hmm_modeling/fs.hotei"
@@ -53,7 +55,7 @@ else
                 -dit \
                 -v "$continuous_bigram_path":"$continuous_bigram_path" \
                 -v "$continuous_bigram_ebisu_path":"$continuous_bigram_ebisu_path" \
-                --name $2 rohitsridhar91/asl_sign_recognizer:v1.2
+                --name $2 rohitsridhar91/asl_sign_recognizer:$VERSION
         fi
         
         if [ "$4" != "" ]; then
