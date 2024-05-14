@@ -163,6 +163,7 @@ cython_debug/
 #.idea/
 
 # Local project files
+backup/
 ContinuousBigram.*/
 ContinuousBigramFixed/
 IsolatedBigram/
