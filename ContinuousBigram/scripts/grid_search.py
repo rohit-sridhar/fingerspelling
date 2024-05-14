@@ -323,8 +323,8 @@ def train_model(grammar_type, ip, num_its, num_tri_its, subdirs, trace_value):
     print("Train Command: " + ' '.join(train_args))
     print(f"Output file: {output_file}")
     
-    # with open(output_file, "w") as f:
-    #     subprocess.run(train_args, stdout=f, stderr=subprocess.STDOUT)
+    with open(output_file, "w") as f:
+        subprocess.run(train_args, stdout=f, stderr=subprocess.STDOUT)
 
 ############### NOT IN USE CURRENTLY ###############
 # Prepare data using scripts/prepare_data.sh. Not in use currently.
