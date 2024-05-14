@@ -164,6 +164,7 @@ cython_debug/
 
 # Local project files
 backup/
+ContinuousBigram/*/*/*/*.acc
 ContinuousBigram.*/
 ContinuousBigramFixed/
 IsolatedBigram/
