@@ -42,9 +42,12 @@ mktri2.hed was modified to use data driven clustering instead of tree clustering
 
 Things TO DO:
 -- Curently the data folders do not need to be split out by grammar options. Instead pass grammar as an arg to grid_search
-    -- and add it to the filename. This involves renaming all existing files.
+    -- and add it to the filename. This involves renaming all existing files. (DONE)
 -- Also we shouldn't have to keep preparing the ext data. A folder hierarchy that parallels the data folder should exist with ext files.
 -- Sync the benten and hotei folders with this one using github. Do it tonight! (DONE)
-    -- Make sure to symlink logs/results/label/data folders across instances of the repo
+    -- Make sure to symlink logs/results/label/data folders across instances of the repo (DONE)
 -- A folder hierarchy paralleling the data folder should exist in the model/grammar/dict/mlf/commands folders as well.
+
+BEST MODEL SO FAR
+6 state HMM with 4 GMM mixes trained on dim 20 data threshold at 8 fpl with bigram language modeling and hhed clustering threshold 50
 
