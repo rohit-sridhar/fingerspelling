@@ -109,9 +109,10 @@ def parse_args():
     )
     
     parser.add_argument(
-        "--test",
-        action='store_true',
-        help="If true, appends .TST to all output files."
+        "--custom_ext",
+        type=str,
+        default=None,
+        help="Custom label the results/log file."
     )
 
     return parser.parse_args()
@@ -143,7 +144,7 @@ def check_args():
         raise ValueError("Check Grammar Keys between Letter/Word.")
 
 # Get the name extension for the results/output file
-def get_name_ext(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, trace_value):
+def get_name_ext(grammar_type, ip, tc, num_its, num_tri_its, hmmdef):
     ip_int = abs(int(ip))
     if ip > 0:
         name_ext = f"{grammar_type}_pos{ip_int}ip_{hmmdef}_{num_its}its_{num_tri_its}tri-its_tc{tc}"
@@ -160,13 +161,10 @@ def get_name_ext(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, trace_value
     
     if args.use_bg_word:
         name_ext += "_bgw"
-    
-    if args.test:
-        name_ext += ".TST"
-    
-    if trace_value is not None:
-        name_ext += f".TR{trace_value}"
 
+    if args.custom_ext is not None:
+        name_ext += f".{args.custom_ext}"
+    
     return name_ext
 
 # Get the results filepath
@@ -230,7 +228,7 @@ def edit_file(re_search, re_repl, file_to_edit):
     
 # Edit options file with all new hyperparams (calls helper above)
 def edit_options(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
-    name_ext = get_name_ext(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, trace_value)
+    name_ext = get_name_ext(grammar_type, ip, tc, num_its, num_tri_its, hmmdef)
     letter_results, word_results = get_hresults_filepaths(name_ext, subdirs)
     letter_grammar, word_grammar = get_grammar_filepaths(grammar_type)
     custom_silsp, multi_process, hedfile1, use_bgl, use_bgw = get_bool_arg_info()
@@ -312,8 +310,8 @@ def edit_options(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, subdirs, tr
     subprocess.run(["grep", TRACE_LEVEL_VARNAME, OPTIONS_FILE])
 
 # Runs the train model script
-def train_model(grammar_type, ip, num_its, num_tri_its, subdirs, trace_value):
-    name_ext = get_name_ext(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, trace_value)
+def train_model(grammar_type, ip, num_its, num_tri_its, subdirs):
+    name_ext = get_name_ext(grammar_type, ip, tc, num_its, num_tri_its, hmmdef)
     
     output_dir = os.path.join(OUTPUT_ROOT, subdirs)
     _make_dir(output_dir)
@@ -381,7 +379,7 @@ if __name__ == "__main__":
                 trace_value
             )
             
-            train_model(grammar_type, ip, num_its, num_tri_its, subdirs, trace_value)
+            train_model(grammar_type, ip, num_its, num_tri_its, subdirs)
             print()
         # for ip in args.ip_values:
         #     for hmmdef in args.hmmdefs:
