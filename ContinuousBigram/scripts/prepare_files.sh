@@ -17,6 +17,41 @@ rm -f $EXT_DIR/done
 mkdir $EXT_DIR/data/
 cp -r $3/* $EXT_DIR/data/
 
+if [[ $4 == "test" ]]; then
+    DICTFILE=$DICTFILE_TEST
+    DICTFILE_WORD=$DICTFILE_WORD_TEST
+    
+    TOKENS=$TOKENS_TEST
+    TOKENS_WORD=$TOKENS_WORD_TEST
+
+    TOKENS_ORIGINAL=$TOKENS_ORIGINAL_TEST
+    TOKENS_ORIGINAL_SKSP=$TOKENS_ORIGINAL_SKSP_TEST
+    TOKENS_WORD_SKSP=$TOKENS_WORD_SKSP_TEST
+
+    MLF_LOCATION_ORIGINAL=$MLF_LOCATION_ORIGINAL_TEST
+    MLF_LOCATION_ORIGINAL_SKSP=$MLF_LOCATION_ORIGINAL_SKSP_TEST
+    MLF_LOCATION_WORD_SKSP=$MLF_LOCATION_WORD_SKSP_TEST
+
+    MLF_LOCATION=$MLF_LOCATION_TEST
+    MLF_LOCATION_WORD=$MLF_LOCATION_WORD_TEST
+fi
+
+echo $DICTFILE
+echo $DICTFILE_WORD
+
+echo $TOKENS
+echo $TOKENS_WORD
+
+echo $TOKENS_ORIGINAL
+echo $TOKENS_ORIGINAL_SKSP
+echo $TOKENS_WORD_SKSP
+
+echo $MLF_LOCATION_ORIGINAL
+echo $MLF_LOCATION_ORIGINAL_SKSP
+echo $MLF_LOCATION_WORD_SKSP
+
+echo $MLF_LOCATION
+echo $MLF_LOCATION_WORD
 
 echo "Generating ext files ...."
 scripts/gen_ext_files.sh $OPTIONS_FILE
@@ -47,7 +82,7 @@ HLEd -b -n $TOKENS_WORD instr/mkcmd_word.led $MLF_LOCATION_WORD
 HLEd -b -n $TOKENS_ORIGINAL_SKSP instr/mkcmd_letter.led $MLF_LOCATION_ORIGINAL_SKSP
 HLEd -b -n $TOKENS_ORIGINAL instr/mkcmd_letter.led $MLF_LOCATION_ORIGINAL
 
-HLEd -n commands/commands_tri_internal -i mlf/labels.mlf_tri_internal instr/mktri_internal.led $MLF_LOCATION_ORIGINAL
+HLEd -n $TOKENS -i $MLF_LOCATION instr/mktri_internal.led $MLF_LOCATION_ORIGINAL
 HLEd -n commands/commands_tri_cross -i mlf/labels.mlf_tri_cross instr/mktri_cross.led $MLF_LOCATION_ORIGINAL
 
 rm -f instr/mkcmd_word.led
@@ -63,6 +98,6 @@ python scripts/gen_grammar.py --label_loc $3/ --grammar_type letter
 python scripts/gen_grammar.py --label_loc $3/ --grammar_type word
 
 echo "Generating dict (tri2letter/tri2word) files ...."
-python scripts/gen_tri_dict.py --label_loc $3/ --dict_type letter --dict_loc dict/dict_tri2letter
-python scripts/gen_tri_dict.py --label_loc $3/ --dict_type word --dict_loc dict/dict_tri2word
+python scripts/gen_tri_dict.py --label_loc $3/ --dict_type letter --dict_loc $DICTFILE
+python scripts/gen_tri_dict.py --label_loc $3/ --dict_type word --dict_loc $DICTFILE_WORD
 

@@ -42,7 +42,7 @@ GRAMMAR_SCALE_FACTOR=0
 
 SAMPLE_PERIOD=1000
 
-MULTI_PROCESS=yes
+MULTI_PROCESS=no
 # THREADS=8           # For Hotei
 THREADS=32        # For Ebisu
 # THREADS=96        # For Benten
@@ -107,12 +107,26 @@ TT_NAME_SCRIPT=$SCRIPTS_DIR/gen_train_test_name.sh      # make consistent names
 DATAFILES_LIST=${PRJ}/output/datafiles			# list of all data files
 DATA_SAMPLES=${PRJ}/output/all-extfiles
 
+#######################################################
+#################### GRAMMAR FILES ####################
+#######################################################
+
 GRAMMARFILE=${PRJ}/grammar/grammar_letter_isolated
 GRAMMARFILE_WORD=${PRJ}/grammar/grammar_word_isolated
+
+GRAMMARFILE_TEST=${PRJ}/saved_models/grammar/grammar_letter_isolated_test
+GRAMMARFILE_WORD_TEST=${PRJ}/saved_models/grammar/grammar_word_isolated_test
+
+#######################################################
+##################### DICT FILES ######################
+#######################################################
 
 ###### USE FOR TRILETTER ######
 DICTFILE=${PRJ}/dict/dict_tri2letter
 DICTFILE_WORD=${PRJ}/dict/dict_tri2word
+
+DICTFILE_TEST=${PRJ}/saved_models/dict/dict_tri2letter_test
+DICTFILE_WORD_TEST=${PRJ}/saved_models/dict/dict_tri2word_test
 
 ###### USE FOR SINGLE LETTER ######
 # DICTFILE=${PRJ}/dict/dict_letter2letter
@@ -125,6 +139,10 @@ DICTFILE_ALIGN=${PRJ}/dict/dict_tri2tri # Dictionary used during forced alignmen
 # TOKENS_ORIGINAL=${PRJ}/commands/commands_letter_isolated # used for building model
 # TOKENS_WORD=${PRJ}/commands/commands_word_isolated
 
+#######################################################
+################### COMMANDS FILES ####################
+#######################################################
+
 ###### 
 # USAGE:
 # TOKENS_ORIGINAL is used to initialize letter models. Triletter modeling uses the 
@@ -134,13 +152,24 @@ TOKENS_ORIGINAL=${PRJ}/commands/commands_letter
 TOKENS_ORIGINAL_SKSP=${PRJ}/commands/commands_letter_isolated
 TOKENS_WORD_SKSP=${PRJ}/commands/commands_word_isolated
 
+TOKENS_ORIGINAL_TEST=${PRJ}/saved_models/commands/commands_letter_test
+TOKENS_ORIGINAL_SKSP_TEST=${PRJ}/saved_models/commands/commands_letter_isolated_test
+TOKENS_WORD_SKSP_TEST=${PRJ}/saved_models/commands/commands_word_isolated_test
+
 ###### USE FOR TRILETTER MODELING #####
 TOKENS=${PRJ}/commands/commands_tri_internal
 TOKENS_WORD=${PRJ}/commands/commands_word   # (I think this should be changed to have triletters ... ?)
 
+TOKENS_TEST=${PRJ}/saved_models/commands/commands_tri_internal_test
+TOKENS_WORD_TEST=${PRJ}/saved_models/commands/commands_word_test   # (I think this should be changed to have triletters ... ?)
+
 ###### USE FOR SINGLE LETTER MODELING ######
 # TOKENS=${PRJ}/commands/commands_letter
 # TOKENS_WORD=${PRJ}/commands/commands_word
+
+#######################################################
+##################### MLF FILES #######################
+#######################################################
 
 ###### 
 # USAGE:
@@ -151,9 +180,16 @@ MLF_LOCATION_ORIGINAL=${PRJ}/mlf/labels.mlf_letter # used for building model and
 MLF_LOCATION_ORIGINAL_SKSP=${PRJ}/mlf/labels.mlf_letter_sksp # used for building model and results
 MLF_LOCATION_WORD_SKSP=${PRJ}/mlf/labels.mlf_word_sksp
 
+MLF_LOCATION_ORIGINAL_TEST=${PRJ}/saved_models/mlf/labels.mlf_letter_test # used for building model and results
+MLF_LOCATION_ORIGINAL_SKSP_TEST=${PRJ}/saved_models/mlf/labels.mlf_letter_sksp_test # used for building model and results
+MLF_LOCATION_WORD_SKSP_TEST=${PRJ}/saved_models/mlf/labels.mlf_word_sksp_test
+
 ###### USE FOR TRILETTER ######
 MLF_LOCATION=${PRJ}/mlf/labels.mlf_tri_internal
 MLF_LOCATION_WORD=${PRJ}/mlf/labels.mlf_word
+
+MLF_LOCATION_TEST=${PRJ}/saved_models/mlf/labels.mlf_tri_internal_test
+MLF_LOCATION_WORD_TEST=${PRJ}/saved_models/mlf/labels.mlf_word_test
 
 ###### USE FOR SINGLE LETTER ######
 # MLF_LOCATION=${PRJ}/mlf/labels.mlf_letter
