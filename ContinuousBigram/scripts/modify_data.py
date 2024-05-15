@@ -40,7 +40,7 @@ def parse_args():
     parser.add_argument(
         "--method",
         type=str,
-        choices=["duplication", "interpolation", "fpl_threshold", "dim_select", "remove_z", "copy", "normalize"],
+        choices=["duplication", "interpolation", "fpl_threshold", "dim_select", "remove_z", "copy", "normalize", "neg_fpl_threshold"],
         required=True,
         help="Method for modifying data."
     )
@@ -108,9 +108,9 @@ def _check_args(args):
             raise ValueError("Must pass a label path ends with /label.")
 
     _make_dir(args.new_data_loc)
-    if args.method == "fpl_threshold":
+    if args.method.endswith("fpl_threshold"):
         if args.new_label_loc is None:
-            raise ValueError("Must pass new label location for fpl_threshold method.")
+            raise ValueError("Must pass new label location for [neg]_fpl_threshold method.")
         _make_dir(args.new_label_loc)
 
 ############### DATA DUPLICATION FUNCTIONS ###############
@@ -161,6 +161,19 @@ def fpl_threshold_files(datafile, label_file, new_datafile, new_label_file, thre
         labels = lab.readlines()
 
     if len(frames) / len(labels) >= threshold:
+        os.link(datafile, new_datafile)
+        os.link(label_file, new_label_file)
+
+############### NEG FPL THRESHOLD FUNCTIONS ###############
+
+def neg_fpl_threshold_files(datafile, label_file, new_datafile, new_label_file, threshold):
+    with open(datafile, 'r') as df:
+        frames = df.readlines()
+    
+    with open(label_file, 'r') as lab:
+        labels = lab.readlines()
+
+    if len(frames) / len(labels) < threshold:
         os.link(datafile, new_datafile)
         os.link(label_file, new_label_file)
 
@@ -237,6 +250,10 @@ if __name__ == "__main__":
             label_file = os.path.join(args.label_loc, f + '.lab')
             new_label_file = os.path.join(args.new_label_loc, f + '.lab')
             fpl_threshold_files(datafile, label_file, new_datafile, new_label_file, args.fpl_threshold)
+        elif args.method == "neg_fpl_threshold":
+            label_file = os.path.join(args.label_loc, f + '.lab')
+            new_label_file = os.path.join(args.new_label_loc, f + '.lab')
+            neg_fpl_threshold_files(datafile, label_file, new_datafile, new_label_file, args.fpl_threshold)
         elif args.method == "dim_select":
             dim_select(datafile, new_datafile, args.dims_kept)
         elif args.method == "remove_z":
