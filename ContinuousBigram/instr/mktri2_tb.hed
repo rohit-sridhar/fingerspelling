@@ -80,6 +80,4 @@ TB 50 "ST_z_4_" {("z","*-z+*","z+*","*-z").state[4]}
 
 TR 1
 
-AU "./commands/commands_tri_internal"
-
 ST "./output/trees"

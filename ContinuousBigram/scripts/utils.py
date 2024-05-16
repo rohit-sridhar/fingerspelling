@@ -8,7 +8,7 @@ RESULTS_ROOT = "results/"
 OPTIONS_FILE = "./scripts/options.sh"
 TRAIN_FILE = "./scripts/train.sh"
 PREPARE_FILE = "./scripts/prepare_files.sh"
-HEDFILE2 = "./instr/mktri2.hed"
+HEDFILE2 = "./instr/mktri2_tc.hed"
 
 TOT_PREPARE = "./scripts/cv/test_on_train.sh"
 EXT_FILE_LIST = "all-extfiles"

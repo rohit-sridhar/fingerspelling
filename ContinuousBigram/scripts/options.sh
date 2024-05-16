@@ -202,7 +202,7 @@ BIGRAM_LETTER_FILE=${PRJ}/output/bigram.letter
 BIGRAM_WORD_FILE=${PRJ}/output/bigram.word
 
 HEDFILE1=${PRJ}/instr/mktri1_silsp.hed
-HEDFILE2=${PRJ}/instr/mktri2.hed
+HEDFILE2=${PRJ}/instr/mktri2_tb.hed
 STATS=${PRJ}/output/stats
 						#
 						#
