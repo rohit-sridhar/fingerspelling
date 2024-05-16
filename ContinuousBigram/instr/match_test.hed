@@ -1,1 +1,2 @@
-CL saved_models/commands/commands_tri_internal_test
+LT "./output/trees"
+AU "./saved_models/commands/commands_tri_internal_test"
