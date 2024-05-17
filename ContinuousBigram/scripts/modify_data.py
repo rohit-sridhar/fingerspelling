@@ -1,8 +1,11 @@
 import argparse
 import os
 import shutil
+
 import numpy as np
+
 from tqdm import tqdm
+from utils import *
 
 ############### GENERAL HELPER FUNCTIONS ###############
 
@@ -36,11 +39,18 @@ def parse_args():
         default=None,
         help="Location to store new labels (only for fpl_threshold). Must end with /label (for naming convention)."
     )
+    
+    parser.add_argument(
+        "--commands_file",
+        type=str,
+        default="commands/commands_tri_internal",
+        help="File with triletter labels. Required if using the match_triletters method"
+    )
 
     parser.add_argument(
         "--method",
         type=str,
-        choices=["duplication", "interpolation", "fpl_threshold", "dim_select", "remove_z", "copy", "normalize", "neg_fpl_threshold"],
+        choices=MODIFY_DATA_METHODS,
         required=True,
         help="Method for modifying data."
     )
@@ -107,10 +117,13 @@ def _check_args(args):
         if path is not None and not(path.endswith('/label')):
             raise ValueError("Must pass a label path ends with /label.")
 
+    if args.method == "match_triletters" and args.commands_file is None:
+        raise ValueError("Must pass triletter commands file for match triletters.")
+
     _make_dir(args.new_data_loc)
-    if args.method.endswith("fpl_threshold"):
+    if args.method.endswith("fpl_threshold") or args.method == "match_triletters":
         if args.new_label_loc is None:
-            raise ValueError("Must pass new label location for [neg]_fpl_threshold method.")
+            raise ValueError("Must pass new label location for [neg]_fpl_threshold/match_triletters methods.")
         _make_dir(args.new_label_loc)
 
 ############### DATA DUPLICATION FUNCTIONS ###############
@@ -228,8 +241,26 @@ def remove_z(datafile, new_datafile):
     with open(new_datafile, 'w') as f:
         f.writelines(new_frames)
 
+############### MATCH TRILETTER FUNCTIONS ###############
+
 def copy(datafile, new_datafile):
     os.link(datafile, new_datafile)
+
+def read_triletters_from_commands():
+    with open(args.commands_file, "r") as f:
+        triletters = f.readlines()
+    
+    triletters = set([triletter.strip() for triletter in triletters])
+    
+    return triletters
+
+def match_triletters(datafile, label_file, commands_triletters):
+    tokens = collect_tokens(label_file)
+    
+    label_triletters = get_triletters(tokens)
+    label_triletters = set(label_triletters)
+
+    return label_triletters.issubset(commands_triletters)
 
 if __name__ == "__main__":
     args = parse_args()
@@ -237,6 +268,8 @@ if __name__ == "__main__":
     _check_args(args)
 
     files = os.listdir(args.data_loc)
+    if args.method == "match_triletters":
+        commands_triletters = read_triletters_from_commands()
     
     for f in tqdm(files):
         datafile = os.path.join(args.data_loc, f)
@@ -258,6 +291,10 @@ if __name__ == "__main__":
             dim_select(datafile, new_datafile, args.dims_kept)
         elif args.method == "remove_z":
             remove_z(datafile, new_datafile)
-        elif args.method == "copy":
-            copy(datafile, new_datafile)
+        elif args.method == "match_triletters":
+            label_file = os.path.join(args.label_loc, f + '.lab')
+            new_label_file = os.path.join(args.new_label_loc, f + '.lab')
+            if match_triletters(datafile, label_file, commands_triletters):
+                copy(datafile, new_datafile)
+                copy(label_file, new_label_file)
 

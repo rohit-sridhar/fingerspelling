@@ -87,6 +87,17 @@ SPACE = '_'
 ENTER = 'sil0'
 EXIT = 'sil1'
 
+MODIFY_DATA_METHODS = [
+    "duplication",
+    "interpolation",
+    "fpl_threshold",
+    "dim_select",
+    "remove_z",
+    "normalize",
+    "neg_fpl_threshold",
+    "match_triletters",
+]
+
 ########## Utils functions for python scripts ##########
 
 ##### LABELS UTILS #####
@@ -106,4 +117,21 @@ def collect_tokens(label_path):
     labels = [l.strip() for l in labels]
     labels = ''.join(labels[1:-1]).split(SPACE)
     return labels
+
+def get_triletters(tokens):
+    triletters = []
+    for token in tokens:
+        if len(token) == 1:
+            return [token]
+
+        for i,letter in enumerate(token):
+            if i == 0:
+                triletter = '+'.join([token[0], token[1]])
+            elif i == len(token) - 1:
+                triletter = '-'.join([token[-2], token[-1]])
+            else:
+                triletter = token[i-1] + '-' + token[i] + '+' + token[i+1]
+            triletters.append(triletter)
+    
+    return triletters
 
