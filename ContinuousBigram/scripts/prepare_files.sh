@@ -34,6 +34,9 @@ if [[ $4 == "test" ]]; then
 
     MLF_LOCATION=$MLF_LOCATION_TEST
     MLF_LOCATION_WORD=$MLF_LOCATION_WORD_TEST
+
+    GRAMMARFILE=$GRAMMARFILE_TEST
+    GRAMMARFILE_WORD=$GRAMMARFILE_WORD_TEST
 fi
 
 echo $DICTFILE
@@ -52,6 +55,9 @@ echo $MLF_LOCATION_WORD_SKSP
 
 echo $MLF_LOCATION
 echo $MLF_LOCATION_WORD
+
+echo $GRAMMARFILE
+echo $GRAMMARFILE_WORD
 
 echo "Generating ext files ...."
 scripts/gen_ext_files.sh $OPTIONS_FILE
@@ -94,8 +100,8 @@ sort -o $TOKENS_WORD $TOKENS_WORD
 sort -o $TOKENS_WORD_SKSP $TOKENS_WORD_SKSP
 
 echo "Generating single letter/word context grammar files ...."
-python scripts/gen_grammar.py --label_loc $3/ --grammar_type letter
-python scripts/gen_grammar.py --label_loc $3/ --grammar_type word
+python scripts/gen_grammar.py --label_loc $3/ --grammar_file $GRAMMARFILE --grammar_type letter
+python scripts/gen_grammar.py --label_loc $3/ --grammar_file $GRAMMARFILE_WORD --grammar_type word
 
 echo "Generating dict (tri2letter/tri2word) files ...."
 python scripts/gen_tri_dict.py --label_loc $3/ --dict_type letter --dict_loc $DICTFILE

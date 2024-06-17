@@ -246,14 +246,6 @@ f-a+c
 a-c+t
 c-t+s
 t-s
-l+o
-l-o+c
-o-c+a
-c+r
-c-r+i
-r-i+m
-i-m+e
-m-e
 b-e
 d+i
 d-i+s
@@ -298,6 +290,7 @@ g-e+r
 e-r+s
 r-s
 w-i+l
+l+o
 l-o+s
 o-s+e
 v+o
@@ -397,6 +390,8 @@ n-d+e
 d-e+r
 t+i
 t-i+m
+i-m+e
+m-e
 f-r+e
 r-e+q
 q-u+e
@@ -880,6 +875,7 @@ g-e+t
 t-i+e
 b+u
 b-u+s
+c+r
 c-r+o
 o-w+d
 w-d+e
@@ -1111,6 +1107,7 @@ s-y+s
 t-e+m
 k-e+n
 e-s+c
+c-r+i
 r-i+p
 i-p+t
 p-t+i
@@ -1157,7 +1154,6 @@ o-r+l
 r-l+d
 t-a+g
 a-g+e
-s-u+m
 o-p+r
 i-e+t
 e-t+o
@@ -1464,8 +1460,6 @@ b-y+p
 y-p+a
 p-a+s
 u-r+g
-h-e+y
-t-i+r
 u-b+d
 b-d+i
 d-i+v
@@ -1480,6 +1474,7 @@ d-a
 r-o+v
 i-n+c
 b-l+o
+l-o+c
 r-a+f
 a-f+f
 d-a+u

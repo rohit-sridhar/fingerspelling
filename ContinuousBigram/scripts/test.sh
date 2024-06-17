@@ -7,23 +7,13 @@
 # haileris@cc.gatech.edu
 ##################################################################
 
-
 ##################################################
-#
-# This program is designed to take a data set and run the recognizer on it.
-# Written by amin@cc.gatech.edu
-# Based on the train.sh script by bashear@cc
-#
-# What you need:
-#
-# The hmm/newMacros created from the training script
-# A data file with VECTOR_LENGTH features.
-# The word.lattice, dict, and command files used for training.
-# The options.sh file describing the project
-#
-# usage:
-# recognize.sh <data to recognize> <place to store results> <options file> \
-#		<trained model>
+# 
+# Arg 1: List of test files
+# Arg 2: Where to save letter results
+# Arg 3: Where to save word results
+# Arg 4: Saved model (newMacros file)
+# Arg 5: options shell script
 # 
 ##################################################
 

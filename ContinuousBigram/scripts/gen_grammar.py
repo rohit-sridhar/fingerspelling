@@ -31,17 +31,24 @@ def parse_args():
         help="Label file location"
     )
     
+    parser.add_argument(
+        "--grammar_file",
+        type=str,
+        required=True,
+        help="Grammar file name"
+    )
+    
     return parser.parse_args()
 
 ########## GENERIC HELPERS ##########
-def get_grammar_file():
-    root = "grammar"
-    if args.n_gram is not None:
-        suffix = str(args.n_gram) + "gram" if args.n_gram > 1 else "isolated"
-    else:
-        suffix = "phrase" if args.grammar_type == "word" else "word"
-    
-    return os.path.join(root, SPACE.join([root, args.grammar_type, suffix]))
+# def get_grammar_file():
+#     root = args.grammar_file_root
+#     if args.n_gram is not None:
+#         suffix = str(args.n_gram) + "gram" if args.n_gram > 1 else "isolated"
+#     else:
+#         suffix = "phrase" if args.grammar_type == "word" else "word"
+#     
+#     return os.path.join(root, SPACE.join([root, args.grammar_type, suffix]))
 
 
 ########## WORD LEVEL GRAMMAR HELPERS ##########
@@ -134,7 +141,7 @@ if __name__ == "__main__":
     args = parse_args()
     print(args)
     
-    grammar_file = get_grammar_file()
+    grammar_file = args.grammar_file
 
     if args.grammar_type == "word":
         if args.n_gram is None:
