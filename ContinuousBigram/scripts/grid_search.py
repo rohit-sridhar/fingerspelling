@@ -310,19 +310,21 @@ def edit_options(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, subdirs, tr
     subprocess.run(["grep", TRACE_LEVEL_VARNAME, OPTIONS_FILE])
 
 # Runs the train model script
-def train_model(grammar_type, ip, num_its, num_tri_its, subdirs):
+def train_model(grammar_type, ip, num_its, num_tri_its, subdirs, trace_value):
     name_ext = get_name_ext(grammar_type, ip, tc, num_its, num_tri_its, hmmdef)
     
     output_dir = os.path.join(OUTPUT_ROOT, subdirs)
     _make_dir(output_dir)
-    output_file = os.path.join(output_dir, "output.log_" + name_ext)
+
+    trace_ext = f".TR{trace_value}"
+    output_file = os.path.join(output_dir, "output.log_" + name_ext + trace_ext)
     
     train_args = [TRAIN_FILE, OPTIONS_FILE]
     print("Train Command: " + ' '.join(train_args))
     print(f"Output file: {output_file}")
     
-    with open(output_file, "w") as f:
-        subprocess.run(train_args, stdout=f, stderr=subprocess.STDOUT)
+    # with open(output_file, "w") as f:
+    #     subprocess.run(train_args, stdout=f, stderr=subprocess.STDOUT)
 
 ############### NOT IN USE CURRENTLY ###############
 # Prepare data using scripts/prepare_data.sh. Not in use currently.
@@ -379,7 +381,7 @@ if __name__ == "__main__":
                 trace_value
             )
             
-            train_model(grammar_type, ip, num_its, num_tri_its, subdirs)
+            train_model(grammar_type, ip, num_its, num_tri_its, subdirs, trace_value)
             print()
         # for ip in args.ip_values:
         #     for hmmdef in args.hmmdefs:

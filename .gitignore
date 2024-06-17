@@ -164,6 +164,7 @@ cython_debug/
 
 # Local project files
 backup/
+ContinuousBigram/scripts/train_multiple.sh
 ContinuousBigram/*/*/*/*.acc
 ContinuousBigram.*/
 ContinuousBigramFixed/
