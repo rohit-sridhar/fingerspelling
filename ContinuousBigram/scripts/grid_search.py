@@ -55,7 +55,7 @@ def parse_args():
         "--hmmdefs",
         type=str,
         nargs='+',
-        default=['3state-pca20-gmm4'],
+        default=['6state-pca20-gmm4'],
         help="HMM Def files to test on."
     )
     
