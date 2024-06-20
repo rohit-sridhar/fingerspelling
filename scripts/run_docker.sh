@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION="v1.3"
+VERSION="latest"
 
 if [ "$1" == "ls" ]; then
     sudo docker ps -a
