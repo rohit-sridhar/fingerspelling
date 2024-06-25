@@ -29,7 +29,7 @@ def parse_args():
         "--dict_type",
         type=str,
         default="letter",
-        choices = ['letter', 'word'],
+        choices = ['letter', 'word', 'cross_letter', 'cross_word'],
         help="New dict file"
     )
     
@@ -38,7 +38,10 @@ def parse_args():
 # Initialize the tri letter dictionary with sil/enter/exit vars
 def initialize_dict():
     with open(args.dict_loc, 'w') as f:
-        f.writelines([f'{ENTER} {ENTER}\n', f'{EXIT} {EXIT}\n', f'{SPACE} {SPACE}\n'])
+        if args.dict_type.startswith("cross_"):
+            f.writelines([f'{ENTER} {ENTER}\n', f'{EXIT} {EXIT}\n'])
+        else:
+            f.writelines([f'{ENTER} {ENTER}\n', f'{EXIT} {EXIT}\n', f'{SPACE} {SPACE}\n'])
 
 # Write a single dictionary entry to file (triletter only)
 def write_entry_to_file(entry):
@@ -103,7 +106,7 @@ def add_letter_to_dict(word):
 
 # Main Word Level Wrapper that aggregated triletter contexts for word dict
 def get_full_word_entry(word):
-    entries = [word]
+    entries = [word.strip(SPACE)]
     first_triletter = process_first_triletter(word, letter=False)
     entries.append(first_triletter)
     
@@ -121,17 +124,33 @@ def add_word_to_dict(word):
         write_single_entry(word)
     else:
         entries = get_full_word_entry(word)
+        if word.endswith("_"):
+            del entries[-1]
+        if word.startswith("_"):
+            del entries[1]
+
         entry = ' '.join(entries)
         write_entry_to_file(entry)
 
 # Ingests the whole label file into the dict
 def ingest_label_file(label_filepath):
     tokens = collect_tokens(label_filepath)
-    for word in tokens:
-        if args.dict_type == "letter":
-            add_letter_to_dict(word)
-        elif args.dict_type == "word":
-            add_word_to_dict(word)
+    phrase = '_'.join(tokens)
+    if args.dict_type == "cross_letter":
+        add_letter_to_dict(phrase)
+    else:
+        for i,word in enumerate(tokens):
+            if args.dict_type == "letter":
+                add_letter_to_dict(word)
+            elif args.dict_type == "word":
+                add_word_to_dict(word)
+            elif args.dict_type == "cross_word":
+                if i == 0:
+                    add_word_to_dict(word + SPACE)
+                elif i == len(tokens) - 1:
+                    add_word_to_dict(SPACE + word)
+                else:
+                    add_word_to_dict(SPACE + word + SPACE)
 
 if __name__ == "__main__":
     args = parse_args()

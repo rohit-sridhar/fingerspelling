@@ -53,7 +53,7 @@ PRUNING_THRESHOLD=0
 HMM_TOPOLOGY_DIR=${PRJ}/hmmdefs
 
 # general HMM_TOPOLOGIES
-HMM_LOCATION=$HMM_TOPOLOGY_DIR/5state-pca20-gmm4
+HMM_LOCATION=$HMM_TOPOLOGY_DIR/6state-pca20-gmm4
 HMM_ALL=$HMM_LOCATION
 HMM_SIL=$HMM_TOPOLOGY_DIR/3state-pca20-sil-skip-loop
 HMM_SP=$HMM_TOPOLOGY_DIR/1state-pca20-sp
@@ -83,7 +83,7 @@ GEN_TRAIN_TEST=yes				# whether or not to generate
 WORD_LEVEL=yes # whether to process data as word level or letter level
 # WORD_LEVEL=no # whether to process data as word level or letter level
 TRILETTER=yes # whether to enable triletter configuration
-CROSS_WORD=no # whether triletters should expand across words  TODO
+CROSS_WORD=yes # whether triletters should expand across words  TODO
 
 FORCE_ALIGN=no # Use to enable/disable forced alignment during training
 EXPORT_MLF=no # Use to export MLF for use outside project
@@ -113,6 +113,7 @@ DATA_SAMPLES=${PRJ}/output/all-extfiles
 
 GRAMMARFILE=${PRJ}/grammar/grammar_letter_isolated
 GRAMMARFILE_WORD=${PRJ}/grammar/grammar_word_isolated
+GRAMMARFILE_WORD_CROSS=${PRJ}/grammar/grammar_word_cross
 
 GRAMMARFILE_TEST=${PRJ}/saved_models/grammar/grammar_letter_isolated_test
 GRAMMARFILE_WORD_TEST=${PRJ}/saved_models/grammar/grammar_word_isolated_test
@@ -123,7 +124,9 @@ GRAMMARFILE_WORD_TEST=${PRJ}/saved_models/grammar/grammar_word_isolated_test
 
 ###### USE FOR TRILETTER ######
 DICTFILE=${PRJ}/dict/dict_tri2letter
+DICTFILE_CROSS=${PRJ}/dict/dict_tri2cross
 DICTFILE_WORD=${PRJ}/dict/dict_tri2word
+DICTFILE_CROSS_WORD=${PRJ}/dict/dict_tri2word_cross
 
 DICTFILE_TEST=${PRJ}/saved_models/dict/dict_tri2letter_test
 DICTFILE_WORD_TEST=${PRJ}/saved_models/dict/dict_tri2word_test
@@ -158,6 +161,7 @@ TOKENS_WORD_SKSP_TEST=${PRJ}/saved_models/commands/commands_word_isolated_test
 
 ###### USE FOR TRILETTER MODELING #####
 TOKENS=${PRJ}/commands/commands_tri_internal
+TOKENS_CROSS=${PRJ}/commands/commands_tri_cross
 TOKENS_WORD=${PRJ}/commands/commands_word   # (I think this should be changed to have triletters ... ?)
 
 TOKENS_TEST=${PRJ}/saved_models/commands/commands_tri_internal_test
@@ -186,6 +190,7 @@ MLF_LOCATION_WORD_SKSP_TEST=${PRJ}/saved_models/mlf/labels.mlf_word_sksp_test
 
 ###### USE FOR TRILETTER ######
 MLF_LOCATION=${PRJ}/mlf/labels.mlf_tri_internal
+MLF_LOCATION_CROSS=${PRJ}/mlf/labels.mlf_tri_cross
 MLF_LOCATION_WORD=${PRJ}/mlf/labels.mlf_word
 
 MLF_LOCATION_TEST=${PRJ}/saved_models/mlf/labels.mlf_tri_internal_test
@@ -229,8 +234,8 @@ OUTPUT_MLF=${EXT_DIR}/result.mlf_letter		# where HTK stores results
 						# .ext files
 OUTPUT_MLF_WORD=${EXT_DIR}/result.mlf_word
 
-LOG_RESULTS=${PRJ}/results/dim20/thr6/hresults.log_letter_grliwi_neg10ip_3state-pca20-gmm4_20its_5tri-its_tc50_silsp
-LOG_RESULTS_WORD=${PRJ}/results/dim20/thr6/hresults.log_word_grliwi_neg10ip_3state-pca20-gmm4_20its_5tri-its_tc50_silsp
+LOG_RESULTS=${PRJ}/results/dim20/thr8/hresults.log_letter_grliwi_neg10ip_6state-pca20-gmm4_20its_5tri-its_tc50_silsp_cross
+LOG_RESULTS_WORD=${PRJ}/results/dim20/thr8/hresults.log_word_grliwi_neg10ip_6state-pca20-gmm4_20its_5tri-its_tc50_silsp_cross
 
 HMM_TEMP_DIR=${PRJ}/models			# directory for storing
 						# intermediate models during
@@ -259,7 +264,7 @@ TESTING_BASENAME="${TESTING_DIR}/testing-extfiles"	# all lists of testing files
 						# will be named this with an
 					    	# index number appended to it.
 						#
-TRACE_LEVEL=2					# level of debugging
+TRACE_LEVEL=1					# level of debugging
 						#
 ${HTKBIN=}					# check to see if the path of
 	#example:  ${HTKBIN=/usr/local/bin/}	# HTK is set as an environment

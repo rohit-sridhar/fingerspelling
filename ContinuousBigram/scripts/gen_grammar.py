@@ -13,7 +13,7 @@ def parse_args():
         "--grammar_type",
         type=str,
         default="word",
-        choices=["word", "letter"],
+        choices=["word", "letter", "cross_word"],
         help="Grammar type (word or letter)."
     )
     
@@ -21,7 +21,7 @@ def parse_args():
         "--n_gram",
         type=int,
         default=1,
-        help="Generates n gram grammar. For n = 1, it is an isolated word grammar. For n = None, it uses the whole phrase."
+        help="Generates n gram grammar. For n = 1, it is an isolated word grammar. For n = 0, it uses the whole phrase."
     )
     
     parser.add_argument(
@@ -75,7 +75,7 @@ def get_phrases():
 
     for label_file in files:
         phrase = collect_tokens(label_file)
-        phrases.add(f" {SPACE} ".join(phrase))
+        phrases.add(f"{SPACE}".join(phrase))
     
     return list(phrases)
 
@@ -112,7 +112,10 @@ def write_word_grammar(tokens, grammar_file):
     token_options = ' | '.join(tokens)
     
     line_1 = f"$word = {token_options};\n"
-    line_2 = f"({ENTER} {{ $word {SPACE} }} $word {EXIT})\n"
+    if args.grammar_type == "cross_word":
+        line_2 = f"({ENTER} < $word > {EXIT})\n"
+    else:
+        line_2 = f"({ENTER} {{ $word {SPACE} }} $word {EXIT})\n"
     
     with open(grammar_file, 'w') as f:
         f.writelines([line_1, "\n", line_2])
@@ -143,15 +146,15 @@ if __name__ == "__main__":
     
     grammar_file = args.grammar_file
 
-    if args.grammar_type == "word":
-        if args.n_gram is None:
+    if args.grammar_type.endswith("word"):
+        if args.n_gram == 0:
             phrases = get_phrases()
             write_word_grammar_phrase(phrases, grammar_file)
         else:
             tokens = get_tokens(args.n_gram)
             write_word_grammar(tokens, grammar_file)
     else:
-        if args.n_gram is None:
+        if args.n_gram == 0:
             words = get_words()
             write_word_grammar(words, grammar_file)
         else:

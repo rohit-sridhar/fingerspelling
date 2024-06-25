@@ -89,7 +89,7 @@ HLEd -b -n $TOKENS_ORIGINAL_SKSP instr/mkcmd_letter.led $MLF_LOCATION_ORIGINAL_S
 HLEd -b -n $TOKENS_ORIGINAL instr/mkcmd_letter.led $MLF_LOCATION_ORIGINAL
 
 HLEd -n $TOKENS -i $MLF_LOCATION instr/mktri_internal.led $MLF_LOCATION_ORIGINAL
-HLEd -n commands/commands_tri_cross -i mlf/labels.mlf_tri_cross instr/mktri_cross.led $MLF_LOCATION_ORIGINAL
+HLEd -n $TOKENS_CROSS -i $MLF_LOCATION_CROSS instr/mktri_cross.led $MLF_LOCATION_ORIGINAL
 
 rm -f instr/mkcmd_word.led
 rm -f instr/mkcmd_letter.led
@@ -102,8 +102,11 @@ sort -o $TOKENS_WORD_SKSP $TOKENS_WORD_SKSP
 echo "Generating single letter/word context grammar files ...."
 python scripts/gen_grammar.py --label_loc $3/ --grammar_file $GRAMMARFILE --grammar_type letter
 python scripts/gen_grammar.py --label_loc $3/ --grammar_file $GRAMMARFILE_WORD --grammar_type word
+python scripts/gen_grammar.py --label_loc $3/ --grammar_file $GRAMMARFILE_WORD_CROSS --grammar_type cross_word
 
 echo "Generating dict (tri2letter/tri2word) files ...."
 python scripts/gen_tri_dict.py --label_loc $3/ --dict_type letter --dict_loc $DICTFILE
+python scripts/gen_tri_dict.py --label_loc $3/ --dict_type cross_letter --dict_loc $DICTFILE_CROSS
 python scripts/gen_tri_dict.py --label_loc $3/ --dict_type word --dict_loc $DICTFILE_WORD
+python scripts/gen_tri_dict.py --label_loc $3/ --dict_type cross_word --dict_loc $DICTFILE_CROSS_WORD
 

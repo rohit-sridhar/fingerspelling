@@ -94,6 +94,16 @@ fi
 # Prepare data for training/testing
 ########################################################################
 
+### Set the Cross word files
+if [[ $TRILETTER = "yes" ]] && [[ $CROSS_WORD = "yes" ]]; then
+    TOKENS=$TOKENS_CROSS
+    MLF_LOCATION=$MLF_LOCATION_CROSS
+    DICTFILE=$DICTFILE_CROSS
+    DICTFILE_WORD=$DICTFILE_CROSS_WORD
+    GRAMMARFILE_WORD=$GRAMMARFILE_WORD_CROSS
+fi
+
+
 DATA_SAMPLES=all-extfiles
 
 TT_NAME_SCRIPT=$SCRIPTS_DIR/gen_train_test_name.sh      # make consistent names
@@ -440,6 +450,12 @@ done
 # Uses the MLF with triletters
 # Uses the Tokens file with triletters
 ###############################################################################
+# if [[ $TRILETTER = "yes" ]] && [[ $CROSS_WORD = "yes" ]]; then
+#     TOKENS=$TOKENS_CROSS
+#     MLF_LOCATION=$MLF_LOCATION_CROSS
+#     DICTFILE=$DICTFILE_CROSS
+#     DICTFILE_WORD=$DICTFILE_CROSS_WORD
+# fi
 
 if [[ $TRILETTER = "yes" ]] || [[ $TRILETTER = "1" ]]; then
 	last_iteration=$((NUM_HMM_DIR-TRI_ITERATIONS-3))

@@ -93,7 +93,7 @@ def parse_args():
     parser.add_argument(
         "--no_multi_process",
         action='store_true',
-        help="If true, won't use custom sil/sp models. custom sil/sp is used by default."
+        help="If true, won't use multiprocessing."
     )
     
     parser.add_argument(
@@ -106,6 +106,12 @@ def parse_args():
         "--use_bg_word",
         action='store_true',
         help="If true, will use word level bigram with HBuild."
+    )
+
+    parser.add_argument(
+        "--cross_word",
+        action="store_true",
+        help="True if to use cross word triphones."
     )
     
     parser.add_argument(
@@ -161,6 +167,9 @@ def get_name_ext(grammar_type, ip, tc, num_its, num_tri_its, hmmdef):
     
     if args.use_bg_word:
         name_ext += "_bgw"
+    
+    if args.cross_word:
+        name_ext += "_cross"
 
     if args.custom_ext is not None:
         name_ext += f".{args.custom_ext}"
@@ -191,8 +200,9 @@ def get_bool_arg_info():
     hedfile1 = "${PRJ}/instr/mktri1_silsp.hed" if not(args.no_custom_silsp) else "${PRJ}/instr/mktri1_orig.hed"
     use_bgl = "yes" if args.use_bg_letter else "no"
     use_bgw = "yes" if args.use_bg_word else "no"
+    cross_word = "yes" if args.cross_word else "no"
 
-    return custom_silsp, multi_process, hedfile1, use_bgl, use_bgw
+    return custom_silsp, multi_process, hedfile1, use_bgl, use_bgw, cross_word
 
 def get_subdirs(filepath):
     if filepath.startswith('.'):
@@ -205,13 +215,6 @@ def get_subdirs(filepath):
 # Get the subdirectories of the data file (leave out root and filename)
 def get_subdirectories(data_file, label_file):
     data_subdirs = get_subdirs(data_file)
-    # label_subdirs = get_subdirs(label_file)
-    
-    # for subdir in data_subdirs:
-    #     if subdir in label_subdirs:
-    #         label_subdirs.remove(subdir)
-
-    # subdirs = os.path.join(*(data_subdirs + label_subdirs))
     subdirs = os.path.join(*(data_subdirs))
     return subdirs
 
@@ -231,7 +234,7 @@ def edit_options(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, subdirs, tr
     name_ext = get_name_ext(grammar_type, ip, tc, num_its, num_tri_its, hmmdef)
     letter_results, word_results = get_hresults_filepaths(name_ext, subdirs)
     letter_grammar, word_grammar = get_grammar_filepaths(grammar_type)
-    custom_silsp, multi_process, hedfile1, use_bgl, use_bgw = get_bool_arg_info()
+    custom_silsp, multi_process, hedfile1, use_bgl, use_bgw, cross_word = get_bool_arg_info()
     
     ip_search = IP_VARNAME + "\s*=\s*-?[0-9]+(\.[0-9]+)*"
     ip_repl = IP_VARNAME + f"={ip}"
@@ -248,7 +251,7 @@ def edit_options(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, subdirs, tr
     hmmdef_search = HMMDEF_VARNAME + "\s*=\s*\$HMM_TOPOLOGY_DIR\/.+"
     hmmdef_repl = HMMDEF_VARNAME + f"=$HMM_TOPOLOGY_DIR/{hmmdef}"
     
-    hedfile1_search = HEDFILE1_VARNAME + "\s*=\s*\$\{PRJ\}\/mktri1.*\.hed"
+    hedfile1_search = HEDFILE1_VARNAME + "\s*=\s*\$\{PRJ\}\/instr\/mktri1_.*\.hed"
     hedfile1_repl = HEDFILE1_VARNAME + f"={hedfile1}"
     
     custom_silsp_search = CUSTOM_SILSP_VARNAME + "\s*=\s*(yes|no)"
@@ -257,6 +260,13 @@ def edit_options(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, subdirs, tr
     multi_process_search = MULTI_PROCESS_VARNAME + "\s*=\s*(yes|no)"
     multi_process_repl = MULTI_PROCESS_VARNAME + f"={multi_process}"
     
+    cross_word_search = CROSS_WORD_VARNAME + "\s*=\s*(yes|no)"
+    cross_word_repl = CROSS_WORD_VARNAME + f"={cross_word}"
+
+    cross_word_hedfile1_search = "^CL commands\/commands_tri_(internal|cross)$"
+    cross_word_hedfile1_repl = "CL commands/commands_tri_cross" if args.cross_word else "CL commands/commands_tri_internal"
+    hedfile1_local_file = hedfile1.replace("${PRJ}", ".")
+
     use_bgl_search = USE_BGL_VARNAME + "\s*=\s*(yes|no)"
     use_bgl_repl = USE_BGL_VARNAME + f"={use_bgl}"
     
@@ -292,6 +302,8 @@ def edit_options(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, subdirs, tr
     edit_file(multi_process_search, multi_process_repl, OPTIONS_FILE)
     edit_file(use_bgl_search, use_bgl_repl, OPTIONS_FILE)
     edit_file(use_bgw_search, use_bgw_repl, OPTIONS_FILE)
+    edit_file(cross_word_search, cross_word_repl, OPTIONS_FILE)
+    edit_file(cross_word_hedfile1_search, cross_word_hedfile1_repl, hedfile1_local_file)
     edit_file(trace_level_search, trace_level_repl, OPTIONS_FILE)
     
     subprocess.run(["grep", IP_VARNAME, OPTIONS_FILE])
@@ -307,7 +319,9 @@ def edit_options(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, subdirs, tr
     subprocess.run(["grep", MULTI_PROCESS_VARNAME, OPTIONS_FILE])
     subprocess.run(["grep", USE_BGL_VARNAME, OPTIONS_FILE])
     subprocess.run(["grep", USE_BGW_VARNAME, OPTIONS_FILE])
+    subprocess.run(["grep", CROSS_WORD_VARNAME, OPTIONS_FILE])
     subprocess.run(["grep", TRACE_LEVEL_VARNAME, OPTIONS_FILE])
+    subprocess.run([f"head -n 1 {hedfile1_local_file}"], shell=True)
 
 # Runs the train model script
 def train_model(grammar_type, ip, num_its, num_tri_its, subdirs, trace_value):
@@ -323,8 +337,8 @@ def train_model(grammar_type, ip, num_its, num_tri_its, subdirs, trace_value):
     print("Train Command: " + ' '.join(train_args))
     print(f"Output file: {output_file}")
     
-    # with open(output_file, "w") as f:
-    #     subprocess.run(train_args, stdout=f, stderr=subprocess.STDOUT)
+    with open(output_file, "w") as f:
+        subprocess.run(train_args, stdout=f, stderr=subprocess.STDOUT)
 
 ############### NOT IN USE CURRENTLY ###############
 # Prepare data using scripts/prepare_data.sh. Not in use currently.
