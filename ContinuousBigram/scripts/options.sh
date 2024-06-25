@@ -62,8 +62,9 @@ ENTER="sil0"
 EXIT="sil1"
 SP="_"
 
-BIGRAM_LETTER=no   # Whether a bigram word net should be used (letter level)
-BIGRAM_WORD=no   # Whether a bigram word net should be used (letter level)
+NGRAM=0
+# BIGRAM_LETTER=no   # Whether a bigram word net should be used (letter level)
+# BIGRAM_WORD=no   # Whether a bigram word net should be used (letter level)
 CUSTOM_SILSP=yes   # Whether HMM_SIL/HMM_SP should be used
 
 # whether or not to initialize the starting model in a generic way:
@@ -83,7 +84,7 @@ GEN_TRAIN_TEST=yes				# whether or not to generate
 WORD_LEVEL=yes # whether to process data as word level or letter level
 # WORD_LEVEL=no # whether to process data as word level or letter level
 TRILETTER=yes # whether to enable triletter configuration
-CROSS_WORD=yes # whether triletters should expand across words  TODO
+CROSS_WORD=no # whether triletters should expand across words  TODO
 
 FORCE_ALIGN=no # Use to enable/disable forced alignment during training
 EXPORT_MLF=no # Use to export MLF for use outside project
@@ -117,6 +118,8 @@ GRAMMARFILE_WORD_CROSS=${PRJ}/grammar/grammar_word_cross
 
 GRAMMARFILE_TEST=${PRJ}/saved_models/grammar/grammar_letter_isolated_test
 GRAMMARFILE_WORD_TEST=${PRJ}/saved_models/grammar/grammar_word_isolated_test
+
+SENTENCES_FILE=${PRJ}/grammar/sentences.txt
 
 #######################################################
 ##################### DICT FILES ######################
@@ -203,8 +206,8 @@ MLF_LOCATION_WORD_TEST=${PRJ}/saved_models/mlf/labels.mlf_word_test
 MLF_LOCATION_GEN=${PRJ}/mlf/gen # Generated MLFs
 
 WORD_LATTICE=${PRJ}/output/word.lattice
-BIGRAM_LETTER_FILE=${PRJ}/output/bigram.letter
-BIGRAM_WORD_FILE=${PRJ}/output/bigram.word
+# BIGRAM_LETTER_FILE=${PRJ}/output/bigram.letter
+# BIGRAM_WORD_FILE=${PRJ}/output/bigram.word
 
 HEDFILE1=${PRJ}/instr/mktri1_silsp.hed
 HEDFILE2=${PRJ}/instr/mktri2_tc.hed
@@ -234,8 +237,8 @@ OUTPUT_MLF=${EXT_DIR}/result.mlf_letter		# where HTK stores results
 						# .ext files
 OUTPUT_MLF_WORD=${EXT_DIR}/result.mlf_word
 
-LOG_RESULTS=${PRJ}/results/dim20/thr8/hresults.log_letter_grliwi_neg10ip_6state-pca20-gmm4_20its_5tri-its_tc50_silsp_cross
-LOG_RESULTS_WORD=${PRJ}/results/dim20/thr8/hresults.log_word_grliwi_neg10ip_6state-pca20-gmm4_20its_5tri-its_tc50_silsp_cross
+LOG_RESULTS=${PRJ}/results/dim20/thr1/hresults.log_letter_grliwi_neg10ip_6state-pca20-gmm4_20its_5tri-its_tc50_ng3_silsp
+LOG_RESULTS_WORD=${PRJ}/results/dim20/thr1/hresults.log_word_grliwi_neg10ip_6state-pca20-gmm4_20its_5tri-its_tc50_ng3_silsp
 
 HMM_TEMP_DIR=${PRJ}/models			# directory for storing
 						# intermediate models during

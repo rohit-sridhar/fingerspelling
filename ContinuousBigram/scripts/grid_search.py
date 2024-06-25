@@ -95,18 +95,26 @@ def parse_args():
         action='store_true',
         help="If true, won't use multiprocessing."
     )
-    
+
     parser.add_argument(
-        "--use_bg_letter",
-        action='store_true',
-        help="If true, will use letter level bigram with HBuild."
+        "--ngrams",
+        type=int,
+        nargs='+',
+        default=[0],
+        help="0 just uses the isolated word grammar. >= 1 uses HLM facilities to build an N-Gram Model."
     )
     
-    parser.add_argument(
-        "--use_bg_word",
-        action='store_true',
-        help="If true, will use word level bigram with HBuild."
-    )
+#     parser.add_argument(
+#         "--use_bg_letter",
+#         action='store_true',
+#         help="If true, will use letter level bigram with HBuild."
+#     )
+#     
+#     parser.add_argument(
+#         "--use_bg_word",
+#         action='store_true',
+#         help="If true, will use word level bigram with HBuild."
+#     )
 
     parser.add_argument(
         "--cross_word",
@@ -150,7 +158,7 @@ def check_args():
         raise ValueError("Check Grammar Keys between Letter/Word.")
 
 # Get the name extension for the results/output file
-def get_name_ext(grammar_type, ip, tc, num_its, num_tri_its, hmmdef):
+def get_name_ext(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, ngram):
     ip_int = abs(int(ip))
     if ip > 0:
         name_ext = f"{grammar_type}_pos{ip_int}ip_{hmmdef}_{num_its}its_{num_tri_its}tri-its_tc{tc}"
@@ -159,14 +167,17 @@ def get_name_ext(grammar_type, ip, tc, num_its, num_tri_its, hmmdef):
     else:
         name_ext = f"{grammar_type}_{ip_int}ip_{hmmdef}_{num_its}its_{num_tri_its}tri-its_tc{tc}"
     
+    if ngram > 0:
+        name_ext += f"_ng{ngram}"
+    
     if not(args.no_custom_silsp):
         name_ext += "_silsp"
     
-    if args.use_bg_letter:
-        name_ext += "_bgl"
-    
-    if args.use_bg_word:
-        name_ext += "_bgw"
+    # if args.use_bg_letter:
+    #     name_ext += "_bgl"
+    # 
+    # if args.use_bg_word:
+    #     name_ext += "_bgw"
     
     if args.cross_word:
         name_ext += "_cross"
@@ -198,11 +209,12 @@ def get_bool_arg_info():
     custom_silsp = "yes" if not(args.no_custom_silsp) else "no"
     multi_process = "yes" if not(args.no_multi_process) else "no"
     hedfile1 = "${PRJ}/instr/mktri1_silsp.hed" if not(args.no_custom_silsp) else "${PRJ}/instr/mktri1_orig.hed"
-    use_bgl = "yes" if args.use_bg_letter else "no"
-    use_bgw = "yes" if args.use_bg_word else "no"
+    # use_bgl = "yes" if args.use_bg_letter else "no"
+    # use_bgw = "yes" if args.use_bg_word else "no"
     cross_word = "yes" if args.cross_word else "no"
 
-    return custom_silsp, multi_process, hedfile1, use_bgl, use_bgw, cross_word
+    # return custom_silsp, multi_process, hedfile1, use_bgl, use_bgw, cross_word
+    return custom_silsp, multi_process, hedfile1, cross_word
 
 def get_subdirs(filepath):
     if filepath.startswith('.'):
@@ -230,11 +242,12 @@ def edit_file(re_search, re_repl, file_to_edit):
         f.writelines(lines)
     
 # Edit options file with all new hyperparams (calls helper above)
-def edit_options(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
-    name_ext = get_name_ext(grammar_type, ip, tc, num_its, num_tri_its, hmmdef)
+def edit_options(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, ngram, subdirs, trace_value):
+    name_ext = get_name_ext(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, ngram)
     letter_results, word_results = get_hresults_filepaths(name_ext, subdirs)
     letter_grammar, word_grammar = get_grammar_filepaths(grammar_type)
-    custom_silsp, multi_process, hedfile1, use_bgl, use_bgw, cross_word = get_bool_arg_info()
+    # custom_silsp, multi_process, hedfile1, use_bgl, use_bgw, cross_word = get_bool_arg_info()
+    custom_silsp, multi_process, hedfile1, cross_word = get_bool_arg_info()
     
     ip_search = IP_VARNAME + "\s*=\s*-?[0-9]+(\.[0-9]+)*"
     ip_repl = IP_VARNAME + f"={ip}"
@@ -267,11 +280,11 @@ def edit_options(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, subdirs, tr
     cross_word_hedfile1_repl = "CL commands/commands_tri_cross" if args.cross_word else "CL commands/commands_tri_internal"
     hedfile1_local_file = hedfile1.replace("${PRJ}", ".")
 
-    use_bgl_search = USE_BGL_VARNAME + "\s*=\s*(yes|no)"
-    use_bgl_repl = USE_BGL_VARNAME + f"={use_bgl}"
-    
-    use_bgw_search = USE_BGW_VARNAME + "\s*=\s*(yes|no)"
-    use_bgw_repl = USE_BGW_VARNAME + f"={use_bgw}"
+    # use_bgl_search = USE_BGL_VARNAME + "\s*=\s*(yes|no)"
+    # use_bgl_repl = USE_BGL_VARNAME + f"={use_bgl}"
+    # 
+    # use_bgw_search = USE_BGW_VARNAME + "\s*=\s*(yes|no)"
+    # use_bgw_repl = USE_BGW_VARNAME + f"={use_bgw}"
 
     letter_results_search = LOG_LETTER_VARNAME + "\s*=\s*\$\{PRJ\}\/.*hresults\.log_letter.*"
     letter_results_repl = LOG_LETTER_VARNAME + f"={letter_results}"
@@ -300,8 +313,8 @@ def edit_options(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, subdirs, tr
     edit_file(hedfile1_search, hedfile1_repl, OPTIONS_FILE)
     edit_file(custom_silsp_search, custom_silsp_repl, OPTIONS_FILE)
     edit_file(multi_process_search, multi_process_repl, OPTIONS_FILE)
-    edit_file(use_bgl_search, use_bgl_repl, OPTIONS_FILE)
-    edit_file(use_bgw_search, use_bgw_repl, OPTIONS_FILE)
+    # edit_file(use_bgl_search, use_bgl_repl, OPTIONS_FILE)
+    # edit_file(use_bgw_search, use_bgw_repl, OPTIONS_FILE)
     edit_file(cross_word_search, cross_word_repl, OPTIONS_FILE)
     edit_file(cross_word_hedfile1_search, cross_word_hedfile1_repl, hedfile1_local_file)
     edit_file(trace_level_search, trace_level_repl, OPTIONS_FILE)
@@ -317,15 +330,15 @@ def edit_options(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, subdirs, tr
     subprocess.run(["grep", HEDFILE1_VARNAME, OPTIONS_FILE])
     subprocess.run(["grep", CUSTOM_SILSP_VARNAME, OPTIONS_FILE])
     subprocess.run(["grep", MULTI_PROCESS_VARNAME, OPTIONS_FILE])
-    subprocess.run(["grep", USE_BGL_VARNAME, OPTIONS_FILE])
-    subprocess.run(["grep", USE_BGW_VARNAME, OPTIONS_FILE])
+    # subprocess.run(["grep", USE_BGL_VARNAME, OPTIONS_FILE])
+    # subprocess.run(["grep", USE_BGW_VARNAME, OPTIONS_FILE])
     subprocess.run(["grep", CROSS_WORD_VARNAME, OPTIONS_FILE])
     subprocess.run(["grep", TRACE_LEVEL_VARNAME, OPTIONS_FILE])
     subprocess.run([f"head -n 1 {hedfile1_local_file}"], shell=True)
 
 # Runs the train model script
-def train_model(grammar_type, ip, num_its, num_tri_its, subdirs, trace_value):
-    name_ext = get_name_ext(grammar_type, ip, tc, num_its, num_tri_its, hmmdef)
+def train_model(grammar_type, ip, num_its, num_tri_its, hmmdef, ngram, subdirs, trace_value):
+    name_ext = get_name_ext(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, ngram)
     
     output_dir = os.path.join(OUTPUT_ROOT, subdirs)
     _make_dir(output_dir)
@@ -337,8 +350,8 @@ def train_model(grammar_type, ip, num_its, num_tri_its, subdirs, trace_value):
     print("Train Command: " + ' '.join(train_args))
     print(f"Output file: {output_file}")
     
-    with open(output_file, "w") as f:
-        subprocess.run(train_args, stdout=f, stderr=subprocess.STDOUT)
+    # with open(output_file, "w") as f:
+    #     subprocess.run(train_args, stdout=f, stderr=subprocess.STDOUT)
 
 ############### NOT IN USE CURRENTLY ###############
 # Prepare data using scripts/prepare_data.sh. Not in use currently.
@@ -356,7 +369,7 @@ if __name__ == "__main__":
     args = parse_args()
     check_args()
     print(args)
-        
+    
     arg_iter = product(
         args.ip_values,
         args.hmmdefs,
@@ -364,7 +377,8 @@ if __name__ == "__main__":
         args.num_its,
         args.num_tri_its,
         args.grammar_types,
-        args.trace_values
+        args.trace_values,
+        args.ngrams
     )
     
     for i in range(len(args.data_files)):
@@ -383,6 +397,7 @@ if __name__ == "__main__":
             num_tri_its = arg_tup[4]
             grammar_type = arg_tup[5]
             trace_value = arg_tup[6]
+            ngram = arg_tup[7]
             
             edit_options(
                 grammar_type,
@@ -391,19 +406,11 @@ if __name__ == "__main__":
                 num_its,
                 num_tri_its,
                 hmmdef,
+                ngram,
                 subdirs,
                 trace_value
             )
             
-            train_model(grammar_type, ip, num_its, num_tri_its, subdirs, trace_value)
+            train_model(grammar_type, ip, num_its, num_tri_its, hmmdef, ngram, subdirs, trace_value)
             print()
-        # for ip in args.ip_values:
-        #     for hmmdef in args.hmmdefs:
-        #         for tc in args.tc:
-        #             for num_its in args.num_its:
-        #                 for num_tri_its in args.num_tri_its:
-        #                     for grammar_type in args.grammar_types:
-        #                         edit_options(ip, tc, num_its, num_tri_its, hmmdef, grammar_type, subdirs)
-        #                         train_model(ip, num_its, num_tri_its, subdirs)
-        #                         print()
 

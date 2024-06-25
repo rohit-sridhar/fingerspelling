@@ -177,6 +177,7 @@ ContinuousBigram/label
 ContinuousBigram/ext
 ContinuousBigram/logs
 ContinuousBigram/models
+ContinuousBigram/lang_models
 ContinuousBigram/trainsets
 ContinuousBigram/testsets
 ContinuousBigram/results

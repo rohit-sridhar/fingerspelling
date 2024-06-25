@@ -104,6 +104,9 @@ python scripts/gen_grammar.py --label_loc $3/ --grammar_file $GRAMMARFILE --gram
 python scripts/gen_grammar.py --label_loc $3/ --grammar_file $GRAMMARFILE_WORD --grammar_type word
 python scripts/gen_grammar.py --label_loc $3/ --grammar_file $GRAMMARFILE_WORD_CROSS --grammar_type cross_word
 
+echo "Generating phrase list for language modeling"
+python scripts/gen_phrases.py --label_loc $3/ --phrases_loc $SENTENCES_FILE
+
 echo "Generating dict (tri2letter/tri2word) files ...."
 python scripts/gen_tri_dict.py --label_loc $3/ --dict_type letter --dict_loc $DICTFILE
 python scripts/gen_tri_dict.py --label_loc $3/ --dict_type cross_letter --dict_loc $DICTFILE_CROSS
