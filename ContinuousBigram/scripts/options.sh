@@ -62,6 +62,7 @@ ENTER="sil0"
 EXIT="sil1"
 SP="_"
 
+LM_DIR=${PRJ}/lang_models
 NGRAM=0
 # BIGRAM_LETTER=no   # Whether a bigram word net should be used (letter level)
 # BIGRAM_WORD=no   # Whether a bigram word net should be used (letter level)
@@ -237,8 +238,8 @@ OUTPUT_MLF=${EXT_DIR}/result.mlf_letter		# where HTK stores results
 						# .ext files
 OUTPUT_MLF_WORD=${EXT_DIR}/result.mlf_word
 
-LOG_RESULTS=${PRJ}/results/dim20/thr1/hresults.log_letter_grliwi_neg10ip_6state-pca20-gmm4_20its_5tri-its_tc50_ng3_silsp
-LOG_RESULTS_WORD=${PRJ}/results/dim20/thr1/hresults.log_word_grliwi_neg10ip_6state-pca20-gmm4_20its_5tri-its_tc50_ng3_silsp
+LOG_RESULTS=${PRJ}/results/dim20/thr8/hresults.log_letter_grliwi_neg10ip_6state-pca20-gmm4_20its_5tri-its_tc50_silsp
+LOG_RESULTS_WORD=${PRJ}/results/dim20/thr8/hresults.log_word_grliwi_neg10ip_6state-pca20-gmm4_20its_5tri-its_tc50_silsp
 
 HMM_TEMP_DIR=${PRJ}/models			# directory for storing
 						# intermediate models during

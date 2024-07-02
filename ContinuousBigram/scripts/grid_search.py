@@ -63,7 +63,7 @@ def parse_args():
         "--data_files",
         type=str,
         nargs='+',
-        default=['./data/dim20/thr1/data'],
+        default=['./data/dim20/thr8/data'],
         help="All the different datasets to test. (must end with /data)"
     )
 
@@ -71,7 +71,7 @@ def parse_args():
         "--label_files",
         type=str,
         nargs='+',
-        default=['./label/thr1/sten/label'],
+        default=['./label/thr8/sten/label'],
         help="All the different datasets to test. (must end with /label)"
     )
     
@@ -279,7 +279,9 @@ def edit_options(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, ngram, subd
     cross_word_hedfile1_search = "^CL commands\/commands_tri_(internal|cross)$"
     cross_word_hedfile1_repl = "CL commands/commands_tri_cross" if args.cross_word else "CL commands/commands_tri_internal"
     hedfile1_local_file = hedfile1.replace("${PRJ}", ".")
-
+    
+    ngram_search = NGRAM_VARNAME + "\s*=\s*[0-9]+"
+    ngram_repl = NGRAM_VARNAME + f"={ngram}"
     # use_bgl_search = USE_BGL_VARNAME + "\s*=\s*(yes|no)"
     # use_bgl_repl = USE_BGL_VARNAME + f"={use_bgl}"
     # 
@@ -313,6 +315,7 @@ def edit_options(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, ngram, subd
     edit_file(hedfile1_search, hedfile1_repl, OPTIONS_FILE)
     edit_file(custom_silsp_search, custom_silsp_repl, OPTIONS_FILE)
     edit_file(multi_process_search, multi_process_repl, OPTIONS_FILE)
+    edit_file(ngram_search, ngram_repl, OPTIONS_FILE)
     # edit_file(use_bgl_search, use_bgl_repl, OPTIONS_FILE)
     # edit_file(use_bgw_search, use_bgw_repl, OPTIONS_FILE)
     edit_file(cross_word_search, cross_word_repl, OPTIONS_FILE)
@@ -330,6 +333,7 @@ def edit_options(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, ngram, subd
     subprocess.run(["grep", HEDFILE1_VARNAME, OPTIONS_FILE])
     subprocess.run(["grep", CUSTOM_SILSP_VARNAME, OPTIONS_FILE])
     subprocess.run(["grep", MULTI_PROCESS_VARNAME, OPTIONS_FILE])
+    subprocess.run(["grep", NGRAM_VARNAME, OPTIONS_FILE])
     # subprocess.run(["grep", USE_BGL_VARNAME, OPTIONS_FILE])
     # subprocess.run(["grep", USE_BGW_VARNAME, OPTIONS_FILE])
     subprocess.run(["grep", CROSS_WORD_VARNAME, OPTIONS_FILE])
@@ -350,8 +354,8 @@ def train_model(grammar_type, ip, num_its, num_tri_its, hmmdef, ngram, subdirs, 
     print("Train Command: " + ' '.join(train_args))
     print(f"Output file: {output_file}")
     
-    # with open(output_file, "w") as f:
-    #     subprocess.run(train_args, stdout=f, stderr=subprocess.STDOUT)
+    with open(output_file, "w") as f:
+        subprocess.run(train_args, stdout=f, stderr=subprocess.STDOUT)
 
 ############### NOT IN USE CURRENTLY ###############
 # Prepare data using scripts/prepare_data.sh. Not in use currently.

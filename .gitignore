@@ -170,6 +170,7 @@ ContinuousBigram.*/
 ContinuousBigramFixed/
 IsolatedBigram/
 MainPipeline/
+app_testing/
 
 # Don't include data or labels
 ContinuousBigram/data
