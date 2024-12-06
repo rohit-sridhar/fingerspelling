@@ -178,6 +178,7 @@ ContinuousBigram/label
 ContinuousBigram/ext
 ContinuousBigram/logs
 ContinuousBigram/models
+ContinuousBigram/saved_models
 ContinuousBigram/lang_models
 ContinuousBigram/trainsets
 ContinuousBigram/testsets

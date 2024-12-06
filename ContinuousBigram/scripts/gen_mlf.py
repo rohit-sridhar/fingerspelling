@@ -99,6 +99,7 @@ def get_label_info(data_file):
     with open(label_file, "r") as f:
         labels = f.readlines()
 
+    full_label = ''.join([label.strip() for label in labels])
     with open(data_file, "r") as f:
         num_lines = len(f.readlines())
     
@@ -108,7 +109,7 @@ def get_label_info(data_file):
         num_labels = len(labels)
     elif args.mlf_type == "word":
         labels = get_word_labels(labels)
-    
+     
     total_duration = args.sample_period * num_lines 
     label_path = os.path.abspath(label_file)
     
@@ -137,8 +138,11 @@ def get_word_labels(labels):
                 word_labels.append(label)
             word = ""
         else:
-            word += label.strip()
-
+            token = label.strip()
+            if token.isdigit() or token == "+" or token == "-":
+                token = TOKEN_MAP[token]
+            word += token
+    
     return word_labels
 
 if __name__ == "__main__":

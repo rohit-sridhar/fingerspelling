@@ -1,4 +1,5 @@
 import os
+import json
 
 from glob import glob
 
@@ -29,9 +30,17 @@ CROSS_WORD_VARNAME = "CROSS_WORD"
 CUSTOM_SILSP_VARNAME = "CUSTOM_SILSP"
 MULTI_PROCESS_VARNAME = "MULTI_PROCESS"
 NGRAM_VARNAME = "NGRAM"
-# USE_BGL_VARNAME = "BIGRAM_LETTER"
-# USE_BGW_VARNAME = "BIGRAM_WORD"
 TRACE_LEVEL_VARNAME = "TRACE_LEVEL"
+TRILETTER_VARNAME = "TRILETTER"
+THREADS_VARNAME = "THREADS"
+
+SUPP_START_IDX = 27
+SUPP_END_IDX = 28
+SUPP_PAD_IDX = 29
+
+MAIN_START_IDX = 59
+MAIN_END_IDX = 60
+MAIN_PAD_IDX = 61
 
 LETTER_GRAMMAR_FILE_DICT = {
     "grliwins": "${PRJ}/grammar/grammar_letter_isolated_ns",
@@ -89,8 +98,24 @@ SPACE = '_'
 ENTER = 'sil0'
 EXIT = 'sil1'
 
+TOKEN_MAP = {
+    "0": "{ZERO}",
+    "1": "{ONE}",
+    "2": "{TWO}",
+    "3": "{THREE}",
+    "4": "{FOUR}",
+    "5": "{FIVE}",
+    "6": "{SIX}",
+    "7": "{SEVEN}",
+    "8": "{EIGHT}",
+    "9": "{NINE}",
+    "+": "{PLUS}",
+    "-": "{MINUS}",
+}
+
 MODIFY_DATA_METHODS = [
     "duplication",
+    "threshold_duplication",
     "interpolation",
     "fpl_threshold",
     "dim_select",
@@ -98,6 +123,8 @@ MODIFY_DATA_METHODS = [
     "normalize",
     "neg_fpl_threshold",
     "match_triletters",
+    "import",
+    "sample"
 ]
 
 ########## Utils functions for python scripts ##########
@@ -136,4 +163,16 @@ def get_triletters(tokens):
             triletters.append(triletter)
     
     return triletters
+
+##### Load JSON Char Maps #####
+def get_char_idx_map(map_file):
+    with open(map_file, "r") as f:
+        char_idx_map = json.load(f)
+
+    return char_idx_map
+
+def get_idx_char_map(map_file):
+    char_idx_map = get_char_idx_map(map_file)
+    idx_char_map = {char_idx_map[key]:key for key in char_idx_map}
+    return idx_char_map
 

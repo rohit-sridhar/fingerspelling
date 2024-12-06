@@ -8,56 +8,17 @@ from utils import *
 
 global args
 
+###### TO ADD A NEW HYPERPARAM #######
+### Below, we describe the workflow for adding new hyperparams
+# Add an arg to parse_args
+# If a non-boolean arg, need to add the arg to the iterator and pass it to
+## edit_options, train_model, get_name_ext
+# Modify edit_options to search for and modify the option in the relevant files
+# Modify edit_options to print out the modification
+# Modify get_name_ext to print out the appropriate extension
+
 def parse_args():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    
-    parser.add_argument(
-        "--ip_values",
-        type=float,
-        nargs='+',
-        default=[-10],
-        help="All the Insertion Penalty vals to test. Higher penalizes deletions. Lower penalizes insertions. 0 is the center."
-    )
-    
-    parser.add_argument(
-        "--tc",
-        type=int,
-        nargs='+',
-        default=[50],
-        help="HHEd cluster f value for TC command in instr/mktri2.hed."
-    )
-    
-    parser.add_argument(
-        "--num_its",
-        type=int,
-        nargs='+',
-        default=[20],
-        help="All the Insertion Penalty vals to test. Higher penalizes deletions. Lower penalizes insertions. 0 is the center."
-    )
-    
-    parser.add_argument(
-        "--num_tri_its",
-        type=int,
-        nargs='+',
-        default=[5],
-        help="All the Insertion Penalty vals to test. Higher penalizes deletions. Lower penalizes insertions. 0 is the center."
-    )
-    
-    parser.add_argument(
-        "--trace_values",
-        type=int,
-        nargs='+',
-        default=[1],
-        help="Trace Values. If not passed, uses 1 by default."
-    )
-    
-    parser.add_argument(
-        "--hmmdefs",
-        type=str,
-        nargs='+',
-        default=['6state-pca20-gmm4'],
-        help="HMM Def files to test on."
-    )
     
     parser.add_argument(
         "--data_files",
@@ -85,6 +46,62 @@ def parse_args():
     )
     
     parser.add_argument(
+        "--ip_values",
+        type=float,
+        nargs='+',
+        default=[-10],
+        help="All the Insertion Penalty vals to test. Higher penalizes deletions. Lower penalizes insertions. 0 is the center."
+    )
+    
+    parser.add_argument(
+        "--tc",
+        type=int,
+        nargs='+',
+        default=[50],
+        help="HHEd cluster f value for TC command in instr/mktri2.hed."
+    )
+    
+    parser.add_argument(
+        "--num_its",
+        type=int,
+        nargs='+',
+        default=[20],
+        help="Number of standard training iterations."
+    )
+    
+    parser.add_argument(
+        "--num_tri_its",
+        type=int,
+        nargs='+',
+        default=[5],
+        help="Number of tri letter iterations."
+    )
+    
+    parser.add_argument(
+        "--trace_values",
+        type=int,
+        nargs='+',
+        default=[1],
+        help="Trace Values. If not passed, uses 1 by default."
+    )
+    
+    parser.add_argument(
+        "--ngrams",
+        type=int,
+        nargs='+',
+        default=[0],
+        help="0 just uses the isolated word grammar. >= 1 uses HLM facilities to build an N-Gram Model."
+    )
+
+    parser.add_argument(
+        "--hmmdefs",
+        type=str,
+        nargs='+',
+        default=['6state-pca20-gmm4'],
+        help="HMM Def files to test on."
+    )
+
+    parser.add_argument(
         "--no_custom_silsp",
         action='store_true',
         help="If true, won't use custom sil/sp models. custom sil/sp is used by default."
@@ -97,25 +114,11 @@ def parse_args():
     )
 
     parser.add_argument(
-        "--ngrams",
-        type=int,
-        nargs='+',
-        default=[0],
-        help="0 just uses the isolated word grammar. >= 1 uses HLM facilities to build an N-Gram Model."
+        "--no_triletter",
+        action='store_true',
+        help="If true, won't use triletter modeling."
     )
     
-#     parser.add_argument(
-#         "--use_bg_letter",
-#         action='store_true',
-#         help="If true, will use letter level bigram with HBuild."
-#     )
-#     
-#     parser.add_argument(
-#         "--use_bg_word",
-#         action='store_true',
-#         help="If true, will use word level bigram with HBuild."
-#     )
-
     parser.add_argument(
         "--cross_word",
         action="store_true",
@@ -170,17 +173,15 @@ def get_name_ext(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, ngram):
     if ngram > 0:
         name_ext += f"_ng{ngram}"
     
-    if not(args.no_custom_silsp):
-        name_ext += "_silsp"
-    
-    # if args.use_bg_letter:
-    #     name_ext += "_bgl"
-    # 
-    # if args.use_bg_word:
-    #     name_ext += "_bgw"
+
+    if args.no_custom_silsp:
+        name_ext += "_no-silsp"
     
     if args.cross_word:
         name_ext += "_cross"
+    
+    if args.no_triletter:
+        name_ext += "_no-triletter"
 
     if args.custom_ext is not None:
         name_ext += f".{args.custom_ext}"
@@ -205,16 +206,24 @@ def get_grammar_filepaths(grammar_type):
     word_grammar = WORD_GRAMMAR_FILE_DICT[grammar_type]
     return letter_grammar, word_grammar
 
+# Returns appropriate values for all bool args. Does not
+# do this for triletter (handled separately)
 def get_bool_arg_info():
     custom_silsp = "yes" if not(args.no_custom_silsp) else "no"
     multi_process = "yes" if not(args.no_multi_process) else "no"
     hedfile1 = "${PRJ}/instr/mktri1_silsp.hed" if not(args.no_custom_silsp) else "${PRJ}/instr/mktri1_orig.hed"
-    # use_bgl = "yes" if args.use_bg_letter else "no"
-    # use_bgw = "yes" if args.use_bg_word else "no"
     cross_word = "yes" if args.cross_word else "no"
 
-    # return custom_silsp, multi_process, hedfile1, use_bgl, use_bgw, cross_word
     return custom_silsp, multi_process, hedfile1, cross_word
+
+def get_machine_info():
+    machine = os.environ["HOSTNAME_SERVER"]
+    if machine == "benten":
+        return "96"
+    elif machine == "ebisu":
+        return "32"
+    elif machine == "labworkstation-System-Product-Name":
+        return "8"
 
 def get_subdirs(filepath):
     if filepath.startswith('.'):
@@ -241,14 +250,53 @@ def edit_file(re_search, re_repl, file_to_edit):
     with open(file_to_edit, 'w') as f:
         f.writelines(lines)
     
+# The function below makes changes for triletter modeling. commands_word and
+# mlf location word stay the same (between single/tri) so those are not modified.
+def make_triletter_changes():
+    triletter_search = TRILETTER_VARNAME + "\s*=\s*(yes|no)"
+    dictfile_search = "^DICTFILE\s*=\s*\$\{PRJ\}\/dict\/dict_(tri|letter)2letter"
+    dictfile_word_search = "^DICTFILE_WORD\s*=\s*\$\{PRJ\}\/dict\/dict_(tri|letter)2word"
+    tokens_search = "^TOKENS\s*=\s*\$\{PRJ\}\/commands\/commands_(tri_internal|letter)"
+    mlf_location_search = "^MLF_LOCATION\s*=\s*\$\{PRJ\}\/mlf\/labels.mlf_(tri_internal|letter)"
+    
+    if args.no_triletter:
+        triletter_repl = TRILETTER_VARNAME + "=no"
+        dictfile_repl = "DICTFILE=${PRJ}/dict/dict_letter2letter"
+        dictfile_word_repl = "DICTFILE_WORD=${PRJ}/dict/dict_letter2word"
+        tokens_repl = "TOKENS=${PRJ}/commands/commands_letter"
+        mlf_location_repl = "MLF_LOCATION=${PRJ}/mlf/labels.mlf_letter"
+    else:
+        triletter_repl = TRILETTER_VARNAME + "=yes"
+        dictfile_repl = "DICTFILE=${PRJ}/dict/dict_tri2letter"
+        dictfile_word_repl = "DICTFILE_WORD=${PRJ}/dict/dict_tri2word"
+        tokens_repl = "TOKENS=${PRJ}/commands/commands_tri_internal"
+        mlf_location_repl = "MLF_LOCATION=${PRJ}/mlf/labels.mlf_tri_internal"
+
+    edit_file(triletter_search, triletter_repl, OPTIONS_FILE)
+    edit_file(dictfile_search, dictfile_repl, OPTIONS_FILE)
+    edit_file(dictfile_word_search, dictfile_word_repl, OPTIONS_FILE)
+    edit_file(tokens_search, tokens_repl, OPTIONS_FILE)
+    edit_file(mlf_location_search, mlf_location_repl, OPTIONS_FILE)
+ 
+    subprocess.run(["grep", "^"+TRILETTER_VARNAME+"=", OPTIONS_FILE])
+    subprocess.run(["grep", "^DICTFILE=", OPTIONS_FILE])
+    subprocess.run(["grep", "^DICTFILE_WORD=", OPTIONS_FILE])
+    subprocess.run(["grep", "^TOKENS=", OPTIONS_FILE])
+    subprocess.run(["grep", "^MLF_LOCATION=", OPTIONS_FILE])
+    
+
 # Edit options file with all new hyperparams (calls helper above)
 def edit_options(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, ngram, subdirs, trace_value):
     name_ext = get_name_ext(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, ngram)
     letter_results, word_results = get_hresults_filepaths(name_ext, subdirs)
     letter_grammar, word_grammar = get_grammar_filepaths(grammar_type)
-    # custom_silsp, multi_process, hedfile1, use_bgl, use_bgw, cross_word = get_bool_arg_info()
+
     custom_silsp, multi_process, hedfile1, cross_word = get_bool_arg_info()
+    num_threads = get_machine_info()
     
+    # Handle triletter changes separately
+    make_triletter_changes()
+
     ip_search = IP_VARNAME + "\s*=\s*-?[0-9]+(\.[0-9]+)*"
     ip_repl = IP_VARNAME + f"={ip}"
 
@@ -282,11 +330,6 @@ def edit_options(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, ngram, subd
     
     ngram_search = NGRAM_VARNAME + "\s*=\s*[0-9]+"
     ngram_repl = NGRAM_VARNAME + f"={ngram}"
-    # use_bgl_search = USE_BGL_VARNAME + "\s*=\s*(yes|no)"
-    # use_bgl_repl = USE_BGL_VARNAME + f"={use_bgl}"
-    # 
-    # use_bgw_search = USE_BGW_VARNAME + "\s*=\s*(yes|no)"
-    # use_bgw_repl = USE_BGW_VARNAME + f"={use_bgw}"
 
     letter_results_search = LOG_LETTER_VARNAME + "\s*=\s*\$\{PRJ\}\/.*hresults\.log_letter.*"
     letter_results_repl = LOG_LETTER_VARNAME + f"={letter_results}"
@@ -303,6 +346,9 @@ def edit_options(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, ngram, subd
     trace_level_search = TRACE_LEVEL_VARNAME + "\s*=\s*[0-9]+"
     trace_level_repl = TRACE_LEVEL_VARNAME + f"={trace_value}"
 
+    threads_search = THREADS_VARNAME + "\s*=\s*(96|32|8)"
+    threads_repl = THREADS_VARNAME + f"={num_threads}"
+
     edit_file(ip_search, ip_repl, OPTIONS_FILE)
     edit_file(tc_search, tc_repl, HEDFILE2)
     edit_file(num_its_search, num_its_repl, OPTIONS_FILE)
@@ -316,11 +362,10 @@ def edit_options(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, ngram, subd
     edit_file(custom_silsp_search, custom_silsp_repl, OPTIONS_FILE)
     edit_file(multi_process_search, multi_process_repl, OPTIONS_FILE)
     edit_file(ngram_search, ngram_repl, OPTIONS_FILE)
-    # edit_file(use_bgl_search, use_bgl_repl, OPTIONS_FILE)
-    # edit_file(use_bgw_search, use_bgw_repl, OPTIONS_FILE)
     edit_file(cross_word_search, cross_word_repl, OPTIONS_FILE)
     edit_file(cross_word_hedfile1_search, cross_word_hedfile1_repl, hedfile1_local_file)
     edit_file(trace_level_search, trace_level_repl, OPTIONS_FILE)
+    edit_file(threads_search, threads_repl, OPTIONS_FILE)
     
     subprocess.run(["grep", IP_VARNAME, OPTIONS_FILE])
     subprocess.run(["grep", NUM_ITS_VARNAME, OPTIONS_FILE])
@@ -334,10 +379,9 @@ def edit_options(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, ngram, subd
     subprocess.run(["grep", CUSTOM_SILSP_VARNAME, OPTIONS_FILE])
     subprocess.run(["grep", MULTI_PROCESS_VARNAME, OPTIONS_FILE])
     subprocess.run(["grep", NGRAM_VARNAME, OPTIONS_FILE])
-    # subprocess.run(["grep", USE_BGL_VARNAME, OPTIONS_FILE])
-    # subprocess.run(["grep", USE_BGW_VARNAME, OPTIONS_FILE])
     subprocess.run(["grep", CROSS_WORD_VARNAME, OPTIONS_FILE])
     subprocess.run(["grep", TRACE_LEVEL_VARNAME, OPTIONS_FILE])
+    subprocess.run(["grep", THREADS_VARNAME, OPTIONS_FILE])
     subprocess.run([f"head -n 1 {hedfile1_local_file}"], shell=True)
 
 # Runs the train model script

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION="latest"
+TAG="latest"
 
 if [ "$1" == "ls" ]; then
     sudo docker ps -a
@@ -27,6 +27,9 @@ else
         mb_pipe_path="$root/Mobile-Data-Processing-Pipeline"
         continuous_bigram_path="$root/hmm_modeling/fingerspelling"
         
+        fingerspelling_torch_path="$root/deep_learning/fingerspelling_torch"
+        fingerspelling_data_path="$root/parquet/asl-fingerspelling"
+        
         if [ "$2" == "islr" ]; then
             islr_path="$root/hmm_modeling/islr"
             
@@ -34,7 +37,7 @@ else
                 -dit \
                 -v "$mb_pipe_path":"$mb_pipe_path" \
                 -v "$islr_path":"$islr_path" \
-                --name $2 rohitsridhar91/asl_sign_recognizer:$VERSION
+                --name $2 rohitsridhar91/asl_sign_recognizer:$TAG
         elif [ "$2" == "popsign_experiments" ]; then
             popsign_path="$root/hmm_modeling/popsign"
             popsign_data_path="$root/sign_language_videos/mediapipe"
@@ -45,20 +48,28 @@ else
                 -v "$continuous_bigram_path":"$continuous_bigram_path" \
                 -v "$popsign_path":"$popsign_path" \
                 -v "$popsign_data_path":"$popsign_data_path" \
-                --name $2 rohitsridhar91/asl_sign_recognizer:$VERSION
+                --name $2 rohitsridhar91/asl_sign_recognizer:$TAG
         elif [ "$2" == "fingerspelling" ]; then
-            # continuous_bigram_benten_path="$root/hmm_modeling/fs.benten"
-            # continuous_bigram_hotei_path="$root/hmm_modeling/fs.hotei"
-            continuous_bigram_ebisu_path="$root/hmm_modeling/fs.ebisu"
-            
             sudo docker run \
                 -dit \
+                -v "$fingerspelling_torch_path":"$fingerspelling_torch_path" \
+                -v "$fingerspelling_data_path":"$fingerspelling_data_path" \
                 -v "$continuous_bigram_path":"$continuous_bigram_path" \
-                -v "$continuous_bigram_ebisu_path":"$continuous_bigram_ebisu_path" \
-                --name $2 rohitsridhar91/asl_sign_recognizer:$VERSION
+                -e HOSTNAME_SERVER="$HOSTNAME" \
+                --name $2 rohitsridhar91/asl_sign_recognizer:$TAG
+        elif [ "$2" == "fingerspelling_torch" ]; then
+            sudo docker run \
+                -dit \
+                --gpus all \
+                -v "$fingerspelling_torch_path":"$fingerspelling_torch_path" \
+                -v "$fingerspelling_data_path":"$fingerspelling_data_path" \
+                -e PJRT_DEVICE="CPU" \
+                --name $2 rohitsridhar91/torch_tflite_convert:$TAG
+        else
+            echo "Specify an appropriate image name"
         fi
         
-        if [ "$4" != "" ]; then
+        if [[ "$4" != "" ]] && [[ "$1" == "launch" ]]; then
             sudo docker cp "$4" $2:/root
             echo "$4 copied to $2:/root"
         fi

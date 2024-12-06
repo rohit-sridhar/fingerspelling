@@ -43,9 +43,7 @@ GRAMMAR_SCALE_FACTOR=0
 SAMPLE_PERIOD=1000
 
 MULTI_PROCESS=yes
-# THREADS=8           # For Hotei
-# THREADS=32        # For Ebisu
-THREADS=96        # For Benten
+THREADS=96
 
 #PRUNING_THRESHOLD="50 50 500" #Threshold for alpha-beta pruning, of form "start step-size end"
 PRUNING_THRESHOLD=0
@@ -64,8 +62,6 @@ SP="_"
 
 LM_DIR=${PRJ}/lang_models
 NGRAM=0
-# BIGRAM_LETTER=no   # Whether a bigram word net should be used (letter level)
-# BIGRAM_WORD=no   # Whether a bigram word net should be used (letter level)
 CUSTOM_SILSP=yes   # Whether HMM_SIL/HMM_SP should be used
 
 # whether or not to initialize the starting model in a generic way:
@@ -83,7 +79,6 @@ GEN_TRAIN_TEST=yes				# whether or not to generate
 						# yes.
 
 WORD_LEVEL=yes # whether to process data as word level or letter level
-# WORD_LEVEL=no # whether to process data as word level or letter level
 TRILETTER=yes # whether to enable triletter configuration
 CROSS_WORD=no # whether triletters should expand across words  TODO
 
@@ -113,10 +108,14 @@ DATA_SAMPLES=${PRJ}/output/all-extfiles
 #################### GRAMMAR FILES ####################
 #######################################################
 
+###### USE FOR TRAINING ######
 GRAMMARFILE=${PRJ}/grammar/grammar_letter_isolated
 GRAMMARFILE_WORD=${PRJ}/grammar/grammar_word_isolated
+
+###### USE FOR CROSS WORD TRILETTER ######
 GRAMMARFILE_WORD_CROSS=${PRJ}/grammar/grammar_word_cross
 
+###### USE FOR TEST SET ######
 GRAMMARFILE_TEST=${PRJ}/saved_models/grammar/grammar_letter_isolated_test
 GRAMMARFILE_WORD_TEST=${PRJ}/saved_models/grammar/grammar_word_isolated_test
 
@@ -126,12 +125,15 @@ SENTENCES_FILE=${PRJ}/grammar/sentences.txt
 ##################### DICT FILES ######################
 #######################################################
 
-###### USE FOR TRILETTER ######
+###### USE FOR MAIN TRAINING ######
 DICTFILE=${PRJ}/dict/dict_tri2letter
-DICTFILE_CROSS=${PRJ}/dict/dict_tri2cross
 DICTFILE_WORD=${PRJ}/dict/dict_tri2word
+
+###### USE FOR CROSS WORD TRILETTER ######
+DICTFILE_CROSS=${PRJ}/dict/dict_tri2letter_cross
 DICTFILE_CROSS_WORD=${PRJ}/dict/dict_tri2word_cross
 
+###### USE FOR TEST SET ######
 DICTFILE_TEST=${PRJ}/saved_models/dict/dict_tri2letter_test
 DICTFILE_WORD_TEST=${PRJ}/saved_models/dict/dict_tri2word_test
 
@@ -142,10 +144,6 @@ DICTFILE_WORD_TEST=${PRJ}/saved_models/dict/dict_tri2word_test
 ###### USE FOR ALIGNMNENT ######
 DICTFILE_ALIGN=${PRJ}/dict/dict_tri2tri # Dictionary used during forced alignment
 
-###### USE TO MODEL LETTERS/WORDS WITHOUT SPACE ######
-# TOKENS_ORIGINAL=${PRJ}/commands/commands_letter_isolated # used for building model
-# TOKENS_WORD=${PRJ}/commands/commands_word_isolated
-
 #######################################################
 ################### COMMANDS FILES ####################
 #######################################################
@@ -155,21 +153,25 @@ DICTFILE_ALIGN=${PRJ}/dict/dict_tri2tri # Dictionary used during forced alignmen
 # TOKENS_ORIGINAL is used to initialize letter models. Triletter modeling uses the 
 # TOKENS file during triletter iterations.
 ######
+
+###### USE FOR INITIAL TRAINING ######
 TOKENS_ORIGINAL=${PRJ}/commands/commands_letter
 TOKENS_ORIGINAL_SKSP=${PRJ}/commands/commands_letter_isolated
 TOKENS_WORD_SKSP=${PRJ}/commands/commands_word_isolated
 
+###### USE FOR TEST SET ######
 TOKENS_ORIGINAL_TEST=${PRJ}/saved_models/commands/commands_letter_test
 TOKENS_ORIGINAL_SKSP_TEST=${PRJ}/saved_models/commands/commands_letter_isolated_test
 TOKENS_WORD_SKSP_TEST=${PRJ}/saved_models/commands/commands_word_isolated_test
-
-###### USE FOR TRILETTER MODELING #####
-TOKENS=${PRJ}/commands/commands_tri_internal
-TOKENS_CROSS=${PRJ}/commands/commands_tri_cross
-TOKENS_WORD=${PRJ}/commands/commands_word   # (I think this should be changed to have triletters ... ?)
-
 TOKENS_TEST=${PRJ}/saved_models/commands/commands_tri_internal_test
-TOKENS_WORD_TEST=${PRJ}/saved_models/commands/commands_word_test   # (I think this should be changed to have triletters ... ?)
+TOKENS_WORD_TEST=${PRJ}/saved_models/commands/commands_word_test
+
+###### USE FOR MAIN TRAINING ######
+TOKENS=${PRJ}/commands/commands_tri_internal
+TOKENS_WORD=${PRJ}/commands/commands_word
+
+###### USE FOR CROSS WORD TRILETTER ######
+TOKENS_CROSS=${PRJ}/commands/commands_tri_cross
 
 ###### USE FOR SINGLE LETTER MODELING ######
 # TOKENS=${PRJ}/commands/commands_letter
@@ -184,25 +186,29 @@ TOKENS_WORD_TEST=${PRJ}/saved_models/commands/commands_word_test   # (I think th
 # MLF_LOCATION_ORIGINAL is used for initial training steps on isolated letters.
 # Triletter modeling uses the MLF_LOCATION file for training.
 ######
+
+###### USE FOR INITIAL TRAINING ######
 MLF_LOCATION_ORIGINAL=${PRJ}/mlf/labels.mlf_letter # used for building model and results
 MLF_LOCATION_ORIGINAL_SKSP=${PRJ}/mlf/labels.mlf_letter_sksp # used for building model and results
 MLF_LOCATION_WORD_SKSP=${PRJ}/mlf/labels.mlf_word_sksp
 
+###### USE FOR TEST SET ######
 MLF_LOCATION_ORIGINAL_TEST=${PRJ}/saved_models/mlf/labels.mlf_letter_test # used for building model and results
 MLF_LOCATION_ORIGINAL_SKSP_TEST=${PRJ}/saved_models/mlf/labels.mlf_letter_sksp_test # used for building model and results
 MLF_LOCATION_WORD_SKSP_TEST=${PRJ}/saved_models/mlf/labels.mlf_word_sksp_test
-
-###### USE FOR TRILETTER ######
-MLF_LOCATION=${PRJ}/mlf/labels.mlf_tri_internal
-MLF_LOCATION_CROSS=${PRJ}/mlf/labels.mlf_tri_cross
-MLF_LOCATION_WORD=${PRJ}/mlf/labels.mlf_word
-
 MLF_LOCATION_TEST=${PRJ}/saved_models/mlf/labels.mlf_tri_internal_test
 MLF_LOCATION_WORD_TEST=${PRJ}/saved_models/mlf/labels.mlf_word_test
 
+###### USE FOR MAIN TRAINING ######
+MLF_LOCATION=${PRJ}/mlf/labels.mlf_tri_internal
+MLF_LOCATION_WORD=${PRJ}/mlf/labels.mlf_word
+
+###### USE FOR CROSS WORD TRILETTER ######
+MLF_LOCATION_CROSS=${PRJ}/mlf/labels.mlf_tri_cross
+
 ###### USE FOR SINGLE LETTER ######
 # MLF_LOCATION=${PRJ}/mlf/labels.mlf_letter
-# MLF_LOCATION_WORD=${PRJ}/mlf/labels.mlf_word # (I think this should be changed to have triletters ... ?)
+# MLF_LOCATION_WORD=${PRJ}/mlf/labels.mlf_word
 
 MLF_LOCATION_GEN=${PRJ}/mlf/gen # Generated MLFs
 
@@ -238,8 +244,8 @@ OUTPUT_MLF=${EXT_DIR}/result.mlf_letter		# where HTK stores results
 						# .ext files
 OUTPUT_MLF_WORD=${EXT_DIR}/result.mlf_word
 
-LOG_RESULTS=${PRJ}/results/dim20/thr8/hresults.log_letter_grliwi_neg10ip_6state-pca20-gmm4_20its_5tri-its_tc50_silsp
-LOG_RESULTS_WORD=${PRJ}/results/dim20/thr8/hresults.log_word_grliwi_neg10ip_6state-pca20-gmm4_20its_5tri-its_tc50_silsp
+LOG_RESULTS=${PRJ}/results/supplemental/dl_cmp/dim20/thr2/train/dupall8/hresults.log_letter_grliwi_neg10ip_6state-pca20-gmm4_20its_5tri-its_tc50
+LOG_RESULTS_WORD=${PRJ}/results/supplemental/dl_cmp/dim20/thr2/train/dupall8/hresults.log_word_grliwi_neg10ip_6state-pca20-gmm4_20its_5tri-its_tc50
 
 HMM_TEMP_DIR=${PRJ}/models			# directory for storing
 						# intermediate models during
