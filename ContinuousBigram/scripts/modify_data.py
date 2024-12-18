@@ -56,7 +56,7 @@ def parse_args():
         "--char_map_file",
         type=str,
         default="/data/parquet/asl-fingerspelling/supplemental_character_to_prediction_index.json",
-        help="Maps characters to indices and vice versa."
+        help="Maps characters to indices and vice versa (only for import method)."
     )
 
     parser.add_argument(
@@ -235,9 +235,9 @@ def _interpolate(frames):
         frames_interp = "  ".join([str(round(landmark, 6)) for landmark in frames_interp])
 
         new_frames.append(frames[i])
-        new_frames.append(frames_interp)
-        new_frames.append(frames[i+1])
-
+        new_frames.append(frames_interp + "\n")
+    
+    new_frames.append(frames[-1])
     return new_frames
 
 def interpolate_frames(datafile, label_file, new_datafile, num_interpolations, interp_all):
@@ -247,7 +247,6 @@ def interpolate_frames(datafile, label_file, new_datafile, num_interpolations, i
     with open(label_file, 'r') as f:
         labels = f.readlines()
     
-    frames = [frame.strip() for frame in frames]
     for _ in range(num_interpolations):
         if interp_all or len(frames) / len(labels) < 2 ** num_interpolations:
             frames = _interpolate(frames)

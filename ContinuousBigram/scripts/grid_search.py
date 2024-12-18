@@ -1,12 +1,11 @@
 import argparse
 import re
 import os
+import csv
 import subprocess
 
 from itertools import product
 from utils import *
-
-global args
 
 ###### TO ADD A NEW HYPERPARAM #######
 ### Below, we describe the workflow for adding new hyperparams
@@ -24,7 +23,7 @@ def parse_args():
         "--data_files",
         type=str,
         nargs='+',
-        default=['./data/dim20/thr8/data'],
+        default=['./data/supplemental/dl_cmp/dim20/thr1/train/interpall1/pt2/data/'],
         help="All the different datasets to test. (must end with /data)"
     )
 
@@ -32,10 +31,19 @@ def parse_args():
         "--label_files",
         type=str,
         nargs='+',
-        default=['./label/thr8/sten/label'],
+        default=['./label/supplemental/dl_cmp/thr1/train/pt2/label/'],
         help="All the different datasets to test. (must end with /label)"
     )
     
+    parser.add_argument(
+        "--results_csv",
+        type=str,
+        default=None,
+        help="Results CSV to append results to. If the file does not exist, it is created. \
+                If it does exist, results are appended. If nothing is passed the results \
+                won't be saved."
+    )
+
     parser.add_argument(
         "--grammar_types",
         type=str,
@@ -195,6 +203,7 @@ def get_hresults_filepaths(name_ext, subdirs):
     
     results_dir = os.path.join(RESULTS_ROOT, subdirs)
     _make_dir(results_dir)
+    
     letter_results = os.path.join("${PRJ}", results_dir, letter_results_file)
     word_results = os.path.join("${PRJ}", results_dir, word_results_file)
     
@@ -219,11 +228,11 @@ def get_bool_arg_info():
 def get_machine_info():
     machine = os.environ["HOSTNAME_SERVER"]
     if machine == "benten":
-        return "96"
+        return BENTEN_THREADS
     elif machine == "ebisu":
-        return "32"
+        return EBISU_THREADS
     elif machine == "labworkstation-System-Product-Name":
-        return "8"
+        return HOTEI_THREADS
 
 def get_subdirs(filepath):
     if filepath.startswith('.'):
@@ -385,12 +394,12 @@ def edit_options(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, ngram, subd
     subprocess.run([f"head -n 1 {hedfile1_local_file}"], shell=True)
 
 # Runs the train model script
-def train_model(grammar_type, ip, num_its, num_tri_its, hmmdef, ngram, subdirs, trace_value):
+def train_model(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, ngram, subdirs, trace_value):
     name_ext = get_name_ext(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, ngram)
     
-    output_dir = os.path.join(OUTPUT_ROOT, subdirs)
+    output_dir = os.path.join(LOG_ROOT, subdirs)
     _make_dir(output_dir)
-
+    
     trace_ext = f".TR{trace_value}"
     output_file = os.path.join(output_dir, "output.log_" + name_ext + trace_ext)
     
@@ -400,6 +409,52 @@ def train_model(grammar_type, ip, num_its, num_tri_its, hmmdef, ngram, subdirs, 
     
     with open(output_file, "w") as f:
         subprocess.run(train_args, stdout=f, stderr=subprocess.STDOUT)
+
+def get_results(results_file, letter_results=True):
+    with open(results_file, "r") as f:
+        results_lines = f.readlines()
+    
+    results = ('0.0', '0.0')
+    for line in results_lines:
+        if line.startswith("WORD: "):
+            corr_match = re.search("Corr=[0-9]+\.[0-9]+", line).group(0)
+            acc_match = re.search("Acc=[0-9]+\.[0-9]+", line).group(0)
+        if line.startswith("SENT: "):
+            sent_match = re.search("Correct=[0-9]+\.[0-9]+", line).group(0)
+    
+    if letter_results:
+        results = [corr_match.split('=')[1], acc_match.split('=')[1]]
+    else:
+        results = [corr_match.split('=')[1], acc_match.split('=')[1], sent_match.split('=')[1]]
+    return results
+
+def add_results_to_csv(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, ngram, subdirs):
+    name_ext = get_name_ext(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, ngram)
+    letter_results_file, word_results_file = get_hresults_filepaths(name_ext, subdirs)
+    
+    letter_results_file = os.path.join('.', *letter_results_file.split("/")[1:])
+    word_results_file = os.path.join('.', *word_results_file.split("/")[1:])
+    
+    letter_results = get_results(letter_results_file, letter_results=True)
+    word_results = get_results(word_results_file, letter_results=False)
+
+    results = [letter_results_file] + letter_results + word_results
+    if os.path.exists(args.results_csv):
+        with open(args.results_csv, 'a', newline='') as f:
+            csvwriter = csv.writer(
+                f, delimiter='|',
+                quotechar='\\', quoting=csv.QUOTE_MINIMAL
+            )
+            csvwriter.writerow(results)
+    else:
+        with open(args.results_csv, 'w') as f:
+            csvwriter = csv.writer(
+                f, delimiter='|',
+                quotechar='\\', quoting=csv.QUOTE_MINIMAL
+            )
+            csvwriter.writerow(['letter_results_file','letter_corr', 'letter_acc', 'word_corr', 'word_acc', 'sent_corr'])
+            csvwriter.writerow(results)
+
 
 ############### NOT IN USE CURRENTLY ###############
 # Prepare data using scripts/prepare_data.sh. Not in use currently.
@@ -459,6 +514,29 @@ if __name__ == "__main__":
                 trace_value
             )
             
-            train_model(grammar_type, ip, num_its, num_tri_its, hmmdef, ngram, subdirs, trace_value)
+            train_model(
+                grammar_type,
+                ip,
+                tc,
+                num_its,
+                num_tri_its,
+                hmmdef,
+                ngram,
+                subdirs,
+                trace_value
+            )
+            
+            if args.results_csv is not None:
+                add_results_to_csv(
+                    grammar_type,
+                    ip,
+                    tc,
+                    num_its,
+                    num_tri_its,
+                    hmmdef,
+                    ngram,
+                    subdirs,
+                )
+
             print()
 

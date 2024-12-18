@@ -3,7 +3,8 @@ import json
 
 from glob import glob
 
-OUTPUT_ROOT = "logs/"
+LOG_ROOT = "logs/"
+OUTPUT_ROOT = "output/"
 RESULTS_ROOT = "results/"
 
 OPTIONS_FILE = "./scripts/options.sh"
@@ -41,6 +42,10 @@ SUPP_PAD_IDX = 29
 MAIN_START_IDX = 59
 MAIN_END_IDX = 60
 MAIN_PAD_IDX = 61
+
+BENTEN_THREADS = "96"
+EBISU_THREADS = "32"
+HOTEI_THREADS = "8"
 
 LETTER_GRAMMAR_FILE_DICT = {
     "grliwins": "${PRJ}/grammar/grammar_letter_isolated_ns",
@@ -124,7 +129,7 @@ MODIFY_DATA_METHODS = [
     "neg_fpl_threshold",
     "match_triletters",
     "import",
-    "sample"
+    "sample",
 ]
 
 ########## Utils functions for python scripts ##########

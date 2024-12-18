@@ -354,7 +354,7 @@ if [[ "${INITIALIZE_HMM}" == "yes" ]] ||
 	    		-I $MLF_LOCATION_ORIGINAL -o $n -m -M $HMM_TRAINING.0  	\
 	    		$HMM_LOCATION
             
-            ${HTKBIN}HInit  -A -T $TRACE_LEVEL -v ${MIN_VARIANCE} -M $HMM_TRAINING.1 -l $n 	\
+            gdb --args ${HTKBIN}HInit  -A -T $TRACE_LEVEL -v ${MIN_VARIANCE} -M $HMM_TRAINING.1 -l $n 	\
 		            -S $TRAINING -I $MLF_LOCATION_ORIGINAL -o $n 	\
 		    		$HMM_TRAINING.0/$n
 	  	    
