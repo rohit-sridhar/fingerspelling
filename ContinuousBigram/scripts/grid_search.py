@@ -128,6 +128,12 @@ def parse_args():
     )
     
     parser.add_argument(
+        "--prepare_data",
+        action='store_true',
+        help="If true, will prepare data before training."
+    )
+    
+    parser.add_argument(
         "--cross_word",
         action="store_true",
         help="True if to use cross word triphones."
@@ -458,15 +464,16 @@ def add_results_to_csv(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, ngram
 
 ############### NOT IN USE CURRENTLY ###############
 # Prepare data using scripts/prepare_data.sh. Not in use currently.
-# def prepare_data(data_file, label_file):
-#     prepare_command = ' '.join([PREPARE_FILE, OPTIONS_FILE, data_file, label_file])
-#     cv_split_command = ' '.join([TOT_PREPARE, EXT_FILE_LIST, TRAIN_LIST, TEST_LIST, GEN_TOT_NAME, OPTIONS_FILE])
-#     
-#     print(prepare_command)
-#     print(cv_split_command)
-# 
-#     os.system(prepare_command)
-#     os.system(cv_split_command)
+def prepare_data(data_file, label_file):
+    prepare_command = [PREPARE_FILE, OPTIONS_FILE, data_file, label_file]
+    # cv_split_command = ' '.join([TOT_PREPARE, EXT_FILE_LIST, TRAIN_LIST, TEST_LIST, GEN_TOT_NAME, OPTIONS_FILE])
+    
+    print(' '.join(prepare_command))
+    # print(cv_split_command)
+
+    subprocess.run(prepare_command)
+    # os.system(prepare_command)
+    # os.system(cv_split_command)
 
 if __name__ == "__main__":
     args = parse_args()
@@ -489,7 +496,8 @@ if __name__ == "__main__":
         data_file = args.data_files[i]
         label_file = args.label_files[i]
         
-        # prepare_data(data_file, label_file)
+        if args.prepare_data:
+            prepare_data(data_file, label_file)
         subdirs = get_subdirectories(data_file, label_file)
         
         for arg_tup in arg_iter:

@@ -104,7 +104,7 @@ if [[ $TRILETTER = "yes" ]] && [[ $CROSS_WORD = "yes" ]]; then
 fi
 
 
-DATA_SAMPLES=all-extfiles
+# DATA_SAMPLES=all-extfiles
 
 TT_NAME_SCRIPT=$SCRIPTS_DIR/gen_train_test_name.sh      # make consistent names
 
