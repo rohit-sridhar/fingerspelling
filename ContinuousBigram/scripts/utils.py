@@ -6,7 +6,9 @@ from glob import glob
 LOG_ROOT = "logs/"
 OUTPUT_ROOT = "output/"
 RESULTS_ROOT = "results/"
+MODELS_ROOT = "models/"
 
+MODEL_MACROS_FILE = "newMacros"
 OPTIONS_FILE = "./scripts/options.sh"
 TRAIN_FILE = "./scripts/train.sh"
 PREPARE_FILE = "./scripts/prepare_files.sh"

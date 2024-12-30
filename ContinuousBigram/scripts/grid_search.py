@@ -3,6 +3,7 @@ import re
 import os
 import csv
 import subprocess
+import shutil
 
 from itertools import product
 from utils import *
@@ -168,14 +169,19 @@ def check_args():
 
 # Get the name extension for the results/output file
 def get_name_ext(grammar_type, ip, tc, num_its, num_tri_its, hmmdef):
+    name_ext = ""
+    if grammar_type is not None:
+        name_ext = f"{grammar_type}_"
+
     ip_int = abs(int(ip))
     if ip > 0:
-        name_ext = f"{grammar_type}_pos{ip_int}ip_{hmmdef}_{num_its}its_{num_tri_its}tri-its_tc{tc}"
+        name_ext += f"pos{ip_int}ip_"
     elif ip < 0:
-        name_ext = f"{grammar_type}_neg{ip_int}ip_{hmmdef}_{num_its}its_{num_tri_its}tri-its_tc{tc}"
+        name_ext += f"neg{ip_int}ip_"
     else:
-        name_ext = f"{grammar_type}_{ip_int}ip_{hmmdef}_{num_its}its_{num_tri_its}tri-its_tc{tc}"
+        name_ext += f"{ip_int}ip_"
     
+    name_ext += "_".join([f"{hmmdef}", f"{num_its}its", f"{num_tri_its}tri-its", f"tc{tc}"])
 
     if args.no_custom_silsp:
         name_ext += "_no-silsp"
@@ -446,8 +452,21 @@ def add_results_to_csv(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, subdi
             csvwriter.writerow(['letter_results_file','letter_corr', 'letter_acc', 'word_corr', 'word_acc', 'sent_corr'])
             csvwriter.writerow(results)
 
+def save_model(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, subdirs):
+    curr_model_path = os.path.join(MODELS_ROOT, f"hmm0.{num_its-1}", MODEL_MACROS_FILE)
+    
+    name_ext = get_name_ext(None, ip, tc, num_its, num_tri_its, hmmdef)  # Pass none for first arg because the model doesn't vary by grammar
+    new_model_dir = os.path.join(MODELS_ROOT, subdirs)
+    new_model_file = '_'.join([MODEL_MACROS_FILE, name_ext])
+    
+    _make_dir(new_model_dir)
+    new_model_path = os.path.join(new_model_dir, new_model_file)
+    
+    print(f"Current Model Dir: {curr_model_path}")
+    print(f"New Model Dir: {new_model_path}")
 
-############### NOT IN USE CURRENTLY ###############
+    shutil.copy(curr_model_path, new_model_path)
+
 # Prepare data using scripts/prepare_data.sh. Not in use currently.
 def prepare_data(data_file, label_file):
     prepare_command = [PREPARE_FILE, OPTIONS_FILE, data_file, label_file]
@@ -515,6 +534,16 @@ if __name__ == "__main__":
                 trace_value
             )
             
+            save_model(
+                grammar_type,
+                ip,
+                tc,
+                num_its,
+                num_tri_its,
+                hmmdef,
+                subdirs
+            )
+            
             if args.results_csv is not None:
                 add_results_to_csv(
                     grammar_type,
@@ -525,6 +554,6 @@ if __name__ == "__main__":
                     hmmdef,
                     subdirs,
                 )
-
+            
             print()
 
