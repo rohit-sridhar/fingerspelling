@@ -115,10 +115,6 @@ GRAMMARFILE_WORD=${PRJ}/grammar/grammar_word_isolated
 ###### USE FOR CROSS WORD TRILETTER ######
 GRAMMARFILE_WORD_CROSS=${PRJ}/grammar/grammar_word_cross
 
-###### USE FOR TEST SET ######
-GRAMMARFILE_TEST=${PRJ}/saved_models/grammar/grammar_letter_isolated_test
-GRAMMARFILE_WORD_TEST=${PRJ}/saved_models/grammar/grammar_word_isolated_test
-
 SENTENCES_FILE=${PRJ}/grammar/sentences.txt
 
 #######################################################
@@ -132,10 +128,6 @@ DICTFILE_WORD=${PRJ}/dict/dict_tri2word
 ###### USE FOR CROSS WORD TRILETTER ######
 DICTFILE_CROSS=${PRJ}/dict/dict_tri2letter_cross
 DICTFILE_CROSS_WORD=${PRJ}/dict/dict_tri2word_cross
-
-###### USE FOR TEST SET ######
-DICTFILE_TEST=${PRJ}/saved_models/dict/dict_tri2letter_test
-DICTFILE_WORD_TEST=${PRJ}/saved_models/dict/dict_tri2word_test
 
 ###### USE FOR SINGLE LETTER ######
 # DICTFILE=${PRJ}/dict/dict_letter2letter
@@ -158,13 +150,6 @@ DICTFILE_ALIGN=${PRJ}/dict/dict_tri2tri # Dictionary used during forced alignmen
 TOKENS_ORIGINAL=${PRJ}/commands/commands_letter
 TOKENS_ORIGINAL_SKSP=${PRJ}/commands/commands_letter_isolated
 TOKENS_WORD_SKSP=${PRJ}/commands/commands_word_isolated
-
-###### USE FOR TEST SET ######
-TOKENS_ORIGINAL_TEST=${PRJ}/saved_models/commands/commands_letter_test
-TOKENS_ORIGINAL_SKSP_TEST=${PRJ}/saved_models/commands/commands_letter_isolated_test
-TOKENS_WORD_SKSP_TEST=${PRJ}/saved_models/commands/commands_word_isolated_test
-TOKENS_TEST=${PRJ}/saved_models/commands/commands_tri_internal_test
-TOKENS_WORD_TEST=${PRJ}/saved_models/commands/commands_word_test
 
 ###### USE FOR MAIN TRAINING ######
 TOKENS=${PRJ}/commands/commands_tri_internal
@@ -191,13 +176,6 @@ TOKENS_CROSS=${PRJ}/commands/commands_tri_cross
 MLF_LOCATION_ORIGINAL=${PRJ}/mlf/labels.mlf_letter # used for building model and results
 MLF_LOCATION_ORIGINAL_SKSP=${PRJ}/mlf/labels.mlf_letter_sksp # used for building model and results
 MLF_LOCATION_WORD_SKSP=${PRJ}/mlf/labels.mlf_word_sksp
-
-###### USE FOR TEST SET ######
-MLF_LOCATION_ORIGINAL_TEST=${PRJ}/saved_models/mlf/labels.mlf_letter_test # used for building model and results
-MLF_LOCATION_ORIGINAL_SKSP_TEST=${PRJ}/saved_models/mlf/labels.mlf_letter_sksp_test # used for building model and results
-MLF_LOCATION_WORD_SKSP_TEST=${PRJ}/saved_models/mlf/labels.mlf_word_sksp_test
-MLF_LOCATION_TEST=${PRJ}/saved_models/mlf/labels.mlf_tri_internal_test
-MLF_LOCATION_WORD_TEST=${PRJ}/saved_models/mlf/labels.mlf_word_test
 
 ###### USE FOR MAIN TRAINING ######
 MLF_LOCATION=${PRJ}/mlf/labels.mlf_tri_internal
