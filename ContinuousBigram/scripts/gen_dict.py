@@ -30,7 +30,7 @@ def parse_args():
         "--dict_type",
         type=str,
         default="letter",
-        choices = ['letter', 'word', 'tri_letter', 'tri_word', 'cross_letter', 'cross_word'],
+        choices = ['letter', 'word', 'tri_letter', 'tri_word', 'tri_word_sksp', 'cross_letter', 'cross_word'],
         help="New dict file"
     )
     
@@ -39,7 +39,7 @@ def parse_args():
 # Initialize the tri letter dictionary with sil/enter/exit vars
 def initialize_dict():
     with open(args.dict_loc, 'w') as f:
-        if args.dict_type.startswith("cross_"):
+        if args.dict_type.startswith("cross_") or args.dict_type.endswith("_sksp"):
             f.writelines([f'{ENTER} {ENTER}\n', f'{EXIT} {EXIT}\n'])
         else:
             f.writelines([f'{ENTER} {ENTER}\n', f'{EXIT} {EXIT}\n', f'{SPACE} {SPACE}\n'])
@@ -126,15 +126,18 @@ def get_full_word_entry(word):
     return entries
 
 # Adds all triletters for a given word to the dict
-def add_word_to_dict(word):
+def add_word_to_dict(word, sksp=False):
     if len(word) == 1:
         write_single_entry(word)
     else:
         entries = get_full_word_entry(word)
-        if word.endswith("_"):
-            del entries[-1]
-        if word.startswith("_"):
-            del entries[1]
+        if sksp:
+            entries.append(SPACE)
+        ## Not sure what the code below does. May have something to do with cross word
+        # if word.endswith(SPACE):
+        #     del entries[-1]
+        # if word.startswith(SPACE):
+        #     del entries[1]
 
         entry = ' '.join(entries)
         write_entry_to_file(entry)
@@ -158,7 +161,10 @@ def ingest_label_file(label_filepath):
             if args.dict_type == "tri_letter":
                 add_letter_to_dict(word)
             elif args.dict_type == "tri_word":
-                add_word_to_dict(word)
+                add_word_to_dict(word, sksp=False)
+            elif args.dict_type == "tri_word_sksp":
+                add_word_to_dict(word, sksp=True)
+            # Note we don't use the sksp arg with dict_type cross_word
             elif args.dict_type == "cross_word":
                 if i == 0:
                     add_word_to_dict(word + SPACE)

@@ -124,6 +124,7 @@ SENTENCES_FILE=${PRJ}/grammar/sentences.txt
 ###### USE FOR MAIN TRAINING ######
 DICTFILE=${PRJ}/dict/dict_tri2letter
 DICTFILE_WORD=${PRJ}/dict/dict_tri2word
+DICTFILE_WORD_SKSP=${PRJ}/dict/dict_tri2word_sksp
 
 ###### USE FOR CROSS WORD TRILETTER ######
 DICTFILE_CROSS=${PRJ}/dict/dict_tri2letter_cross
@@ -192,7 +193,9 @@ MLF_LOCATION_GEN=${PRJ}/mlf/gen # Generated MLFs
 
 WORD_LATTICE=${PRJ}/output/word.lattice
 # BIGRAM_LETTER_FILE=${PRJ}/output/bigram.letter
-# BIGRAM_WORD_FILE=${PRJ}/output/bigram.word
+
+BIGRAM_WORD=no
+BIGRAM_WORD_FILE=${PRJ}/output/bigram.word
 
 HEDFILE1=${PRJ}/instr/mktri1_silsp.hed
 HEDFILE2=${PRJ}/instr/mktri2_tc.hed

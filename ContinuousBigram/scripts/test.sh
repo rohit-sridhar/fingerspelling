@@ -9,17 +9,15 @@
 
 ##################################################
 # 
-# Arg 1: List of test files
-# Arg 2: Where to save letter results
-# Arg 3: Where to save word results
-# Arg 4: Saved model (newMacros file)
-# Arg 5: options shell script
+# Arg 1: options shell script
+# Arg 2: List of test files
+# Arg 3: Saved model (newMacros file)
 # 
 ##################################################
 
-echo Processing $1
+echo Processing $2
 
-OPTIONS_FILE=$5;
+OPTIONS_FILE=$1;
 
 if [ ! -x "${OPTIONS_FILE}" ]; then
    echo "Can't read options file '${OPTIONS_FILE}', make sure the file exists and is readable and executable"
@@ -27,35 +25,40 @@ if [ ! -x "${OPTIONS_FILE}" ]; then
 fi
 
 . ${OPTIONS_FILE}
+
+rm -f $TESTING_BASENAME*
+$SCRIPTS_DIR/cv/gen_test_set.sh $DATA_SAMPLES $TESTING_BASENAME $TT_NAME_SCRIPT
+
+
 HMM_LOAD_OPT="-H"
-TEST_DATA=$1
-LETTER_RESULTS_FILE=$2
-WORD_RESULTS_FILE=$3
-MODEL=$4;
+TEST_DATA=$2
+MODEL=$3
+LETTER_RESULTS_FILE=$LOG_RESULTS
+WORD_RESULTS_FILE=$LOG_RESULTS_WORD
 
 echo
 echo "*****************************************************"
-echo Generating Grammar
+echo "Generating Grammar (using HTK Tools)"
 echo "*****************************************************"
 if [[ $BIGRAM_LETTER = "yes" ]]; then
-    ${HTKBIN}HLStats -b $BIGRAM_LETTER_FILE -s $ENTER $EXIT -o $TOKENS_ORIGINAL_TEST $MLF_LOCATION_ORIGINAL_TEST
-    ${HTKBIN}HBuild -n $BIGRAM_LETTER_FILE -s $ENTER $EXIT $TOKENS_ORIGINAL_TEST ${WORD_LATTICE}
+    ${HTKBIN}HLStats -b $BIGRAM_LETTER_FILE -s $ENTER $EXIT -o $TOKENS_ORIGINAL $MLF_LOCATION_ORIGINAL
+    ${HTKBIN}HBuild -n $BIGRAM_LETTER_FILE -s $ENTER $EXIT $TOKENS_ORIGINAL ${WORD_LATTICE}
 else
-    ${HTKBIN}HParse -l ${GRAMMARFILE_TEST} ${WORD_LATTICE}
+    ${HTKBIN}HParse -l ${GRAMMARFILE} ${WORD_LATTICE}
 fi
 
 if [[ $WORD_LEVEL = "yes" ]] || [[ $WORD_LEVEL = "1" ]]; then
     if [[ $BIGRAM_WORD = "yes" ]]; then
-        ${HTKBIN}HLStats -b $BIGRAM_WORD_FILE -s $ENTER $EXIT -o $TOKENS_WORD_SKSP_TEST $MLF_LOCATION_WORD_SKSP_TEST
-        ${HTKBIN}HBuild -n $BIGRAM_WORD_FILE -s $ENTER $EXIT $TOKENS_WORD_SKSP_TEST ${WORD_LATTICE}_word
+        ${HTKBIN}HLStats -b $BIGRAM_WORD_FILE -s $ENTER $EXIT -o $TOKENS_WORD_SKSP $MLF_LOCATION_WORD_SKSP
+        ${HTKBIN}HBuild -n $BIGRAM_WORD_FILE -s $ENTER $EXIT $TOKENS_WORD_SKSP ${WORD_LATTICE}_word
     else
-	    ${HTKBIN}HParse -l ${GRAMMARFILE_WORD_TEST} ${WORD_LATTICE}_word
+	    ${HTKBIN}HParse -l ${GRAMMARFILE_WORD} ${WORD_LATTICE}_word
     fi
 fi
 
 echo
 echo "*****************************************************"
-echo Checking our Models
+echo "Checking our Models"
 echo "*****************************************************"
 ###############################################################################
 # now we check our models
@@ -90,16 +93,16 @@ if [[ $MULTI_PROCESS = "yes" ]]; then
         OUTPUT_MLF_SUB="$OUTPUT_MLF.${test_file##*.}"
         ${HTKBIN}HVite -p $INSERT_PENALTY -t $PRUNING_THRESHOLD -s $GRAMMAR_SCALE_FACTOR -A -T $TRACE_LEVEL 					\
         	$HMM_LOAD_OPT $MODEL 	\
-        	-w $WORD_LATTICE -S $test_file -I $MLF_LOCATION_TEST 	\
-        	-i $OUTPUT_MLF_SUB $DICTFILE_TEST $TOKENS_TEST &
+        	-w $WORD_LATTICE -S $test_file -I $MLF_LOCATION 	\
+        	-i $OUTPUT_MLF_SUB $DICTFILE $TOKENS &
         pid+=("$!")
 
         if [[ $WORD_LEVEL = "yes" ]] || [[ $WORD_LEVEL = "1" ]]; then
             OUTPUT_MLF_WORD_SUB="$OUTPUT_MLF_WORD.${test_file##*.}"
         	${HTKBIN}HVite -p $INSERT_PENALTY -s $GRAMMAR_SCALE_FACTOR -A -T $TRACE_LEVEL 					\
         		$HMM_LOAD_OPT $MODEL 	\
-        		-w ${WORD_LATTICE}_word -S $test_file -I $MLF_LOCATION_TEST 	\
-        		-i $OUTPUT_MLF_WORD_SUB -n 4 20 $DICTFILE_WORD_TEST $TOKENS_TEST &
+        		-w ${WORD_LATTICE}_word -S $test_file -I $MLF_LOCATION 	\
+        		-i $OUTPUT_MLF_WORD_SUB -n 4 20 $DICTFILE_WORD $TOKENS &
             pid+=("$!")
         fi
     done
@@ -108,14 +111,14 @@ if [[ $MULTI_PROCESS = "yes" ]]; then
 else
     ${HTKBIN}HVite -p $INSERT_PENALTY -t $PRUNING_THRESHOLD -s $GRAMMAR_SCALE_FACTOR -A -T $TRACE_LEVEL 					\
     	$HMM_LOAD_OPT $MODEL 	\
-    	-w $WORD_LATTICE -S $TEST_DATA -I $MLF_LOCATION_TEST 	\
-    	-i $OUTPUT_MLF $DICTFILE_TEST $TOKENS_TEST 
+    	-w $WORD_LATTICE -S $TEST_DATA -I $MLF_LOCATION 	\
+    	-i $OUTPUT_MLF $DICTFILE $TOKENS 
     
     if [[ $WORD_LEVEL = "yes" ]] || [[ $WORD_LEVEL = "1" ]]; then
     	${HTKBIN}HVite -p $INSERT_PENALTY -s $GRAMMAR_SCALE_FACTOR -A -T $TRACE_LEVEL 					\
     		$HMM_LOAD_OPT $MODEL 	\
-    		-w ${WORD_LATTICE}_word -S $TEST_DATA -I $MLF_LOCATION_TEST 	\
-    		-i $OUTPUT_MLF_WORD -n 4 20 $DICTFILE_WORD_TEST $TOKENS_TEST
+    		-w ${WORD_LATTICE}_word -S $TEST_DATA -I $MLF_LOCATION 	\
+    		-i $OUTPUT_MLF_WORD -n 4 20 $DICTFILE_WORD $TOKENS
     fi
 fi
 
@@ -144,21 +147,23 @@ echo "*****************************************************"
 ###############################################################################
 if [[ $MULTI_PROCESS = "yes" ]]; then
     output_mlfs=`find / -type f -wholename "$OUTPUT_MLF.*"`
-    ${HTKBIN}HResults -A -e "???" $ENTER -e "???" $EXIT -T $TRACE_LEVEL -t -I $MLF_LOCATION_ORIGINAL_TEST \
-     	-p $TOKENS_ORIGINAL_TEST $output_mlfs >> $LETTER_RESULTS_FILE
+    ${HTKBIN}HResults -A -e "???" $ENTER -e "???" $EXIT -T $TRACE_LEVEL -t -I $MLF_LOCATION_ORIGINAL \
+     	-p $TOKENS_ORIGINAL $output_mlfs >> $LETTER_RESULTS_FILE
     
     if [[ $WORD_LEVEL = "yes" ]] || [[ $WORD_LEVEL = "1" ]]; then
         output_mlfs_word=`find / -type f -wholename "$OUTPUT_MLF_WORD.*"`
-    	${HTKBIN}HResults -A -e "???" $ENTER -e "???" $EXIT -e "???" _ -T $TRACE_LEVEL -t -I $MLF_LOCATION_WORD_TEST \
-    		$TOKENS_WORD_TEST $output_mlfs_word >> $WORD_RESULTS_FILE
+    	# ${HTKBIN}HResults -A -e "???" $ENTER -e "???" $EXIT -e "???" _ -T $TRACE_LEVEL -t -I $MLF_LOCATION_WORD \
+    	# 	$TOKENS_WORD $output_mlfs_word >> $WORD_RESULTS_FILE
+    	${HTKBIN}HResults -A -e "???" $ENTER -e "???" $EXIT -e "???" _ -T $TRACE_LEVEL -t -I $MLF_LOCATION_WORD \
+     	    $TOKENS_WORD $output_mlfs_word >> $WORD_RESULTS_FILE
     fi
 else
-    ${HTKBIN}HResults -A -e "???" $ENTER -e "???" $EXIT -T $TRACE_LEVEL -t -I $MLF_LOCATION_ORIGINAL_TEST \
-     	-p $TOKENS_ORIGINAL_TEST $OUTPUT_MLF >> $LETTER_RESULTS_FILE
+    ${HTKBIN}HResults -A -e "???" $ENTER -e "???" $EXIT -T $TRACE_LEVEL -t -I $MLF_LOCATION_ORIGINAL \
+     	-p $TOKENS_ORIGINAL $OUTPUT_MLF >> $LETTER_RESULTS_FILE
     
     if [[ $WORD_LEVEL = "yes" ]] || [[ $WORD_LEVEL = "1" ]]; then
-    	${HTKBIN}HResults -A -e "???" $ENTER -e "???" $EXIT -e "???" _ -T $TRACE_LEVEL -t -I $MLF_LOCATION_WORD_TEST \
-    		$TOKENS_WORD_TEST $OUTPUT_MLF_WORD >> $WORD_RESULTS_FILE
+    	${HTKBIN}HResults -A -e "???" $ENTER -e "???" $EXIT -e "???" _ -T $TRACE_LEVEL -t -I $MLF_LOCATION_WORD \
+    		$TOKENS_WORD $OUTPUT_MLF_WORD >> $WORD_RESULTS_FILE
     fi
 fi
 

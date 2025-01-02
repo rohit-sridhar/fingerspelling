@@ -37,7 +37,7 @@ def parse_args():
         required=True,
         help="Grammar file name"
     )
-    
+
     return parser.parse_args()
 
 ########## GENERIC HELPERS ##########
@@ -61,10 +61,12 @@ def get_tokens(n_gram):
     for label_file in files:
         phrase_tokens = collect_tokens(label_file)
         if len(phrase_tokens) <= n_gram:
-            tokens.add(f" {SPACE} ".join(phrase_tokens))
+            # tokens.add(f" {SPACE} ".join(phrase_tokens))
+            tokens.add(f" ".join(phrase_tokens))
         else:
             for i in range(len(phrase_tokens) - (n_gram - 1)):
-                tokens.add(f" {SPACE} ".join(phrase_tokens[i:i+n_gram]))
+                # tokens.add(f" {SPACE} ".join(phrase_tokens[i:i+n_gram]))
+                tokens.add(f" ".join(phrase_tokens[i:i+n_gram]))
     
     return sorted(list(tokens))
 
@@ -113,9 +115,10 @@ def write_word_grammar(tokens, grammar_file):
     
     line_1 = f"$word = {token_options};\n"
     if args.grammar_type == "cross_word":
-        line_2 = f"({ENTER} < $word > {EXIT})\n"
+        line_2 = f"({ENTER} < $word > {EXIT})\n"  # This may be incorrect
     else:
-        line_2 = f"({ENTER} {{ $word {SPACE} }} $word {EXIT})\n"
+        # line_2 = f"({ENTER} < $word {SPACE} > $word {EXIT})\n"
+        line_2 = f"({ENTER} {{ $word _ }} $word {EXIT})\n"
     
     with open(grammar_file, 'w') as f:
         f.writelines([line_1, "\n", line_2])

@@ -1,6 +1,7 @@
 import argparse
 
 from utils import *
+from tqdm import tqdm
 
 global args
 
@@ -10,8 +11,8 @@ def parse_args():
     parser.add_argument(
         "--label_loc",
         type=str,
-        default="./label/thr8/sten/label",
-        help="Label file location"
+        default=None,
+        help="Label file location. If none, gathers phrases from metadata."
     )
     
     parser.add_argument(
@@ -29,7 +30,7 @@ if __name__ == "__main__":
     label_files = get_label_files(args.label_loc)
     sentences = []
 
-    for label_path in label_files:
+    for label_path in tqdm(label_files):
         labels = collect_tokens(label_path)
         sentence = ENTER + ' ' + ' '.join(labels) + ' ' + EXIT + '\n'
         sentences.append(sentence)

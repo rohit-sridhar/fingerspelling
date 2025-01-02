@@ -382,6 +382,7 @@ def get_labels(df, seq_id, idx_char_map, supplemental=True):
 
 def import_data():
     df = pd.read_pickle(args.data_loc)
+    print(df)
     dl_seq_ids = df.index.to_list()
     
     if os.path.basename(args.char_map_file).startswith("supplemental"):

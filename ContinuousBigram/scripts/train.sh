@@ -65,29 +65,35 @@ fi
 # you can read the output of this step by running HList on *.ext
 
 # check to see if we really want to do this
-typeset -l GEN_EXT_FILES	# make sure it is all lowercase
 
-if [[ "${GEN_EXT_FILES}" == "yes" ]] ||
-   [[ "${GEN_EXT_FILES}" == "1" ]] &&
-   [[ ! -f "${EXT_DIR}/done" ]]; then
 
-   echo
-   echo "*****************************************************"
-   echo converting data files to .ext files
-   echo "*****************************************************"
-   rm -rf $EXT_DIR/*
-   for n in $(cat ${DATAFILES_LIST});
-   do
-	 if [[ ! -d `dirname ${EXT_DIR}/$n` ]]; then
-		echo "Making Directory: `dirname ${EXT_DIR}/$n`"
-		mkdir -p `dirname ${EXT_DIR}/$n`
-	 fi
-         ${PREPARE_DATA} $n ${VECTOR_LENGTH} ${EXT_DIR}/$n.ext $SAMPLE_PERIOD
-   #      echo converted $n to `ls ${EXT_DIR} | tail -n 1`  
+##############################################################################################
+############################# This is now handled in grid_search #############################
+##############################################################################################
 
-   done
-   echo "1" > ${EXT_DIR}/done
-fi
+# typeset -l GEN_EXT_FILES	# make sure it is all lowercase
+# 
+# if [[ "${GEN_EXT_FILES}" == "yes" ]] ||
+#    [[ "${GEN_EXT_FILES}" == "1" ]] &&
+#    [[ ! -f "${EXT_DIR}/done" ]]; then
+# 
+#    echo
+#    echo "*****************************************************"
+#    echo converting data files to .ext files
+#    echo "*****************************************************"
+#    rm -rf $EXT_DIR/*
+#    for n in $(cat ${DATAFILES_LIST});
+#    do
+# 	 if [[ ! -d `dirname ${EXT_DIR}/$n` ]]; then
+# 		echo "Making Directory: `dirname ${EXT_DIR}/$n`"
+# 		mkdir -p `dirname ${EXT_DIR}/$n`
+# 	 fi
+#          ${PREPARE_DATA} $n ${VECTOR_LENGTH} ${EXT_DIR}/$n.ext $SAMPLE_PERIOD
+#    #      echo converted $n to `ls ${EXT_DIR} | tail -n 1`  
+# 
+#    done
+#    echo "1" > ${EXT_DIR}/done
+# fi
 
 
 ########################################################################
@@ -129,7 +135,7 @@ do
 done
 
 # generate a list of all data samples HTK has avaliable to it.
-#ls ${EXT_DIR}/*.ext > $DATA_SAMPLES
+# ls ${EXT_DIR}/*.ext > $DATA_SAMPLES
 find ${EXT_DIR}/ | grep "\.ext$" | sort $SORT_OPTION > $DATA_SAMPLES
 
 # if [[ $BIGRAM_LETTER = "yes" ]]; then
@@ -140,54 +146,54 @@ find ${EXT_DIR}/ | grep "\.ext$" | sort $SORT_OPTION > $DATA_SAMPLES
 
 ${HTKBIN}HParse -l ${GRAMMARFILE} ${WORD_LATTICE}
 
-# if [[ $WORD_LEVEL = "yes" ]] || [[ $WORD_LEVEL = "1" ]]; then
-#     if [[ $BIGRAM_WORD = "yes" ]]; then
-#         ${HTKBIN}HLStats -b $BIGRAM_WORD_FILE -s $ENTER $EXIT -o $TOKENS_WORD_SKSP $MLF_LOCATION_WORD_SKSP
-#         ${HTKBIN}HBuild -n $BIGRAM_WORD_FILE -s $ENTER $EXIT $TOKENS_WORD_SKSP ${WORD_LATTICE}_word
-#     else
-#         ${HTKBIN}HParse -l ${GRAMMARFILE_WORD} ${WORD_LATTICE}_word
-#     fi
-# fi
-
-
 if [[ $WORD_LEVEL = "yes" ]] || [[ $WORD_LEVEL = "1" ]]; then
-    if [[ $NGRAM = 0 ]]; then
-        ${HTKBIN}HParse -l ${GRAMMARFILE_WORD} ${WORD_LATTICE}_word
+    if [[ $BIGRAM_WORD = "yes" ]]; then
+        ${HTKBIN}HLStats -b $BIGRAM_WORD_FILE -s $ENTER $EXIT -o $TOKENS_WORD_SKSP $MLF_LOCATION_WORD_SKSP
+        ${HTKBIN}HBuild -n $BIGRAM_WORD_FILE -s $ENTER $EXIT $TOKENS_WORD_SKSP ${WORD_LATTICE}_word
     else
-        ## Saving LM Modeling commands here.
-        rm -rf $LM_DIR/*
-    
-        # Init empty wordmap with Name header word_map
-        ${HTKBIN}LNewMap word_map $LM_DIR/empty.wmap
-        
-        # Make a new directory for intermediates
-        mkdir $LM_DIR/lm.0
-        
-        # Collect n grams from sentence file
-        ${HTKBIN}LGPrep -T 1 -a 1000 -b 1000 -d $LM_DIR/lm.0 -n $NGRAM -s "Fingerspelling Sentences" $LM_DIR/empty.wmap grammar/sentences.txt
-        
-        # Make lm.1 dir
-        mkdir $LM_DIR/lm.1
-        
-        # Bring together n grams (remove dupes).
-        ${HTKBIN}LGCopy -T 1 -b 200000 -d $LM_DIR/lm.1 $LM_DIR/lm.0/wmap $LM_DIR/lm.0/gram.*
-        
-        # Make a new directory for intermediates
-        mkdir $LM_DIR/lm_base
-        
-        # Seems to do little but add OOV words
-        ${HTKBIN}LGCopy -T 1 -o -m $LM_DIR/lm_base/base.wmap -b 200000 -d $LM_DIR/lm_base/ -w commands/commands_word_isolated $LM_DIR/lm.0/wmap $LM_DIR/lm.1/data.*
-        
-        # Get frequency counts
-        ${HTKBIN}LFoF -T 1 -n $NGRAM -f 32 $LM_DIR/lm_base/base.wmap $LM_DIR/lm_base/base.fof $LM_DIR/lm.1/data.*
-        
-        # Builds the language model
-        ${HTKBIN}LBuild -T 1 -n $NGRAM $LM_DIR/lm_base/base.wmap $LM_DIR/lm_base/ngram_backoff $LM_DIR/lm.1/data.*
-    
-        # Build the 
-        ${HTKBIN}HBuild -n $LM_DIR/lm_base/ngram_backoff -s $ENTER $EXIT $TOKENS_WORD_SKSP ${WORD_LATTICE}_word
+        ${HTKBIN}HParse -l ${GRAMMARFILE_WORD} ${WORD_LATTICE}_word
     fi
 fi
+
+
+# if [[ $WORD_LEVEL = "yes" ]] || [[ $WORD_LEVEL = "1" ]]; then
+#     if [[ $NGRAM = 0 ]]; then
+#         ${HTKBIN}HParse -l ${GRAMMARFILE_WORD} ${WORD_LATTICE}_word
+#     else
+#         ## Saving LM Modeling commands here.
+#         rm -rf $LM_DIR/*
+#     
+#         # Init empty wordmap with Name header word_map
+#         ${HTKBIN}LNewMap word_map $LM_DIR/empty.wmap
+#         
+#         # Make a new directory for intermediates
+#         mkdir $LM_DIR/lm.0
+#         
+#         # Collect n grams from sentence file
+#         ${HTKBIN}LGPrep -T 1 -a 1000 -b 1000 -d $LM_DIR/lm.0 -n $NGRAM -s "Fingerspelling Sentences" $LM_DIR/empty.wmap grammar/sentences.txt
+#         
+#         # Make lm.1 dir
+#         mkdir $LM_DIR/lm.1
+#         
+#         # Bring together n grams (remove dupes).
+#         ${HTKBIN}LGCopy -T 1 -b 200000 -d $LM_DIR/lm.1 $LM_DIR/lm.0/wmap $LM_DIR/lm.0/gram.*
+#         
+#         # Make a new directory for intermediates
+#         mkdir $LM_DIR/lm_base
+#         
+#         # Seems to do little but add OOV words
+#         ${HTKBIN}LGCopy -T 1 -o -m $LM_DIR/lm_base/base.wmap -b 200000 -d $LM_DIR/lm_base/ -w commands/commands_word_isolated $LM_DIR/lm.0/wmap $LM_DIR/lm.1/data.*
+#         
+#         # Get frequency counts
+#         ${HTKBIN}LFoF -T 1 -n $NGRAM -f 32 $LM_DIR/lm_base/base.wmap $LM_DIR/lm_base/base.fof $LM_DIR/lm.1/data.*
+#         
+#         # Builds the language model
+#         ${HTKBIN}LBuild -T 1 -n $NGRAM $LM_DIR/lm_base/base.wmap $LM_DIR/lm_base/ngram_backoff $LM_DIR/lm.1/data.*
+#     
+#         # Build the 
+#         ${HTKBIN}HBuild -n $LM_DIR/lm_base/ngram_backoff -s $ENTER $EXIT $TOKENS_WORD_SKSP ${WORD_LATTICE}_word
+#     fi
+# fi
 
 MIN_CYCLES=1
 
