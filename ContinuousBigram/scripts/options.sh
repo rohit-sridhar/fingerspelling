@@ -60,8 +60,6 @@ ENTER="sil0"
 EXIT="sil1"
 SP="_"
 
-LM_DIR=${PRJ}/lang_models
-NGRAM=0
 CUSTOM_SILSP=yes   # Whether HMM_SIL/HMM_SP should be used
 
 # whether or not to initialize the starting model in a generic way:
@@ -111,6 +109,7 @@ DATA_SAMPLES=${PRJ}/output/all-extfiles
 ###### USE FOR TRAINING ######
 GRAMMARFILE=${PRJ}/grammar/grammar_letter_isolated
 GRAMMARFILE_WORD=${PRJ}/grammar/grammar_word_isolated
+GRAMMARFILE_WORD_SKSP=${PRJ}/grammar/grammar_word_isolated_sksp
 
 ###### USE FOR CROSS WORD TRILETTER ######
 GRAMMARFILE_WORD_CROSS=${PRJ}/grammar/grammar_word_cross
@@ -149,12 +148,12 @@ DICTFILE_ALIGN=${PRJ}/dict/dict_tri2tri # Dictionary used during forced alignmen
 
 ###### USE FOR INITIAL TRAINING ######
 TOKENS_ORIGINAL=${PRJ}/commands/commands_letter
-TOKENS_ORIGINAL_SKSP=${PRJ}/commands/commands_letter_isolated
-TOKENS_WORD_SKSP=${PRJ}/commands/commands_word_isolated
+# TOKENS_ORIGINAL_SKSP=${PRJ}/commands/commands_letter_isolated
 
 ###### USE FOR MAIN TRAINING ######
 TOKENS=${PRJ}/commands/commands_tri_internal
 TOKENS_WORD=${PRJ}/commands/commands_word
+TOKENS_WORD_SKSP=${PRJ}/commands/commands_word_sksp
 
 ###### USE FOR CROSS WORD TRILETTER ######
 TOKENS_CROSS=${PRJ}/commands/commands_tri_cross
@@ -176,11 +175,12 @@ TOKENS_CROSS=${PRJ}/commands/commands_tri_cross
 ###### USE FOR INITIAL TRAINING ######
 MLF_LOCATION_ORIGINAL=${PRJ}/mlf/labels.mlf_letter # used for building model and results
 MLF_LOCATION_ORIGINAL_SKSP=${PRJ}/mlf/labels.mlf_letter_sksp # used for building model and results
-MLF_LOCATION_WORD_SKSP=${PRJ}/mlf/labels.mlf_word_sksp
 
 ###### USE FOR MAIN TRAINING ######
 MLF_LOCATION=${PRJ}/mlf/labels.mlf_tri_internal
+MLF_LOCATION_SKSP=${PRJ}/mlf/labels.mlf_tri_internal_sksp
 MLF_LOCATION_WORD=${PRJ}/mlf/labels.mlf_word
+MLF_LOCATION_WORD_SKSP=${PRJ}/mlf/labels.mlf_word_sksp
 
 ###### USE FOR CROSS WORD TRILETTER ######
 MLF_LOCATION_CROSS=${PRJ}/mlf/labels.mlf_tri_cross
@@ -194,8 +194,10 @@ MLF_LOCATION_GEN=${PRJ}/mlf/gen # Generated MLFs
 WORD_LATTICE=${PRJ}/output/word.lattice
 # BIGRAM_LETTER_FILE=${PRJ}/output/bigram.letter
 
-BIGRAM_WORD=no
-BIGRAM_WORD_FILE=${PRJ}/output/bigram.word
+NGRAM=1
+NGRAM_WORD=yes
+LM_DIR=${PRJ}/lang_models
+# NGRAM_WORD_FILE=${PRJ}/output/bigram.word
 
 HEDFILE1=${PRJ}/instr/mktri1_silsp.hed
 HEDFILE2=${PRJ}/instr/mktri2_tc.hed

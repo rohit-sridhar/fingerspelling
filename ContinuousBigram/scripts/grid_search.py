@@ -49,8 +49,8 @@ def parse_args():
         "--grammar_types",
         type=str,
         nargs='+',
-        default=['grliwi'],
-        choices=LETTER_GRAMMAR_FILE_DICT.keys(),
+        default=["grliwi"],
+        choices=["grliwi"],
         help="Grammars to test. Each choice references a grammar key corresponding to unique letter/word grammars."
     )
     
@@ -103,6 +103,14 @@ def parse_args():
     )
 
     parser.add_argument(
+        "--ngrams",
+        type=int,
+        nargs='+',
+        default=[1],
+        help="Ngrams to use with HLM modeling tools. If Ngram=0, doesn't use HLM tools."
+    )
+    
+    parser.add_argument(
         "--no_custom_silsp",
         action='store_true',
         help="If true, won't use custom sil/sp models. custom sil/sp is used by default."
@@ -136,12 +144,6 @@ def parse_args():
         "--cross_word",
         action="store_true",
         help="True if using cross word triphones."
-    )
-    
-    parser.add_argument(
-        "--bigram_word",
-        action="store_true",
-        help="True if using word bigram (using HBuilt and HParse)."
     )
     
     parser.add_argument(
@@ -186,7 +188,7 @@ def check_args():
         raise ValueError("Check Grammar Keys between Letter/Word.")
 
 # Get the name extension for the results/output file
-def get_name_ext(grammar_type, ip, tc, num_its, num_tri_its, hmmdef):
+def get_name_ext(ip, tc, num_its, num_tri_its, hmmdef, grammar_type=None, trace_value=None):
     name_ext = ""
     if grammar_type is not None:
         name_ext = f"{grammar_type}_"
@@ -212,6 +214,9 @@ def get_name_ext(grammar_type, ip, tc, num_its, num_tri_its, hmmdef):
 
     if args.custom_ext is not None:
         name_ext += f".{args.custom_ext}"
+
+    if trace_value is not None:
+        trace_ext = f".TR{trace_value}"
     
     return name_ext
 
@@ -241,9 +246,8 @@ def get_bool_arg_info():
     multi_process = "yes" if not(args.no_multi_process) else "no"
     hedfile1 = "${PRJ}/instr/mktri1_silsp.hed" if not(args.no_custom_silsp) else "${PRJ}/instr/mktri1_orig.hed"
     cross_word = "yes" if args.cross_word else "no"
-    bigram_word = "yes" if args.bigram_word else "no"
 
-    return custom_silsp, multi_process, hedfile1, cross_word, bigram_word
+    return custom_silsp, multi_process, hedfile1, cross_word
 
 def get_machine_info():
     machine = os.environ["HOSTNAME_SERVER"]
@@ -315,12 +319,12 @@ def make_triletter_changes():
     
 
 # Edit options file with all new hyperparams (calls helper above)
-def edit_options(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
-    name_ext = get_name_ext(grammar_type, ip, tc, num_its, num_tri_its, hmmdef)
+def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, grammar_type=None, trace_value=None):
+    name_ext = get_name_ext(ip, tc, num_its, num_tri_its, hmmdef, grammar_type=grammar_type) # We leave trace_value out in this call.
     letter_results, word_results = get_hresults_filepaths(name_ext, subdirs)
     letter_grammar, word_grammar = get_grammar_filepaths(grammar_type)
 
-    custom_silsp, multi_process, hedfile1, cross_word, bigram_word = get_bool_arg_info()
+    custom_silsp, multi_process, hedfile1, cross_word = get_bool_arg_info()
     num_threads = get_machine_info()
     
     # Handle triletter changes separately
@@ -353,8 +357,8 @@ def edit_options(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, subdirs, tr
     cross_word_search = CROSS_WORD_VARNAME + "\s*=\s*(yes|no)"
     cross_word_repl = CROSS_WORD_VARNAME + f"={cross_word}"
     
-    bigram_word_search = BIGRAM_WORD_VARNAME + "\s*=\s*(yes|no)"
-    bigram_word_repl = BIGRAM_WORD_VARNAME + f"={bigram_word}"
+    ngram_word_search = NGRAM_WORD_VARNAME + "\s*=\s*[0-9]"
+    ngram_word_repl = NGRAM_WORD_VARNAME + f"={ngram}"
 
     cross_word_hedfile1_search = "^CL commands\/commands_tri_(internal|cross)$"
     cross_word_hedfile1_repl = "CL commands/commands_tri_cross" if args.cross_word else "CL commands/commands_tri_internal"
@@ -391,7 +395,7 @@ def edit_options(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, subdirs, tr
     edit_file(custom_silsp_search, custom_silsp_repl, OPTIONS_FILE)
     edit_file(multi_process_search, multi_process_repl, OPTIONS_FILE)
     edit_file(cross_word_search, cross_word_repl, OPTIONS_FILE)
-    edit_file(bigram_word_search, bigram_word_repl, OPTIONS_FILE)
+    edit_file(ngram_word_search, ngram_word_repl, OPTIONS_FILE)
     edit_file(cross_word_hedfile1_search, cross_word_hedfile1_repl, hedfile1_local_file)
     edit_file(trace_level_search, trace_level_repl, OPTIONS_FILE)
     edit_file(threads_search, threads_repl, OPTIONS_FILE)
@@ -408,19 +412,18 @@ def edit_options(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, subdirs, tr
     subprocess.run(["grep", CUSTOM_SILSP_VARNAME, OPTIONS_FILE])
     subprocess.run(["grep", MULTI_PROCESS_VARNAME, OPTIONS_FILE])
     subprocess.run(["grep", CROSS_WORD_VARNAME, OPTIONS_FILE])
-    subprocess.run(["grep", BIGRAM_WORD_VARNAME, OPTIONS_FILE])
+    subprocess.run(["grep", NGRAM_WORD_VARNAME, OPTIONS_FILE])
     subprocess.run(["grep", TRACE_LEVEL_VARNAME, OPTIONS_FILE])
     subprocess.run(["grep", THREADS_VARNAME, OPTIONS_FILE])
     subprocess.run([f"head -n 1 {hedfile1_local_file}"], shell=True)
 
-def test_model(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
-    name_ext = get_name_ext(grammar_type, ip, tc, num_its, num_tri_its, hmmdef)
+def test_model(ip, tc, num_its, num_tri_its, hmmdef, subdirs, grammar_type, trace_value):
+    name_ext = get_name_ext(ip, tc, num_its, num_tri_its, hmmdef, grammar_type=grammar_type, trace_value=trace_value)
     
     output_dir = os.path.join(LOG_ROOT, subdirs)
     _make_dir(output_dir)
 
-    trace_ext = f".TR{trace_value}"
-    output_file = os.path.join(output_dir, "output.log_" + name_ext + trace_ext + ".test_model")
+    output_file = os.path.join(output_dir, "output.log_" + name_ext + ".test_model")
     
     new_model_dir, new_model_path = get_model_path(subdirs, ip, tc, num_its, num_tri_its, hmmdef)
     print(f"Model Dir: {new_model_path}")
@@ -433,14 +436,13 @@ def test_model(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, subdirs, trac
         subprocess.run(test_args, stdout=f, stderr=subprocess.STDOUT)
 
 # Runs the train model script
-def train_model(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
-    name_ext = get_name_ext(grammar_type, ip, tc, num_its, num_tri_its, hmmdef)
+def train_model(ip, tc, num_its, num_tri_its, hmmdef, subdirs, grammar_type, trace_value):
+    name_ext = get_name_ext(ip, tc, num_its, num_tri_its, hmmdef, grammar_type=grammar_type, trace_value=trace_value)
     
     output_dir = os.path.join(LOG_ROOT, subdirs)
     _make_dir(output_dir)
     
-    trace_ext = f".TR{trace_value}"
-    output_file = os.path.join(output_dir, "output.log_" + name_ext + trace_ext)
+    output_file = os.path.join(output_dir, "output.log_" + name_ext)
     
     train_args = [TRAIN_FILE, OPTIONS_FILE]
     print("Train Command: " + ' '.join(train_args))
@@ -467,8 +469,8 @@ def get_results(results_file, letter_results=True):
         results = [corr_match.split('=')[1], acc_match.split('=')[1], sent_match.split('=')[1]]
     return results
 
-def add_results_to_csv(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, subdirs):
-    name_ext = get_name_ext(grammar_type, ip, tc, num_its, num_tri_its, hmmdef)
+def add_results_to_csv(ip, tc, num_its, num_tri_its, hmmdef, subdirs, grammar_type):
+    name_ext = get_name_ext(ip, tc, num_its, num_tri_its, hmmdef, grammar_type=grammar_type)
     letter_results_file, word_results_file = get_hresults_filepaths(name_ext, subdirs)
     
     letter_results_file = os.path.join('.', *letter_results_file.split("/")[1:])
@@ -495,7 +497,7 @@ def add_results_to_csv(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, subdi
             csvwriter.writerow(results)
 
 def get_model_path(subdirs, ip, tc, num_its, num_tri_its, hmmdef):
-    name_ext = get_name_ext(None, ip, tc, num_its, num_tri_its, hmmdef)  # Pass none for first arg because the model doesn't vary by grammar
+    name_ext = get_name_ext(ip, tc, num_its, num_tri_its, hmmdef)  # Pass none for first arg because the model doesn't vary by grammar
 
     new_model_dir = os.path.join(MODELS_ROOT, subdirs)
     new_model_file = '_'.join([MODEL_MACROS_FILE, name_ext])
@@ -503,10 +505,10 @@ def get_model_path(subdirs, ip, tc, num_its, num_tri_its, hmmdef):
 
     return new_model_dir, new_model_path
 
-def save_model(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, subdirs):
+def save_model(ip, tc, num_its, num_tri_its, hmmdef, subdirs, grammar_type):
     curr_model_path = os.path.join(MODELS_ROOT, f"hmm0.{num_its-1}", MODEL_MACROS_FILE)
 
-    name_ext = get_name_ext(None, ip, tc, num_its, num_tri_its, hmmdef)  # Pass none for first arg because the model doesn't vary by grammar
+    name_ext = get_name_ext(ip, tc, num_its, num_tri_its, hmmdef)  # Pass none for first arg because the model doesn't vary by grammar
     new_model_dir, new_model_path = get_model_path(subdirs, ip, tc, num_its, num_tri_its, hmmdef)
     _make_dir(new_model_dir)
     
@@ -528,33 +530,38 @@ def prepare_data(data_file, label_file):
     # os.system(cv_split_command)
 
 # TODO Standardize the output file naming and name ext (with trace ext)
-def gen_grammar(grammar_type, ip, tc, num_its, num_tri_its, hmmdef, subdirs, label_file, word=True):
-    name_ext = get_name_ext(grammar_type, ip, tc, num_its, num_tri_its, hmmdef)
+def gen_grammar(ip, tc, num_its, num_tri_its, hmmdef, subdirs, label_file, grammar_type=None, trace_value=None, grammar_type_arg='word'):
+    name_ext = get_name_ext(ip, tc, num_its, num_tri_its, hmmdef, grammar_type=grammar_type, trace_value=trace_value)
     
     output_dir = os.path.join(LOG_ROOT, subdirs)
     _make_dir(output_dir)
 
-    trace_ext = f".TR{trace_value}"
-    output_file = os.path.join(output_dir, "output.log_" + name_ext + trace_ext + ".test_model")
+    output_file = os.path.join(output_dir, "output.log_" + name_ext + ".test_model")
     
-    grammar_file = os.path.basename(WORD_GRAMMAR_FILE_DICT[grammar_type] if word else LETTER_GRAMMAR_FILE_DICT[grammar_type])
-    ngram_basename = grammar_file.split("_")[-1]  # Last token in grammar filename should be '1gram', '2gram', etc.
+    # if first_arg == "letter":
+    #     grammar_file = os.path.basename(LETTER_GRAMMAR_FILE_DICT[grammar_type])
+    # else:
+    #     grammar_file = os.path.basename(WORD_GRAMMAR_FILE_DICT[grammar_type])
+    #     if first_arg == "word_sksp":
+    #         grammar_file += "_sksp"
     
-    ngram = "1" if ngram_basename == "isolated" else ngram_basename[0]
-    grammar_filepath = os.path.join(GRAMMAR_ROOT, grammar_file)
+    # ngram_basename = grammar_file.split("_")[-1]  # Last token in grammar filename should be '1gram', '2gram', etc.
+    
+    # ngram = "1" if ngram_basename == "isolated" else ngram_basename[0]
+    # grammar_filepath = os.path.join(GRAMMAR_ROOT, grammar_file)
 
     gen_grammar_args = ['python', GEN_GRAMMAR_FILE]
-    gen_grammar_args += ["--grammar_type", "word" if word else "letter"]
-    gen_grammar_args += ["--n_gram", ngram]
+    gen_grammar_args += ["--grammar_type", grammar_type_arg]   # Different grammar type from first arg
+    # gen_grammar_args += ["--n_gram", ngram]
     gen_grammar_args += ["--label_loc", label_file]
-    gen_grammar_args += ["--grammar_file", grammar_filepath]
+    # gen_grammar_args += ["--grammar_file", grammar_filepath]
 
     print("Gen Grammar Command: " + ' '.join(gen_grammar_args))
     with open(output_file, "w") as f:
         subprocess.run(gen_grammar_args, stdout=f, stderr=subprocess.STDOUT)
 
-def clear_results_files(grammary_type, ip, tc, num_its, num_tri_its, hmmdef, subdirs):
-    name_ext = get_name_ext(grammar_type, ip, tc, num_its, num_tri_its, hmmdef)
+def clear_results_files(ip, tc, num_its, num_tri_its, hmmdef, subdirs, grammar_type):
+    name_ext = get_name_ext(ip, tc, num_its, num_tri_its, hmmdef, grammar_type=grammar_type)
     letter_results_file, word_results_file = get_hresults_filepaths(name_ext, subdirs)
     
     letter_results_file = os.path.join(*letter_results_file.split(os.path.sep)[1:])
@@ -579,6 +586,7 @@ if __name__ == "__main__":
         args.num_tri_its,
         args.grammar_types,
         args.trace_values,
+        args.ngrams
     )
     
     for i in range(len(args.data_files)):
@@ -599,20 +607,21 @@ if __name__ == "__main__":
             num_tri_its = arg_tup[4]
             grammar_type = arg_tup[5]
             trace_value = arg_tup[6]
+            ngram = arg_tup[7]
             
             edit_options(
-                grammar_type,
                 ip,
                 tc,
                 num_its,
                 num_tri_its,
                 hmmdef,
                 subdirs,
-                trace_value
+                ngram,
+                grammar_type=grammar_type,
+                trace_value=trace_value,
             )
 
             gen_grammar(
-                grammar_type,
                 ip,
                 tc,
                 num_its,
@@ -620,11 +629,12 @@ if __name__ == "__main__":
                 hmmdef,
                 subdirs,
                 label_file,
-                word=True
+                grammar_type=grammar_type,
+                trace_value=trace_value,
+                grammar_type_arg="word"
             )
             
             gen_grammar(
-                grammar_type,
                 ip,
                 tc,
                 num_its,
@@ -632,62 +642,77 @@ if __name__ == "__main__":
                 hmmdef,
                 subdirs,
                 label_file,
-                word=False
+                grammar_type=grammar_type,
+                trace_value=trace_value,
+                grammar_type_arg="word_sksp"
+            )
+            
+            gen_grammar(
+                ip,
+                tc,
+                num_its,
+                num_tri_its,
+                hmmdef,
+                subdirs,
+                label_file,
+                grammar_type=grammar_type,
+                trace_value=trace_value,
+                grammar_type_arg="letter"
             )
             
             if args.clear_hresults:
                 clear_results_files(
-                    grammar_type,
                     ip,
                     tc,
                     num_its,
                     num_tri_its,
                     hmmdef,
-                    subdirs
+                    subdirs,
+                    grammar_type,
                 )
 
             if args.test_model:
                 test_model(
-                    grammar_type,
                     ip,
                     tc,
                     num_its,
                     num_tri_its,
                     hmmdef,
                     subdirs,
+                    grammar_type,
                     trace_value
                 )
             else:
                 train_model(
-                    grammar_type,
                     ip,
                     tc,
                     num_its,
                     num_tri_its,
                     hmmdef,
                     subdirs,
+                    grammar_type,
                     trace_value
                 )
             
             save_model(
-                grammar_type,
                 ip,
                 tc,
                 num_its,
                 num_tri_its,
                 hmmdef,
-                subdirs
+                subdirs,
+                grammar_type,
             )
 
             if args.results_csv is not None:
                 add_results_to_csv(
-                    grammar_type,
                     ip,
                     tc,
                     num_its,
                     num_tri_its,
                     hmmdef,
                     subdirs,
+                    grammar_type,
                 )
             
             print()

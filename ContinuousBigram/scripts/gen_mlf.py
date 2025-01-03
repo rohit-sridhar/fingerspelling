@@ -46,9 +46,9 @@ def parse_args():
     )
     
     parser.add_argument(
-        "--skip_space",
+        "--sksp",
         action="store_true",
-        help="Boolean indicating whether to skip spaces (as defined in scripts/utils.py)"
+        help="Boolean indicating whether to produce the sksp variant (spaces are included in words)."
     )
     
     return parser.parse_args()
@@ -75,7 +75,7 @@ def get_label_ts(labels, total_duration, num_labels):
     
     return label_ts
 
-# Remove spaces from label list
+# Remove spaces from label list ( NOT IN USE CURRENTLY)
 def remove_spaces(labels):
     new_labels = []
     for label in labels:
@@ -104,8 +104,9 @@ def get_label_info(data_file):
         num_lines = len(f.readlines())
     
     num_labels = len(labels)
-    if args.mlf_type == "letter" and args.skip_space:
-        labels = remove_spaces(labels)
+    if args.mlf_type == "letter" and args.sksp:
+        # labels = remove_spaces(labels)
+        labels.insert(-1, SPACE + "\n")
         num_labels = len(labels)
     elif args.mlf_type == "word":
         labels = get_word_labels(labels)
@@ -134,7 +135,7 @@ def get_word_labels(labels):
     for label in labels[1:]:
         if label.startswith(SPACE) or label.startswith(EXIT):
             word_labels.append(word + "\n")
-            if not(label.startswith(SPACE) and args.skip_space):
+            if not(label.startswith(SPACE) and args.sksp):
                 word_labels.append(label)
             word = ""
         else:

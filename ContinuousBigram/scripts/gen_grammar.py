@@ -13,16 +13,20 @@ def parse_args():
         "--grammar_type",
         type=str,
         default="word",
-        choices=["word", "letter", "cross_word"],
+        choices=["word", "word_sksp", "letter", "cross_word"],
         help="Grammar type (word or letter)."
     )
     
-    parser.add_argument(
-        "--n_gram",
-        type=int,
-        default=1,
-        help="Generates n gram grammar. For n = 1, it is an isolated word grammar. For n = 0, it uses the whole phrase."
-    )
+#################################################################
+##### THIS IS THE OLD WAY OF DOING N GRAMS (ALSO INCORRECT) #####
+#################################################################
+
+    # parser.add_argument(
+    #     "--n_gram",
+    #     type=int,
+    #     default=1,
+    #     help="For now you can only use n >= 1, (positive ints only)."
+    # )
     
     parser.add_argument(
         "--label_loc",
@@ -31,14 +35,18 @@ def parse_args():
         help="Label file location"
     )
     
-    parser.add_argument(
-        "--grammar_file",
-        type=str,
-        required=True,
-        help="Grammar file name"
-    )
+    # parser.add_argument(
+    #     "--grammar_file",
+    #     type=str,
+    #     required=True,
+    #     help="Grammar file name"
+    # )
 
     return parser.parse_args()
+
+# def check_args(args):
+#     if args.n_gram <= 0:
+#         raise ValueError("Must pass n_gram > 0 (positive ints only)")
 
 ########## GENERIC HELPERS ##########
 # def get_grammar_file():
@@ -118,7 +126,10 @@ def write_word_grammar(tokens, grammar_file):
         line_2 = f"({ENTER} < $word > {EXIT})\n"  # This may be incorrect
     else:
         # line_2 = f"({ENTER} < $word {SPACE} > $word {EXIT})\n"
-        line_2 = f"({ENTER} {{ $word _ }} $word {EXIT})\n"
+        if args.grammar_type == "word":
+            line_2 = f"({ENTER} {{ $word _ }} $word {EXIT})\n"
+        elif args.grammar_type == "word_sksp":
+            line_2 = f"({ENTER} {{ $word }} $word {EXIT})\n"
     
     with open(grammar_file, 'w') as f:
         f.writelines([line_1, "\n", line_2])
@@ -145,22 +156,17 @@ def write_letter_grammar(letters, grammar_file):
 
 if __name__ == "__main__":
     args = parse_args()
+    # check_args(args)
     print(args)
     
-    grammar_file = args.grammar_file
+    grammar_file = "grammar/grammar_letter_isolated" if args.grammar_type == "letter" else "grammar/grammar_word_isolated"
 
-    if args.grammar_type.endswith("word"):
-        if args.n_gram == 0:
-            phrases = get_phrases()
-            write_word_grammar_phrase(phrases, grammar_file)
-        else:
-            tokens = get_tokens(args.n_gram)
-            write_word_grammar(tokens, grammar_file)
+    if "letter" not in args.grammar_type:
+        # tokens = get_tokens(args.n_gram)
+        tokens = get_tokens(1)
+        write_word_grammar(tokens, grammar_file)
     else:
-        if args.n_gram == 0:
-            words = get_words()
-            write_word_grammar(words, grammar_file)
-        else:
-            letters = get_letters(args.n_gram)
-            write_letter_grammar(letters, grammar_file)
+        # letters = get_letters(args.n_gram)
+        letters = get_letters(1)
+        write_letter_grammar(letters, grammar_file)
 
