@@ -36,24 +36,66 @@ MODEL=$3
 LETTER_RESULTS_FILE=$LOG_RESULTS
 WORD_RESULTS_FILE=$LOG_RESULTS_WORD
 
+if [[ $NGRAM > 0 ]]; then
+    DICTFILE_WORD=$DICTFILE_WORD_SKSP
+    GRAMMARFILE_WORD=$GRAMMARFILE_WORD_SKSP
+    TOKENS_WORD=$TOKENS_WORD_SKSP
+    MLF_LOCATION=$MLF_LOCATION_SKSP
+    MLF_LOCATION_WORD=$MLF_LOCATION_WORD_SKSP
+    MLF_LOCATION_ORIGINAL=$MLF_LOCATION_ORIGINAL_SKSP
+fi
+
 echo
 echo "*****************************************************"
 echo "Generating Grammar (using HTK Tools)"
 echo "*****************************************************"
-if [[ $BIGRAM_LETTER = "yes" ]]; then
-    ${HTKBIN}HLStats -b $BIGRAM_LETTER_FILE -s $ENTER $EXIT -o $TOKENS_ORIGINAL $MLF_LOCATION_ORIGINAL
-    ${HTKBIN}HBuild -n $BIGRAM_LETTER_FILE -s $ENTER $EXIT $TOKENS_ORIGINAL ${WORD_LATTICE}
-else
-    ${HTKBIN}HParse -l ${GRAMMARFILE} ${WORD_LATTICE}
-fi
+# if [[ $BIGRAM_LETTER = "yes" ]]; then
+#     ${HTKBIN}HLStats -b $BIGRAM_LETTER_FILE -s $ENTER $EXIT -o $TOKENS_ORIGINAL $MLF_LOCATION_ORIGINAL
+#     ${HTKBIN}HBuild -n $BIGRAM_LETTER_FILE -s $ENTER $EXIT $TOKENS_ORIGINAL ${WORD_LATTICE}
+# else
+${HTKBIN}HParse -l ${GRAMMARFILE} ${WORD_LATTICE}
+# fi
 
 if [[ $WORD_LEVEL = "yes" ]] || [[ $WORD_LEVEL = "1" ]]; then
-    if [[ $BIGRAM_WORD = "yes" ]]; then
-        ${HTKBIN}HLStats -b $BIGRAM_WORD_FILE -s $ENTER $EXIT -o $TOKENS_WORD_SKSP $MLF_LOCATION_WORD_SKSP
-        ${HTKBIN}HBuild -n $BIGRAM_WORD_FILE -s $ENTER $EXIT $TOKENS_WORD_SKSP ${WORD_LATTICE}_word
-    else
-	    ${HTKBIN}HParse -l ${GRAMMARFILE_WORD} ${WORD_LATTICE}_word
+#     if [[ $BIGRAM_WORD = "yes" ]]; then
+#         ${HTKBIN}HLStats -b $BIGRAM_WORD_FILE -s $ENTER $EXIT -o $TOKENS_WORD $MLF_LOCATION_WORD
+#         ${HTKBIN}HBuild -n $BIGRAM_WORD_FILE -s $ENTER $EXIT $TOKENS_WORD ${WORD_LATTICE}_word
+#     else
+    ${HTKBIN}HParse -l ${GRAMMARFILE_WORD} ${WORD_LATTICE}_word
+    if [[ $NGRAM > 0 ]]; then
+        echo "Skipping HLM for now"
+        # ## Clean the lang_models/lm.all dir
+        # rm -rf $LM_DIR/lm.$NGRAM
+        # 
+        # # Init empty wordmap with Name header word_map
+        # LNewMap word_map $LM_DIR/empty.wmap
+        # 
+        # # Make a new directory for intermediates
+        # mkdir $ROOT/lm.$NGRAM
+        # 
+        # # Collect n grams from sentence file
+        # LGPrep -T 1 -d $ROOT/lm.$NGRAM -n $NGRAM_WORD -s "Fingerspelling All Sentences" $ROOT/empty.wmap grammar/sentences.txt
+        # 
+        # # Make lm.1 dir
+        # # mkdir $ROOT/lm.1
+        # 
+        # # Bring together n grams (remove dupes).
+        # # LGCopy -T 1 -d $ROOT/lm.1 $ROOT/lm.0/wmap $ROOT/lm.0/gram.*
+        # 
+        # # Make a new directory for intermediates
+        # # mkdir $ROOT/lm_all
+        # 
+        # # Seems to do little but add OOV words
+        # # LGCopy -T 1 -o -m $ROOT/lm_all/all.wmap -d $ROOT/lm_all/ -w $TOKENS_WORD $ROOT/lm.0/wmap $ROOT/lm.1/data.*
+        # 
+        # # Get frequency counts
+        # LFoF -T 1 -n $NGRAM -f 64 $ROOT/lm.$NGRAM/wmap $ROOT/lm.$NGRAM/all.fof $ROOT/lm.$NGRAM/gram.*
+        # 
+        # # Builds the language model
+        # lm_file="ngram_lm"
+        # LBuild -T 1 -n $NGRAM $ROOT/lm.$NGRAM/wmap $ROOT/lm.$NGRAM/$lm_file $ROOT/lm.$NGRAM/gram.*
     fi
+    # fi
 fi
 
 echo
