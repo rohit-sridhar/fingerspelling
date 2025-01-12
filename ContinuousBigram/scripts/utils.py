@@ -16,6 +16,7 @@ TRAIN_FILE = "./scripts/train.sh"
 TEST_FILE = "./scripts/test.sh"
 PREPARE_FILE = "./scripts/prepare_files.sh"
 HEDFILE2 = "./instr/mktri2_tc.hed"
+SENTENCES_FILE = os.path.join(GRAMMAR_ROOT, "sentences.txt")
 
 TOT_PREPARE = "./scripts/cv/test_on_train.sh"
 EXT_FILE_LIST = "all-extfiles"
@@ -40,6 +41,10 @@ NGRAM_VARNAME = "NGRAM"
 TRACE_LEVEL_VARNAME = "TRACE_LEVEL"
 TRILETTER_VARNAME = "TRILETTER"
 THREADS_VARNAME = "THREADS"
+
+# Next two params are LM utils
+BASE_PARAMETER = 1.5
+CONSTANT_PARAMETER = 0.01
 
 SUPP_START_IDX = 27
 SUPP_END_IDX = 28

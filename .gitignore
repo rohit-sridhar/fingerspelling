@@ -162,6 +162,10 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
+# Ignore swp files
+**/.*.swp
+**/.*.swo
+
 # Local project files
 backup/
 ContinuousBigram/scripts/run_multiple.sh
@@ -191,4 +195,7 @@ ContinuousBigram/dict
 ContinuousBigram/grammar
 ContinuousBigram/commands
 ContinuousBigram/output
+
+# Remove this later after merging bigram branch
+ContinuousBigram/scripts/make_bigram*
 

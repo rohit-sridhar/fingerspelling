@@ -32,7 +32,9 @@ if __name__ == "__main__":
 
     for label_path in tqdm(label_files):
         labels = collect_tokens(label_path)
-        sentence = ENTER + ' ' + ' '.join(labels) + ' ' + EXIT + '\n'
+        sentence_id = os.path.splitext(os.path.basename(label_path))[0] + ": "
+        
+        sentence = sentence_id + ' '.join(labels) + '\n'
         sentences.append(sentence)
     
     with open(args.phrases_loc, 'w') as f:
