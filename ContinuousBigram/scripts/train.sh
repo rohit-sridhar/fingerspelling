@@ -260,24 +260,26 @@ fi
 cycle=0; correct=0;
 while [[ $cycle -lt $TEST_TRAIN_CYCLES ]]
 do
-    # generate filenames that are dependent on the specific iteration
-    HMM_TRAINING=$HMM_BASE_DIR$cycle; 
-    TRAINING=`$TT_NAME_SCRIPT $TRAINING_BASENAME $cycle`
-    TESTING=`$TT_NAME_SCRIPT $TESTING_BASENAME $cycle`
-    OUTPUT_MLF=$BASE_OUTPUT_MLF$cycle;
-    OUTPUT_MLF_WORD=$BASE_OUTPUT_MLF_WORD$cycle;
-    MLF_LOCATION=$BASE_MLF_LOCATION;
-    MLF_LOCATION_GEN=${BASE_MLF_LOCATION_GEN}/${cycle};
 
-    mkdir ${BASE_MLF_LOCATION_GEN}/${cycle}
+# generate filenames that are dependent on the specific iteration
+HMM_TRAINING=$HMM_BASE_DIR$cycle; 
+TRAINING=`$TT_NAME_SCRIPT $TRAINING_BASENAME $cycle`
+TESTING=`$TT_NAME_SCRIPT $TESTING_BASENAME $cycle`
+OUTPUT_MLF=$BASE_OUTPUT_MLF$cycle;
+OUTPUT_MLF_WORD=$BASE_OUTPUT_MLF_WORD$cycle;
+MLF_LOCATION=$BASE_MLF_LOCATION;
+MLF_LOCATION_GEN=${BASE_MLF_LOCATION_GEN}/${cycle};
 
-    ## generate the directories to store the iterations of HMM training
-    hmm_count=0
-    while [[ $hmm_count -lt $NUM_HMM_DIR ]]
-    do
-	mkdir $HMM_TRAINING.$hmm_count 
-	hmm_count=$((hmm_count+1))
-    done
+mkdir ${BASE_MLF_LOCATION_GEN}/${cycle}
+
+## generate the directories to store the iterations of HMM training
+hmm_count=0
+while [[ $hmm_count -lt $NUM_HMM_DIR ]]
+do
+    mkdir $HMM_TRAINING.$hmm_count 
+    hmm_count=$((hmm_count+1))
+done
+
 echo
 echo "*****************************************************"
 echo Building Models

@@ -159,7 +159,12 @@ if __name__ == "__main__":
     # check_args(args)
     print(args)
     
-    grammar_file = "grammar/grammar_letter_isolated" if args.grammar_type == "letter" else "grammar/grammar_word_isolated"
+    if args.grammar_type == "letter":
+        grammar_file = "grammar/grammar_letter_isolated"
+    elif args.grammar_type == "word":
+        grammar_file = "grammar/grammar_word_isolated"
+    else:
+        grammar_file = "grammar/grammar_word_isolated_sksp"
 
     if "letter" not in args.grammar_type:
         # tokens = get_tokens(args.n_gram)
