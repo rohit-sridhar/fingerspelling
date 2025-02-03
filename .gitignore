@@ -178,23 +178,25 @@ MainPipeline/
 app_testing/
 
 # Don't include data or labels
-ContinuousBigram/data
-ContinuousBigram/label
-ContinuousBigram/ext
-ContinuousBigram/logs
-ContinuousBigram/models
-ContinuousBigram/saved_models
-ContinuousBigram/lang_models
-ContinuousBigram/trainsets
-ContinuousBigram/testsets
-ContinuousBigram/results
-ContinuousBigram/all-extfiles
-ContinuousBigram/datafiles
-ContinuousBigram/mlf
-ContinuousBigram/dict
-ContinuousBigram/grammar
-ContinuousBigram/commands
-ContinuousBigram/output
+data/
+label/
+ext/
+logs/
+models/
+saved_models/
+lang_models/
+trainsets/
+testsets/
+results/
+all-extfiles/
+datafiles/
+mlf/
+dict/
+grammar/
+commands/
+output/
+videos/
+categorized_videos/
 
 # Remove this later after merging bigram branch
 ContinuousBigram/scripts/make_bigram*
