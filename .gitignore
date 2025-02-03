@@ -178,27 +178,27 @@ MainPipeline/
 app_testing/
 
 # Don't include data or labels
-ContinuousBigram/data/
-ContinuousBigram/label/
-ContinuousBigram/ext/
-ContinuousBigram/logs/
-ContinuousBigram/models/
-ContinuousBigram/saved_models/
-ContinuousBigram/lang_models/
-ContinuousBigram/trainsets/
-ContinuousBigram/testsets/
-ContinuousBigram/results/
-ContinuousBigram/all-extfiles/
-ContinuousBigram/datafiles/
-ContinuousBigram/mlf/
-ContinuousBigram/dict/
-ContinuousBigram/grammar/
-ContinuousBigram/commands/
-ContinuousBigram/output/
-ContinuousBigram/viz/data/
-ContinuousBigram/viz/output/
-ContinuousBigram/viz/videos/
-ContinuousBigram/viz/categorized_videos/
+ContinuousBigram/data
+ContinuousBigram/label
+ContinuousBigram/ext
+ContinuousBigram/logs
+ContinuousBigram/models
+ContinuousBigram/saved_models
+ContinuousBigram/lang_models
+ContinuousBigram/trainsets
+ContinuousBigram/testsets
+ContinuousBigram/results
+ContinuousBigram/all-extfiles
+ContinuousBigram/datafiles
+ContinuousBigram/mlf
+ContinuousBigram/dict
+ContinuousBigram/grammar
+ContinuousBigram/commands
+ContinuousBigram/output
+ContinuousBigram/viz/data
+ContinuousBigram/viz/output
+ContinuousBigram/viz/videos
+ContinuousBigram/viz/categorized_videos
 
 # Only ignore the old bigram files
 ContinuousBigram/scripts/make_bigram.old*
