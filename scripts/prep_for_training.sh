@@ -1,7 +1,9 @@
 #!/bin/bash
 
+#####
 ## Arg 1: Absolate path to original fingerspelling directory (hard link metadat from)
 ## Arg 2: Absolute path to new fingerspelling directory (hard link metadata to)
+##### IMPORTANT: The paths must end with ContinuousBigram/
 
 ln -s $1/logs $2/logs
 ln -s $1/data $2/data
