@@ -216,7 +216,7 @@ def get_name_ext(ip, tc, num_its, num_tri_its, hmmdef, grammar_type=None, trace_
         name_ext += f".{args.custom_ext}"
 
     if trace_value is not None:
-        trace_ext = f".TR{trace_value}"
+        name_ext += f".TR{trace_value}"
     
     return name_ext
 

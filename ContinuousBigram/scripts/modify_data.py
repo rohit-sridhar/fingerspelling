@@ -382,7 +382,6 @@ def get_labels(df, seq_id, idx_char_map, supplemental=True):
 
 def import_data():
     df = pd.read_pickle(args.data_loc)
-    print(df)
     dl_seq_ids = df.index.to_list()
     
     if os.path.basename(args.char_map_file).startswith("supplemental"):
@@ -390,7 +389,6 @@ def import_data():
     else:
         supplemental = False
     
-    print(f"Supplemental: {supplemental}")
     idx_char_map = get_idx_char_map(args.char_map_file)
 
     for seq_id in tqdm(dl_seq_ids):
