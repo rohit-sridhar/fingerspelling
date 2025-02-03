@@ -1,5 +1,8 @@
 #!/bin/bash
 
+## Arg 1: Absolate path to original fingerspelling directory (hard link metadat from)
+## Arg 2: Absolute path to new fingerspelling directory (hard link metadata to)
+
 ln -s $1/logs $2/logs
 ln -s $1/data $2/data
 ln -s $1/label $2/label
