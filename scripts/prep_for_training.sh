@@ -9,7 +9,7 @@ ln -s $1/logs $2/logs
 ln -s $1/data $2/data
 ln -s $1/label $2/label
 ln -s $1/results $2/results
-ln -s $1/models $2/models
+ln -s $1/models/supplemental $2/models/supplemental
 
 mkdir $2/ext
 mkdir $2/output
