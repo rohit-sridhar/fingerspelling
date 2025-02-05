@@ -137,7 +137,14 @@ def parse_args():
     parser.add_argument(
         "--test_model",
         action='store_true',
-        help="If true, will run testing."
+        help="If true, will run testing. If a model is not passed as an arg, will build a model name from other args (as in train time)"
+    )
+    
+    parser.add_argument(
+        "--test_model_path",
+        type=str,
+        default=None,
+        help="Model path for testing."
     )
     
     parser.add_argument(
@@ -425,7 +432,10 @@ def test_model(ip, tc, num_its, num_tri_its, hmmdef, subdirs, grammar_type, trac
 
     output_file = os.path.join(output_dir, "output.log_" + name_ext + ".test_model")
     
-    new_model_dir, new_model_path = get_model_path(subdirs, ip, tc, num_its, num_tri_its, hmmdef)
+    if args.test_model_path is None:
+        _, new_model_path = get_model_path(subdirs, ip, tc, num_its, num_tri_its, hmmdef)
+    else:
+        new_model_path = args.test_model_path
     print(f"Model Dir: {new_model_path}")
 
     test_args = [TEST_FILE, OPTIONS_FILE, "./testsets/testing-extfiles0", new_model_path]
@@ -694,15 +704,15 @@ if __name__ == "__main__":
                     trace_value
                 )
             
-            save_model(
-                ip,
-                tc,
-                num_its,
-                num_tri_its,
-                hmmdef,
-                subdirs,
-                grammar_type,
-            )
+                save_model(
+                    ip,
+                    tc,
+                    num_its,
+                    num_tri_its,
+                    hmmdef,
+                    subdirs,
+                    grammar_type,
+                )
 
             if args.results_csv is not None:
                 add_results_to_csv(
