@@ -132,7 +132,6 @@ if [[ $MULTI_PROCESS = "yes" ]]; then
     if [[ $lines_per_file -lt 1 ]]; then
         lines_per_file=1
     fi
-    echo "Lines Per File: $lines_per_file"
     split -l $lines_per_file $TEST_DATA "$TEST_DATA."     # splits testing files
     pid=()
     
