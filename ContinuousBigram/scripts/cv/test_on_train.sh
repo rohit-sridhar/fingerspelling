@@ -30,3 +30,5 @@ TESTING=`$NAME_SCRIPT $3 0`	# generate name for the testing file
 
 cp $ALL_FILES $TRAINING
 cp $ALL_FILES $TESTING
+
+cat $ALL_FILES | sort -R | head -n $6 > $TESTING

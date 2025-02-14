@@ -251,7 +251,7 @@ if [[ "${GEN_TRAIN_TEST}" == "yes" ]] ||
 	rm -f $TRAINING_BASENAME*
 	rm -f $TESTING_BASENAME*
 	$TRAIN_TEST_SCRIPT $DATA_SAMPLES $TRAINING_BASENAME $TESTING_BASENAME \
-			   $TT_NAME_SCRIPT $OPTIONS_FILE 
+			   $TT_NAME_SCRIPT $OPTIONS_FILE $NUM_TEST_SAMPLES
 fi
 
 
@@ -768,12 +768,12 @@ echo "*****************************************************"
 # Uses the Tokens file with triletters
 ###############################################################################
 if [[ $MULTI_PROCESS = "yes" ]]; then
-    output_mlfs=`find / -type f -wholename "$OUTPUT_MLF.*"`
+    output_mlfs=`find ${EXT_DIR} -type f -wholename "$OUTPUT_MLF.*"`
     ${HTKBIN}HResults -A -e "???" $ENTER -e "???" $EXIT -T $TRACE_LEVEL -t -I $MLF_LOCATION_ORIGINAL \
      	-p $TOKENS_ORIGINAL $output_mlfs >> $LOG_RESULTS
     
     if [[ $WORD_LEVEL = "yes" ]] || [[ $WORD_LEVEL = "1" ]]; then
-        output_mlfs_word=`find / -type f -wholename "$OUTPUT_MLF_WORD.*"`
+        output_mlfs_word=`find ${EXT_DIR} -type f -wholename "$OUTPUT_MLF_WORD.*"`
     	${HTKBIN}HResults -A -e "???" $ENTER -e "???" $EXIT -e "???" _ -T $TRACE_LEVEL -t -I $MLF_LOCATION_WORD \
     		$TOKENS_WORD $output_mlfs_word >> $LOG_RESULTS_WORD
     fi

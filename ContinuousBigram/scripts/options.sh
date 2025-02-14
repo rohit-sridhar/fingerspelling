@@ -102,6 +102,8 @@ TT_NAME_SCRIPT=$SCRIPTS_DIR/gen_train_test_name.sh      # make consistent names
 DATAFILES_LIST=${PRJ}/output/datafiles			# list of all data files
 DATA_SAMPLES=${PRJ}/output/all-extfiles
 
+NUM_TEST_SAMPLES=100
+
 #######################################################
 #################### GRAMMAR FILES ####################
 #######################################################
@@ -145,6 +147,7 @@ DICTFILE_ALIGN=${PRJ}/dict/dict_tri2tri # Dictionary used during forced alignmen
 # TOKENS_ORIGINAL is used to initialize letter models. Triletter modeling uses the 
 # TOKENS file during triletter iterations.
 ######
+TOKENS_ALL=${PRJ}/commands/commands_tri_internal.all
 
 ###### USE FOR INITIAL TRAINING ######
 TOKENS_ORIGINAL=${PRJ}/commands/commands_letter
@@ -227,8 +230,8 @@ OUTPUT_MLF=${EXT_DIR}/result.mlf_letter		# where HTK stores results
 						# .ext files
 OUTPUT_MLF_WORD=${EXT_DIR}/result.mlf_word
 
-LOG_RESULTS=${PRJ}/results/supplemental/dl_cmp/dim20/thr1/train/interpall2/ptgrp3n13/sd10248/hresults.log_letter_grliwi_neg10ip_6state-pca20-gmm4_20its_5tri-its_tc50
-LOG_RESULTS_WORD=${PRJ}/results/supplemental/dl_cmp/dim20/thr1/train/interpall2/ptgrp3n13/sd10248/hresults.log_word_grliwi_neg10ip_6state-pca20-gmm4_20its_5tri-its_tc50
+LOG_RESULTS=${PRJ}/results/supplemental/dl_cmp/dim20/thr1/train/interpall1/pt93/sd5248/hresults.log_letter_grliwi_neg10ip_6state-pca20-gmm4_20its_5tri-its_tc50
+LOG_RESULTS_WORD=${PRJ}/results/supplemental/dl_cmp/dim20/thr1/train/interpall1/pt93/sd5248/hresults.log_word_grliwi_neg10ip_6state-pca20-gmm4_20its_5tri-its_tc50
 
 HMM_TEMP_DIR=${PRJ}/models			# directory for storing
 						# intermediate models during
