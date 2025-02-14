@@ -1,4 +1,4 @@
-CL commands/commands_tri_internal
+CL commands/commands_tri_internal.all
 TI T_a {(*-a+*,a+*,*-a).transP}
 TI T_b {(*-b+*,b+*,*-b).transP}
 TI T_c {(*-c+*,c+*,*-c).transP}

@@ -129,6 +129,10 @@ if [[ $MULTI_PROCESS = "yes" ]]; then
     
 	num_lines=`cat $TEST_DATA | wc -l` #   compute the num lines per file
     lines_per_file=$(($num_lines / $THREADS))
+    if [[ $lines_per_file -lt 1 ]]; then
+        lines_per_file=1
+    fi
+    echo "Lines Per File: $lines_per_file"
     split -l $lines_per_file $TEST_DATA "$TEST_DATA."     # splits testing files
     pid=()
     
@@ -195,12 +199,12 @@ echo "*****************************************************"
 # Uses the Tokens file with triletters
 ###############################################################################
 if [[ $MULTI_PROCESS = "yes" ]]; then
-    output_mlfs=`find / -type f -wholename "$OUTPUT_MLF.*"`
+    output_mlfs=`find ${EXT_DIR} -type f -wholename "$OUTPUT_MLF.*"`
     ${HTKBIN}HResults -A -e "???" $ENTER -e "???" $EXIT -T $TRACE_LEVEL -t -I $MLF_LOCATION_ORIGINAL \
      	-p $TOKENS_ORIGINAL $output_mlfs >> $LETTER_RESULTS_FILE
     
     if [[ $WORD_LEVEL = "yes" ]] || [[ $WORD_LEVEL = "1" ]]; then
-        output_mlfs_word=`find / -type f -wholename "$OUTPUT_MLF_WORD.*"`
+        output_mlfs_word=`find ${EXT_DIR} -type f -wholename "$OUTPUT_MLF_WORD.*"`
     	# ${HTKBIN}HResults -A -e "???" $ENTER -e "???" $EXIT -e "???" _ -T $TRACE_LEVEL -t -I $MLF_LOCATION_WORD \
     	# 	$TOKENS_WORD $output_mlfs_word >> $WORD_RESULTS_FILE
     	${HTKBIN}HResults -A -e "???" $ENTER -e "???" $EXIT -e "???" _ -T $TRACE_LEVEL -t -I $MLF_LOCATION_WORD \
