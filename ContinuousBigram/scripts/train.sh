@@ -345,7 +345,7 @@ if [[ "${INITIALIZE_HMM}" == "yes" ]] ||
         wait "${pid[@]}"
         
         pid=()
-	    for n in $(cat ${TOKENS_ORIGINAL}); do    
+	    for n in $(cat ${TOKENS_ORIGINAL}); do
             ${HTKBIN}HInit  -A -T $TRACE_LEVEL -v ${MIN_VARIANCE} -M $HMM_TRAINING.1 -l $n 	\
 		            -S $TRAINING -I $MLF_LOCATION_ORIGINAL -o $n 	\
 		    		$HMM_TRAINING.0/$n &
@@ -591,9 +591,9 @@ if [[ $TRILETTER = "yes" ]] || [[ $TRILETTER = "1" ]]; then
     fi
 	hmm_count=$((hmm_count+1))
 
-	next_dir=$((hmm_count+1))
-	HHEd -A -T $TRACE_LEVEL $HMM_LOAD_OPT $HMM_TRAINING.$hmm_count/$HMM_MACRO -M $HMM_TRAINING.$next_dir $HEDFILE2 ${TOKENS_ALL}
-	hmm_count=$((hmm_count+1))
+	# next_dir=$((hmm_count+1))
+	# HHEd -A -T $TRACE_LEVEL $HMM_LOAD_OPT $HMM_TRAINING.$hmm_count/$HMM_MACRO -M $HMM_TRAINING.$next_dir $HEDFILE2 ${TOKENS_ALL}
+	# hmm_count=$((hmm_count+1))
 
 	# Force-align MLFs
 	if [[ $FORCE_ALIGN = "yes" ]] || [[ $FORCE_ALIGN = "1" ]]; then

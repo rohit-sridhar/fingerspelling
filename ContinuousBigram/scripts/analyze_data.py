@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import argparse
 
 from utils import *
+from collections import Counter
 
 LAB_PATH = "./ext/data/"
 DATA_PATH = "./data_original/"
@@ -12,7 +13,7 @@ def parse_args():
     parser.add_argument(
         '--analysis_type',
         type=str,
-        choices=['frames_per_letter', 'phrases'],
+        choices=['frames_per_letter', 'phrases', 'count'],
         default='frames_per_letter',
         help="Type of analysis."
     )
@@ -88,9 +89,20 @@ def analyze_phrases(label_dir):
     
     for label_file in label_files:
         label_path = os.path.join(label_dir, label_file)
-        labels = collect_tokens(label_path, tokens)
+        labels = collect_tokens(label_path)
         tokens.update(labels)
     print(sorted(list(tokens)))
+
+def analyze_counts(label_dir):
+    label_files = get_label_files(label_dir)
+    letters = Counter()
+
+    for label_file in label_files:
+        labels = collect_tokens(label_file)
+        for label in labels:
+            for letter in label:
+                letters.update(letter)
+    print(letters)
 
 if __name__ == "__main__":
     args = parse_args()
@@ -100,4 +112,6 @@ if __name__ == "__main__":
         analyze_frames_per_letter(args.data_dir, args.label_dir)
     elif args.analysis_type == "phrases":
         analyze_phrases(args.label_dir)
+    elif args.analysis_type == "count":
+        analyze_counts(args.label_dir)
 

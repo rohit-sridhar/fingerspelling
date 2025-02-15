@@ -13,8 +13,10 @@ OPTIONS_FILE=$1
 echo "Housekeeping ...."
 find $2/ -type f | sort -V  > $DATAFILES_LIST
 # find $2/* -type f | sort -V  > $DATAFILES_LIST
-rm -rf $EXT_DIR/data/
-rm -f $EXT_DIR/done
+# rm -rf $EXT_DIR/data/
+# rm -f $EXT_DIR/done
+rm -rf $EXT_DIR/*
+
 mkdir $EXT_DIR/data/
 find $3/ -name "*.lab" -type f | xargs cp -t $EXT_DIR/data/
 # cp -r $3/* $EXT_DIR/data/
