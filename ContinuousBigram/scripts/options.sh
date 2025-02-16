@@ -34,7 +34,7 @@ MIN_VARIANCE=0.01				# don't let the
 						# this value during
 						# HMM training
 
-INSERT_PENALTY=10.0	#Penalize model for too many word insertion/deletion
+INSERT_PENALTY=-10	#Penalize model for too many word insertion/deletion
 						#If too many deletions, increase
 						#If too many insertions, decrease
 
@@ -51,7 +51,7 @@ PRUNING_THRESHOLD=0
 HMM_TOPOLOGY_DIR=${PRJ}/hmmdefs
 
 # general HMM_TOPOLOGIES
-HMM_LOCATION=$HMM_TOPOLOGY_DIR/6state-pca20-gmm4
+HMM_LOCATION=$HMM_TOPOLOGY_DIR/6state-pca20-gmm2
 HMM_ALL=$HMM_LOCATION
 HMM_SIL=$HMM_TOPOLOGY_DIR/3state-pca20-sil-skip-loop
 HMM_SP=$HMM_TOPOLOGY_DIR/1state-pca20-sp
@@ -230,8 +230,8 @@ OUTPUT_MLF=${EXT_DIR}/result.mlf_letter		# where HTK stores results
 						# .ext files
 OUTPUT_MLF_WORD=${EXT_DIR}/result.mlf_word
 
-LOG_RESULTS=${PRJ}/results/supplemental/dl_cmp/dim20/thr1/val/interpall1/pt227/sd1248/hresults.log_letter_grliwi_pos10ip_6state-pca20-gmm4_20its_5tri-its_tc50
-LOG_RESULTS_WORD=${PRJ}/results/supplemental/dl_cmp/dim20/thr1/val/interpall1/pt227/sd1248/hresults.log_word_grliwi_pos10ip_6state-pca20-gmm4_20its_5tri-its_tc50
+LOG_RESULTS=${PRJ}/results/supplemental/dl_cmp/dim20/thr1/train/interpall1/pt227/sd5248/hresults.log_letter_grliwi_neg10ip_6state-pca20-gmm2_20its_5tri-its_tc50
+LOG_RESULTS_WORD=${PRJ}/results/supplemental/dl_cmp/dim20/thr1/train/interpall1/pt227/sd5248/hresults.log_word_grliwi_neg10ip_6state-pca20-gmm2_20its_5tri-its_tc50
 
 HMM_TEMP_DIR=${PRJ}/models			# directory for storing
 						# intermediate models during

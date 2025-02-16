@@ -98,7 +98,7 @@ def parse_args():
         "--hmmdefs",
         type=str,
         nargs='+',
-        default=['6state-pca20-gmm4'],
+        default=['6state-pca20-gmm2'],
         help="HMM Def files to test on."
     )
 
@@ -468,10 +468,10 @@ def get_results(results_file, letter_results=True):
     results = ('0.0', '0.0')
     for line in results_lines:
         if line.startswith("WORD: "):
-            corr_match = re.search("Corr=[0-9]+\.[0-9]+", line).group(0)
-            acc_match = re.search("Acc=[0-9]+\.[0-9]+", line).group(0)
+            corr_match = re.search("Corr=-?[0-9]+\.[0-9]+", line).group(0)
+            acc_match = re.search("Acc=-?[0-9]+\.[0-9]+", line).group(0)
         if line.startswith("SENT: "):
-            sent_match = re.search("Correct=[0-9]+\.[0-9]+", line).group(0)
+            sent_match = re.search("Correct=-?[0-9]+\.[0-9]+", line).group(0)
     
     if letter_results:
         results = [corr_match.split('=')[1], acc_match.split('=')[1]]
