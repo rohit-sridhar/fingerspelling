@@ -49,6 +49,16 @@ else
                 -v "$popsign_path":"$popsign_path" \
                 -v "$popsign_data_path":"$popsign_data_path" \
                 --name $2 rohitsridhar91/asl_sign_recognizer:$TAG
+        elif [ "$2" == "fs_ebisu" ]; then
+            fs_ebisu_path="$root/hmm_modeling/fs_ebisu"
+            sudo docker run \
+                -dit \
+                -v "$fs_ebisu_path":"$fs_ebisu_path" \
+                -v "$fingerspelling_torch_path":"$fingerspelling_torch_path" \
+                -v "$fingerspelling_data_path":"$fingerspelling_data_path" \
+                -v "$continuous_bigram_path":"$continuous_bigram_path" \
+                -e HOSTNAME_SERVER="$HOSTNAME" \
+                --name $2 rohitsridhar91/asl_sign_recognizer:$TAG
         elif [ "$2" == "fingerspelling" ]; then
             sudo docker run \
                 -dit \

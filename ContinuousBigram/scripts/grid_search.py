@@ -194,21 +194,30 @@ def check_args():
     if sorted(list(LETTER_GRAMMAR_FILE_DICT.keys())) != sorted(list(WORD_GRAMMAR_FILE_DICT.keys())):
         raise ValueError("Check Grammar Keys between Letter/Word.")
 
+    if args.test_model_path is not None:
+        if args.test_model_path.startswith("."):
+            args.test_model_path = os.path.join(*args.test_model_path.split(os.path.sep)[1:])
+        
+        if not(args.test_model_path.startswith(MODELS_ROOT)):
+            raise ValueError("Please pass a path where the first dir is (./)?model")
+
+def get_ip_ext(ip):
+    ip_int = abs(int(ip))
+    if ip > 0:
+        return f"pos{ip_int}ip"
+    elif ip < 0:
+        return f"neg{ip_int}ip"
+    else:
+        return f"{ip_int}ip" 
+
 # Get the name extension for the results/output file
 def get_name_ext(ip, tc, num_its, num_tri_its, hmmdef, grammar_type=None, trace_value=None):
     name_ext = ""
     if grammar_type is not None:
         name_ext = f"{grammar_type}_"
 
-    ip_int = abs(int(ip))
-    if ip > 0:
-        name_ext += f"pos{ip_int}ip_"
-    elif ip < 0:
-        name_ext += f"neg{ip_int}ip_"
-    else:
-        name_ext += f"{ip_int}ip_"
-    
-    name_ext += "_".join([f"{hmmdef}", f"{num_its}its", f"{num_tri_its}tri-its", f"tc{tc}"])
+    ip_ext = get_ip_ext(ip)
+    name_ext += "_".join([f"{ip_ext}", f"{hmmdef}", f"{num_its}its", f"{num_tri_its}tri-its", f"tc{tc}"])
 
     if args.no_custom_silsp:
         name_ext += "_no-silsp"
@@ -228,16 +237,32 @@ def get_name_ext(ip, tc, num_its, num_tri_its, hmmdef, grammar_type=None, trace_
     return name_ext
 
 # Get the results filepath
-def get_hresults_filepaths(name_ext, subdirs):
-    letter_results_file = '_'.join(["hresults.log_letter", name_ext])
-    word_results_file = '_'.join(["hresults.log_word", name_ext])
-    
+def get_hresults_filepaths(name_ext, subdirs, ip):
     results_dir = os.path.join(RESULTS_ROOT, subdirs)
     _make_dir(results_dir)
     
+    if args.test_model_path is None:
+        letter_results_file = '_'.join(["hresults.log_letter", name_ext])
+        word_results_file = '_'.join(["hresults.log_word", name_ext])
+    else:
+        model_dir, model_name = os.path.split(args.test_model_path)
+        model_results_dir = '_'.join(model_dir.split(os.path.sep)[1:])
+
+        results_dir = os.path.join(results_dir, model_results_dir)
+        _make_dir(results_dir)
+        
+        #### START HACKY. Need to rm insertion penalty from model names     ####
+        model_name_split = model_name.split("_")
+        model_name_split[1] = get_ip_ext(ip)
+        model_name = "_".join(model_name_split)
+        ####################              END HACKY         ####################
+
+        letter_results_file = '.'.join(["hresults", "log_letter", model_name])
+        word_results_file = '.'.join(["hresults", "log_word", model_name])
+        
     letter_results = os.path.join("${PRJ}", results_dir, letter_results_file)
     word_results = os.path.join("${PRJ}", results_dir, word_results_file)
-    
+
     return (letter_results, word_results)
 
 # Get grammar filepath based on grammar type
@@ -328,7 +353,7 @@ def make_triletter_changes():
 # Edit options file with all new hyperparams (calls helper above)
 def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, grammar_type=None, trace_value=None):
     name_ext = get_name_ext(ip, tc, num_its, num_tri_its, hmmdef, grammar_type=grammar_type) # We leave trace_value out in this call.
-    letter_results, word_results = get_hresults_filepaths(name_ext, subdirs)
+    letter_results, word_results = get_hresults_filepaths(name_ext, subdirs, ip)
     letter_grammar, word_grammar = get_grammar_filepaths(grammar_type)
 
     custom_silsp, multi_process, hedfile1, cross_word = get_bool_arg_info()
@@ -481,7 +506,7 @@ def get_results(results_file, letter_results=True):
 
 def add_results_to_csv(ip, tc, num_its, num_tri_its, hmmdef, subdirs, grammar_type):
     name_ext = get_name_ext(ip, tc, num_its, num_tri_its, hmmdef, grammar_type=grammar_type)
-    letter_results_file, word_results_file = get_hresults_filepaths(name_ext, subdirs)
+    letter_results_file, word_results_file = get_hresults_filepaths(name_ext, subdirs, ip)
     
     letter_results_file = os.path.join('.', *letter_results_file.split("/")[1:])
     word_results_file = os.path.join('.', *word_results_file.split("/")[1:])
@@ -572,7 +597,7 @@ def gen_grammar(ip, tc, num_its, num_tri_its, hmmdef, subdirs, label_file, gramm
 
 def clear_results_files(ip, tc, num_its, num_tri_its, hmmdef, subdirs, grammar_type):
     name_ext = get_name_ext(ip, tc, num_its, num_tri_its, hmmdef, grammar_type=grammar_type)
-    letter_results_file, word_results_file = get_hresults_filepaths(name_ext, subdirs)
+    letter_results_file, word_results_file = get_hresults_filepaths(name_ext, subdirs, ip)
     
     letter_results_file = os.path.join(*letter_results_file.split(os.path.sep)[1:])
     word_results_file = os.path.join(*word_results_file.split(os.path.sep)[1:])
