@@ -23,33 +23,12 @@ else
         fi
         
         root="$3"
-        
-        mb_pipe_path="$root/Mobile-Data-Processing-Pipeline"
         continuous_bigram_path="$root/hmm_modeling/fingerspelling"
         
         fingerspelling_torch_path="$root/deep_learning/fingerspelling_torch"
         fingerspelling_data_path="$root/parquet/asl-fingerspelling"
         
-        if [ "$2" == "islr" ]; then
-            islr_path="$root/hmm_modeling/islr"
-            
-            sudo docker run \
-                -dit \
-                -v "$mb_pipe_path":"$mb_pipe_path" \
-                -v "$islr_path":"$islr_path" \
-                --name $2 rohitsridhar91/asl_sign_recognizer:$TAG
-        elif [ "$2" == "popsign_experiments" ]; then
-            popsign_path="$root/hmm_modeling/popsign"
-            popsign_data_path="$root/sign_language_videos/mediapipe"
-            
-            sudo docker run \
-                -dit \
-                -v "$mb_pipe_path":"$mb_pipe_path" \
-                -v "$continuous_bigram_path":"$continuous_bigram_path" \
-                -v "$popsign_path":"$popsign_path" \
-                -v "$popsign_data_path":"$popsign_data_path" \
-                --name $2 rohitsridhar91/asl_sign_recognizer:$TAG
-        elif [ "$2" == "fingerspelling" ]; then
+        if [ "$2" == "fingerspelling" ]; then
             sudo docker run \
                 -dit \
                 -v "$fingerspelling_torch_path":"$fingerspelling_torch_path" \
@@ -57,14 +36,6 @@ else
                 -v "$continuous_bigram_path":"$continuous_bigram_path" \
                 -e HOSTNAME_SERVER="$HOSTNAME" \
                 --name $2 rohitsridhar91/asl_sign_recognizer:$TAG
-        elif [ "$2" == "fingerspelling_torch" ]; then
-            sudo docker run \
-                -dit \
-                --gpus all \
-                -v "$fingerspelling_torch_path":"$fingerspelling_torch_path" \
-                -v "$fingerspelling_data_path":"$fingerspelling_data_path" \
-                -e PJRT_DEVICE="CPU" \
-                --name $2 rohitsridhar91/torch_tflite_convert:$TAG
         else
             echo "Specify an appropriate image name"
         fi

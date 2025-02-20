@@ -332,8 +332,9 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, grammar_t
     letter_grammar, word_grammar = get_grammar_filepaths(grammar_type)
 
     custom_silsp, multi_process, hedfile1, cross_word = get_bool_arg_info()
+    hedfile2 = f"${{PRJ}}/instr/mktri2_tc.{hmmdef}.hed"
     num_threads = get_machine_info()
-    
+
     # Handle triletter changes separately
     make_triletter_changes()
 
@@ -342,18 +343,21 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, grammar_t
 
     tc_search = "^TC [0-9]+"
     tc_repl = f"TC {tc}"
-    
+
     num_its_search = NUM_ITS_VARNAME + "\s*=\s*[0-9]+"
     num_its_repl = NUM_ITS_VARNAME + f"={num_its}"
-    
+
     num_tri_its_search = NUM_TRI_ITS_VARNAME + "\s*=\s*[0-9]+"
     num_tri_its_repl = NUM_TRI_ITS_VARNAME + f"={num_tri_its}"
 
     hmmdef_search = HMMDEF_VARNAME + "\s*=\s*\$HMM_TOPOLOGY_DIR\/.+"
     hmmdef_repl = HMMDEF_VARNAME + f"=$HMM_TOPOLOGY_DIR/{hmmdef}"
-    
+
     hedfile1_search = HEDFILE1_VARNAME + "\s*=\s*\$\{PRJ\}\/instr\/mktri1_.*\.hed"
     hedfile1_repl = HEDFILE1_VARNAME + f"={hedfile1}"
+    
+    hedfile2_search = HEDFILE2_VARNAME + "\s*=\s*\$\{PRJ\}\/instr\/mktri2_.*\.hed"
+    hedfile2_repl = HEDFILE2_VARNAME + f"={hedfile2}"
     
     custom_silsp_search = CUSTOM_SILSP_VARNAME + "\s*=\s*(yes|no)"
     custom_silsp_repl = CUSTOM_SILSP_VARNAME + f"={custom_silsp}"
@@ -399,6 +403,7 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, grammar_t
     edit_file(letter_grammar_search, letter_grammar_repl, OPTIONS_FILE)
     edit_file(word_grammar_search, word_grammar_repl, OPTIONS_FILE)
     edit_file(hedfile1_search, hedfile1_repl, OPTIONS_FILE)
+    edit_file(hedfile2_search, hedfile2_repl, OPTIONS_FILE)
     edit_file(custom_silsp_search, custom_silsp_repl, OPTIONS_FILE)
     edit_file(multi_process_search, multi_process_repl, OPTIONS_FILE)
     edit_file(cross_word_search, cross_word_repl, OPTIONS_FILE)
@@ -416,6 +421,7 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, grammar_t
     subprocess.run(["grep", GRAMMAR_LETTER_VARNAME, OPTIONS_FILE])
     subprocess.run(["grep", GRAMMAR_WORD_VARNAME, OPTIONS_FILE])
     subprocess.run(["grep", HEDFILE1_VARNAME, OPTIONS_FILE])
+    subprocess.run(["grep", HEDFILE2_VARNAME, OPTIONS_FILE])
     subprocess.run(["grep", CUSTOM_SILSP_VARNAME, OPTIONS_FILE])
     subprocess.run(["grep", MULTI_PROCESS_VARNAME, OPTIONS_FILE])
     subprocess.run(["grep", CROSS_WORD_VARNAME, OPTIONS_FILE])
