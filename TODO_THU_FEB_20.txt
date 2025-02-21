@@ -1,0 +1,2 @@
+pull latest from git
+revamp docker with Dockerfile
