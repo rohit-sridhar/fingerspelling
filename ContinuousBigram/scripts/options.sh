@@ -34,7 +34,7 @@ MIN_VARIANCE=0.01				# don't let the
 						# this value during
 						# HMM training
 
-INSERT_PENALTY=-10	#Penalize model for too many word insertion/deletion
+INSERT_PENALTY=-150.0	#Penalize model for too many word insertion/deletion
 						#If too many deletions, increase
 						#If too many insertions, decrease
 
@@ -43,7 +43,7 @@ GRAMMAR_SCALE_FACTOR=0
 SAMPLE_PERIOD=1000
 
 MULTI_PROCESS=yes
-THREADS=96
+THREADS=32
 
 #PRUNING_THRESHOLD="50 50 500" #Threshold for alpha-beta pruning, of form "start step-size end"
 PRUNING_THRESHOLD=0
