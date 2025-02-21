@@ -20,7 +20,6 @@ elif [ "$1" == "launch" ]; then
         -v "$fingerspelling_torch_path":"$fingerspelling_torch_path" \
         -v "$fingerspelling_data_path":"$fingerspelling_data_path" \
         -v "$continuous_bigram_path":"$continuous_bigram_path" \
-        -w "$continuous_bigram_path" \
         -e HOSTNAME_SERVER="$HOSTNAME" \
         --name $2 $local_image
 else

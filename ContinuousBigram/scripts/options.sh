@@ -34,7 +34,7 @@ MIN_VARIANCE=0.01				# don't let the
 						# this value during
 						# HMM training
 
-INSERT_PENALTY=-150.0	#Penalize model for too many word insertion/deletion
+INSERT_PENALTY=-10	#Penalize model for too many word insertion/deletion
 						#If too many deletions, increase
 						#If too many insertions, decrease
 
@@ -43,7 +43,7 @@ GRAMMAR_SCALE_FACTOR=0
 SAMPLE_PERIOD=1000
 
 MULTI_PROCESS=yes
-THREADS=32
+THREADS=96
 
 #PRUNING_THRESHOLD="50 50 500" #Threshold for alpha-beta pruning, of form "start step-size end"
 PRUNING_THRESHOLD=0
@@ -230,8 +230,8 @@ OUTPUT_MLF=${EXT_DIR}/result.mlf_letter		# where HTK stores results
 						# .ext files
 OUTPUT_MLF_WORD=${EXT_DIR}/result.mlf_word
 
-LOG_RESULTS=${PRJ}/results/supplemental/dl_cmp/dim20/thr1/train/interpall1/pt227/sd6248/hresults.log_letter_grliwi_neg10ip_3state-pca20-gmm2_20its_5tri-its_tc50
-LOG_RESULTS_WORD=${PRJ}/results/supplemental/dl_cmp/dim20/thr1/train/interpall1/pt227/sd6248/hresults.log_word_grliwi_neg10ip_3state-pca20-gmm2_20its_5tri-its_tc50
+LOG_RESULTS=${PRJ}/results/supplemental/dl_cmp/dim20/thr1/train/interpall2/pt31/sd2248/hresults.log_letter_grliwi_neg10ip_3state-pca20-gmm2_20its_5tri-its_tc50
+LOG_RESULTS_WORD=${PRJ}/results/supplemental/dl_cmp/dim20/thr1/train/interpall2/pt31/sd2248/hresults.log_word_grliwi_neg10ip_3state-pca20-gmm2_20its_5tri-its_tc50
 
 HMM_TEMP_DIR=${PRJ}/models			# directory for storing
 						# intermediate models during
