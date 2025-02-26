@@ -1,3 +1,6 @@
+
+/data/supplemental/dl_cmp/dim20/thr0/* was synced to PACE via rsync
+
 Folder Hierarchy
 
 data dim

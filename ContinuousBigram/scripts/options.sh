@@ -51,7 +51,7 @@ PRUNING_THRESHOLD=0
 HMM_TOPOLOGY_DIR=${PRJ}/hmmdefs
 
 # general HMM_TOPOLOGIES
-HMM_LOCATION=$HMM_TOPOLOGY_DIR/3state-pca20-gmm2
+HMM_LOCATION=$HMM_TOPOLOGY_DIR/6state-pca20
 HMM_ALL=$HMM_LOCATION
 HMM_SIL=$HMM_TOPOLOGY_DIR/3state-pca20-sil-skip-loop
 HMM_SP=$HMM_TOPOLOGY_DIR/1state-pca20-sp
@@ -203,7 +203,7 @@ LM_DIR=${PRJ}/lang_models
 # NGRAM_WORD_FILE=${PRJ}/output/bigram.word
 
 HEDFILE1=${PRJ}/instr/mktri1_silsp.hed
-HEDFILE2=${PRJ}/instr/mktri2_tc.3state-pca20-gmm2.hed
+HEDFILE2=${PRJ}/instr/mktri2_tc.6state-pca20.hed
 STATS=${PRJ}/output/stats
 						#
 						#
@@ -230,8 +230,8 @@ OUTPUT_MLF=${EXT_DIR}/result.mlf_letter		# where HTK stores results
 						# .ext files
 OUTPUT_MLF_WORD=${EXT_DIR}/result.mlf_word
 
-LOG_RESULTS=${PRJ}/results/supplemental/dl_cmp/dim20/thr1/train/interpall2/pt31/sd2248/hresults.log_letter_grliwi_neg10ip_3state-pca20-gmm2_20its_5tri-its_tc50
-LOG_RESULTS_WORD=${PRJ}/results/supplemental/dl_cmp/dim20/thr1/train/interpall2/pt31/sd2248/hresults.log_word_grliwi_neg10ip_3state-pca20-gmm2_20its_5tri-its_tc50
+LOG_RESULTS=${PRJ}/results/supplemental/dl_cmp/dim20/thr8/train/interpall2/pt107/sd5248/hresults.log_letter_grliwi_neg10ip_6state-pca20_20its_5tri-its_tc50
+LOG_RESULTS_WORD=${PRJ}/results/supplemental/dl_cmp/dim20/thr8/train/interpall2/pt107/sd5248/hresults.log_word_grliwi_neg10ip_6state-pca20_20its_5tri-its_tc50
 
 HMM_TEMP_DIR=${PRJ}/models			# directory for storing
 						# intermediate models during

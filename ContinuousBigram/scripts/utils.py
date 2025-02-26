@@ -9,6 +9,11 @@ RESULTS_ROOT = "results/"
 MODELS_ROOT = "models/"
 GRAMMAR_ROOT = "grammar/"
 
+SUPP_DATA_FILES = "./data/supplemental/dl_cmp/dim20/thr0/all/data/"
+SUPP_LABEL_FILES = "./label/supplemental/dl_cmp/thr0/all/label/"
+MAIN_DATA_FILES = "./data/main/dl_cmp/dim20/thr0/all/data/"
+MAIN_LABEL_FILES = "./label/main/dl_cmp/thr0/all/label/"
+
 MODEL_MACROS_FILE = "newMacros"
 GEN_GRAMMAR_FILE = "./scripts/gen_grammar.py"
 OPTIONS_FILE = "./scripts/options.sh"

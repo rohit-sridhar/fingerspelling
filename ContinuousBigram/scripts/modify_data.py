@@ -385,24 +385,35 @@ def import_data():
     dl_seq_ids = df.index.to_list()
     
     if os.path.basename(args.char_map_file).startswith("supplemental"):
+        data_path = SUPP_DATA_FILES
+        label_path = SUPP_LABEL_FILES
         supplemental = True
     else:
+        data_path = ALL_DATA_PATH
+        label_path = ALL_LABEL_PATH
         supplemental = False
     
     idx_char_map = get_idx_char_map(args.char_map_file)
 
     for seq_id in tqdm(dl_seq_ids):
         new_datafile = os.path.join(args.new_data_loc, str(seq_id))
-        new_labelfile = os.path.join(args.new_label_loc, str(seq_id) + ".lab")
+        new_label_file = os.path.join(args.new_label_loc, str(seq_id) + ".lab")
         
-        landmarks = get_landmarks(df, seq_id)
-        phrase = get_labels(df, seq_id, idx_char_map, supplemental)
-        
-        with open(new_datafile, 'w') as f:
-            f.writelines(landmarks)
-        
-        with open(new_labelfile, 'w') as f:
-            f.writelines(phrase)
+        datafile = os.path.join(data_path, str(seq_id))
+        label_file = os.path.join(label_path, str(seq_id) + ".lab")
+
+        if os.path.exists(datafile) and os.path.exists(label_file):
+            os.link(datafile, new_datafile)
+            os.link(label_file, new_label_file)
+        else:
+            landmarks = get_landmarks(df, seq_id)
+            phrase = get_labels(df, seq_id, idx_char_map, supplemental)
+            
+            with open(new_datafile, 'w') as f:
+                f.writelines(landmarks)
+            
+            with open(new_label_file, 'w') as f:
+                f.writelines(phrase)
 
 ############### SAMPLE DATA FUNCTIONS ###############
 def sample_data(datafile, label_file, new_datafile, new_label_file, sample_ratio):
