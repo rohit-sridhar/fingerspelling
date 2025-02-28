@@ -299,9 +299,9 @@ def get_subdirs(filepath):
 
 
 # Get the subdirectories of the data file (leave out root and filename)
-def get_subdirectories(data_file, label_file):
-    data_subdirs = get_subdirs(data_file)
-    subdirs = os.path.join(*(data_subdirs))
+def get_subdirectories(filepath):
+    subdir_list = get_subdirs(filepath)
+    subdirs = os.path.join(*(subdir_list))
     return subdirs
 
 # Helper to edit the options file with new hyperparam (for 1 param)
@@ -319,23 +319,23 @@ def edit_file(re_search, re_repl, file_to_edit):
 # mlf location word stay the same (between single/tri) so those are not modified.
 def make_triletter_changes():
     triletter_search = TRILETTER_VARNAME + "\s*=\s*(yes|no)"
-    dictfile_search = "^DICTFILE\s*=\s*\$\{PRJ\}\/dict\/dict_(tri|letter)2letter"
-    dictfile_word_search = "^DICTFILE_WORD\s*=\s*\$\{PRJ\}\/dict\/dict_(tri|letter)2word"
-    tokens_search = "^TOKENS\s*=\s*\$\{PRJ\}\/commands\/commands_(tri_internal|letter)"
-    mlf_location_search = "^MLF_LOCATION\s*=\s*\$\{PRJ\}\/mlf\/labels.mlf_(tri_internal|letter)"
+    dictfile_search = "^DICTFILE\s*=\s*\$\{DICTFILE_ROOT\}\/dict_(tri|letter)2letter"
+    dictfile_word_search = "^DICTFILE_WORD\s*=\s*\$\{DICTFILE_ROOT\}\/dict_(tri|letter)2word"
+    tokens_search = "^TOKENS\s*=\s*\$\{TOKENS_ROOT\}\/commands_(tri_internal|letter)"
+    mlf_location_search = "^MLF_LOCATION\s*=\s*\$\{MLF_ROOT\}\/labels.mlf_(tri_internal|letter)"
     
     if args.no_triletter:
         triletter_repl = TRILETTER_VARNAME + "=no"
-        dictfile_repl = "DICTFILE=${PRJ}/dict/dict_letter2letter"
-        dictfile_word_repl = "DICTFILE_WORD=${PRJ}/dict/dict_letter2word"
-        tokens_repl = "TOKENS=${PRJ}/commands/commands_letter"
-        mlf_location_repl = "MLF_LOCATION=${PRJ}/mlf/labels.mlf_letter"
+        dictfile_repl = "DICTFILE=${DICTFILE_ROOT}/dict_letter2letter"
+        dictfile_word_repl = "DICTFILE_WORD=${DICTFILE_ROOT}/dict_letter2word"
+        tokens_repl = "TOKENS=${TOKENS_ROOT}/commands_letter"
+        mlf_location_repl = "MLF_LOCATION=${MLF_ROOT}/labels.mlf_letter"
     else:
         triletter_repl = TRILETTER_VARNAME + "=yes"
-        dictfile_repl = "DICTFILE=${PRJ}/dict/dict_tri2letter"
-        dictfile_word_repl = "DICTFILE_WORD=${PRJ}/dict/dict_tri2word"
-        tokens_repl = "TOKENS=${PRJ}/commands/commands_tri_internal"
-        mlf_location_repl = "MLF_LOCATION=${PRJ}/mlf/labels.mlf_tri_internal"
+        dictfile_repl = "DICTFILE=${DICTFILE_ROOT}/dict_tri2letter"
+        dictfile_word_repl = "DICTFILE_WORD=${DICTFILE_ROOT}/dict_tri2word"
+        tokens_repl = "TOKENS=${TOKENS_ROOT}/commands_tri_internal"
+        mlf_location_repl = "MLF_LOCATION=${MLF_ROOT}/labels.mlf_tri_internal"
 
     edit_file(triletter_search, triletter_repl, OPTIONS_FILE)
     edit_file(dictfile_search, dictfile_repl, OPTIONS_FILE)
@@ -415,7 +415,7 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, grammar_t
     trace_level_search = TRACE_LEVEL_VARNAME + "\s*=\s*[0-9]+"
     trace_level_repl = TRACE_LEVEL_VARNAME + f"={trace_value}"
 
-    threads_search = THREADS_VARNAME + "\s*=\s*(96|32|8)"
+    threads_search = THREADS_VARNAME + "\s*=\s*[0-9]+"
     threads_repl = THREADS_VARNAME + f"={num_threads}"
 
     edit_file(ip_search, ip_repl, OPTIONS_FILE)
@@ -454,6 +454,41 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, grammar_t
     subprocess.run(["grep", TRACE_LEVEL_VARNAME, OPTIONS_FILE])
     subprocess.run(["grep", THREADS_VARNAME, OPTIONS_FILE])
     subprocess.run([f"head -n 1 {hedfile1_local_file}"], shell=True)
+
+def edit_htk_root_file_options(subdirs):
+    grammarfile_root_search = GRAMMARFILE_ROOT_VARNAME + "\s*=\s*\$\{PRJ\}\/grammar.*"
+    grammarfile_root_repl = GRAMMARFILE_ROOT_VARNAME + os.path.join("=${PRJ}/grammar", subdirs)
+
+    dictfile_root_search = DICTFILE_ROOT_VARNAME + "\s*=\s*\$\{PRJ\}\/dict.*"
+    dictfile_root_repl = DICTFILE_ROOT_VARNAME + os.path.join("=${PRJ}/dict", subdirs)
+    
+    tokens_root_search = TOKENS_ROOT_VARNAME + "\s*=\s*\$\{PRJ\}\/commands.*"
+    tokens_root_repl = TOKENS_ROOT_VARNAME + os.path.join("=${PRJ}/commands", subdirs)
+    
+    mlf_root_search = MLF_ROOT_VARNAME + "\s*=\s*\$\{PRJ\}\/mlf.*"
+    mlf_root_repl = MLF_ROOT_VARNAME + os.path.join("=${PRJ}/mlf", subdirs)
+
+    output_root_search = ""
+
+    edit_file(grammarfile_root_search, grammarfile_root_repl, OPTIONS_FILE)
+    edit_file(dictfile_root_search, dictfile_root_repl, OPTIONS_FILE)
+    edit_file(tokens_root_search, tokens_root_repl, OPTIONS_FILE)
+    edit_file(mlf_root_search, mlf_root_repl, OPTIONS_FILE)
+
+    subprocess.run(["grep", GRAMMARFILE_ROOT_VARNAME + "\s*=\s*", OPTIONS_FILE])
+    subprocess.run(["grep", DICTFILE_ROOT_VARNAME + "\s*=\s*", OPTIONS_FILE])
+    subprocess.run(["grep", TOKENS_ROOT_VARNAME + "\s*=\s*", OPTIONS_FILE])
+    subprocess.run(["grep", MLF_ROOT_VARNAME + "\s*=\s*", OPTIONS_FILE])
+    
+    grammar_dir = os.path.join(".", "grammar", subdirs)
+    dict_dir = os.path.join(".", "dict", subdirs)
+    tokens_dir = os.path.join(".", "commands", subdirs)
+    mlf_dir = os.path.join(".", "mlf", subdirs)
+    
+    _make_dir(grammar_dir)
+    _make_dir(dict_dir)
+    _make_dir(tokens_dir)
+    _make_dir(mlf_dir)
 
 def test_model(ip, tc, num_its, num_tri_its, hmmdef, subdirs, grammar_type, trace_value):
     name_ext = get_name_ext(ip, tc, num_its, num_tri_its, hmmdef, grammar_type=grammar_type, trace_value=trace_value)
@@ -558,7 +593,7 @@ def save_model(ip, tc, num_its, num_tri_its, hmmdef, subdirs, grammar_type):
 
     shutil.copy(curr_model_path, new_model_path)
 
-# Prepare data using scripts/prepare_data.sh. Not in use currently.
+# Prepare data using scripts/prepare_files.sh. Not in use currently.
 def prepare_data(data_file, label_file):
     prepare_command = [PREPARE_FILE, OPTIONS_FILE, data_file, label_file]
     # cv_split_command = ' '.join([TOT_PREPARE, EXT_FILE_LIST, TRAIN_LIST, TEST_LIST, GEN_TOT_NAME, OPTIONS_FILE])
@@ -571,6 +606,7 @@ def prepare_data(data_file, label_file):
     # os.system(cv_split_command)
 
 # TODO Standardize the output file naming and name ext (with trace ext)
+# Note that grammar_type_arg is different from grammar_type.
 def gen_grammar(ip, tc, num_its, num_tri_its, hmmdef, subdirs, label_file, grammar_type=None, trace_value=None, grammar_type_arg='word'):
     name_ext = get_name_ext(ip, tc, num_its, num_tri_its, hmmdef, grammar_type=grammar_type, trace_value=trace_value)
     
@@ -579,23 +615,22 @@ def gen_grammar(ip, tc, num_its, num_tri_its, hmmdef, subdirs, label_file, gramm
 
     output_file = os.path.join(output_dir, "output.log_" + name_ext + ".test_model")
     
-    # if first_arg == "letter":
-    #     grammar_file = os.path.basename(LETTER_GRAMMAR_FILE_DICT[grammar_type])
-    # else:
-    #     grammar_file = os.path.basename(WORD_GRAMMAR_FILE_DICT[grammar_type])
-    #     if first_arg == "word_sksp":
-    #         grammar_file += "_sksp"
+    if grammar_type_arg == "letter":
+        grammar_file = os.path.basename(LETTER_GRAMMAR_FILE_DICT[grammar_type])
+    else:
+        grammar_file = os.path.basename(WORD_GRAMMAR_FILE_DICT[grammar_type])
+        if grammar_type_arg == "word_sksp":
+            grammar_file += "_sksp"
     
     # ngram_basename = grammar_file.split("_")[-1]  # Last token in grammar filename should be '1gram', '2gram', etc.
-    
     # ngram = "1" if ngram_basename == "isolated" else ngram_basename[0]
-    # grammar_filepath = os.path.join(GRAMMAR_ROOT, grammar_file)
+    grammar_filepath = os.path.join(GRAMMAR_ROOT, subdirs, grammar_file)
 
     gen_grammar_args = ['python', GEN_GRAMMAR_FILE]
-    gen_grammar_args += ["--grammar_type", grammar_type_arg]   # Different grammar type from first arg
+    # gen_grammar_args += ["--grammar_file", grammar_type_arg]   # Different grammar type from first arg
     # gen_grammar_args += ["--n_gram", ngram]
     gen_grammar_args += ["--label_loc", label_file]
-    # gen_grammar_args += ["--grammar_file", grammar_filepath]
+    gen_grammar_args += ["--grammar_file", grammar_filepath]
 
     print("Gen Grammar Command: " + ' '.join(gen_grammar_args))
     with open(output_file, "w") as f:
@@ -635,10 +670,11 @@ if __name__ == "__main__":
         data_file = args.data_files[i]
         label_file = args.label_files[i]
         
+        subdirs = get_subdirectories(data_file)
+        edit_htk_root_file_options(subdirs)
+
         if args.prepare_data:
             prepare_data(data_file, label_file)
-        
-        subdirs = get_subdirectories(data_file, label_file)
         
         for arg_tup in arg_iter:
             ip = arg_tup[0]

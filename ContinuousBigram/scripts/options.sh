@@ -51,7 +51,7 @@ PRUNING_THRESHOLD=0
 HMM_TOPOLOGY_DIR=${PRJ}/hmmdefs
 
 # general HMM_TOPOLOGIES
-HMM_LOCATION=$HMM_TOPOLOGY_DIR/6state-pca20
+HMM_LOCATION=$HMM_TOPOLOGY_DIR/6state-pca20-gmm2
 HMM_ALL=$HMM_LOCATION
 HMM_SIL=$HMM_TOPOLOGY_DIR/3state-pca20-sil-skip-loop
 HMM_SP=$HMM_TOPOLOGY_DIR/1state-pca20-sp
@@ -99,6 +99,8 @@ VALIDATION_ITERATIONS=10 #Number of repeats or folds
 
 TT_NAME_SCRIPT=$SCRIPTS_DIR/gen_train_test_name.sh      # make consistent names
 
+OUTPUTFILE_ROOT=${PRJ}/output
+
 DATAFILES_LIST=${PRJ}/output/datafiles			# list of all data files
 DATA_SAMPLES=${PRJ}/output/all-extfiles
 
@@ -108,13 +110,15 @@ NUM_TEST_SAMPLES=100
 #################### GRAMMAR FILES ####################
 #######################################################
 
+GRAMMARFILE_ROOT=${PRJ}/grammar/supplemental/dl_cmp/dim20/thr1/train/pt93/sd1248
+
 ###### USE FOR TRAINING ######
-GRAMMARFILE=${PRJ}/grammar/grammar_letter_isolated
-GRAMMARFILE_WORD=${PRJ}/grammar/grammar_word_isolated
-GRAMMARFILE_WORD_SKSP=${PRJ}/grammar/grammar_word_isolated_sksp
+GRAMMARFILE=${GRAMMARFILE_ROOT}/grammar_letter_isolated
+GRAMMARFILE_WORD=${GRAMMARFILE_ROOT}/grammar_word_isolated
+GRAMMARFILE_WORD_SKSP=${GRAMMARFILE_ROOT}/grammar_word_isolated_sksp
 
 ###### USE FOR CROSS WORD TRILETTER ######
-GRAMMARFILE_WORD_CROSS=${PRJ}/grammar/grammar_word_cross
+GRAMMARFILE_WORD_CROSS=${GRAMMARFILE_ROOT}/grammar_word_cross
 
 SENTENCES_FILE=${PRJ}/grammar/sentences.txt
 
@@ -122,25 +126,29 @@ SENTENCES_FILE=${PRJ}/grammar/sentences.txt
 ##################### DICT FILES ######################
 #######################################################
 
+DICTFILE_ROOT=${PRJ}/dict/supplemental/dl_cmp/dim20/thr1/train/pt93/sd1248
+
 ###### USE FOR MAIN TRAINING ######
-DICTFILE=${PRJ}/dict/dict_tri2letter
-DICTFILE_WORD=${PRJ}/dict/dict_tri2word
-DICTFILE_WORD_SKSP=${PRJ}/dict/dict_tri2word_sksp
+DICTFILE=${DICTFILE_ROOT}/dict_tri2letter
+DICTFILE_WORD=${DICTFILE_ROOT}/dict_tri2word
+DICTFILE_WORD_SKSP=${DICTFILE_ROOT}/dict_tri2word_sksp
 
 ###### USE FOR CROSS WORD TRILETTER ######
-DICTFILE_CROSS=${PRJ}/dict/dict_tri2letter_cross
-DICTFILE_CROSS_WORD=${PRJ}/dict/dict_tri2word_cross
+DICTFILE_CROSS=${DICTFILE_ROOT}/dict_tri2letter_cross
+DICTFILE_CROSS_WORD=${DICTFILE_ROOT}/dict_tri2word_cross
 
 ###### USE FOR SINGLE LETTER ######
 # DICTFILE=${PRJ}/dict/dict_letter2letter
 # DICTFILE_WORD=${PRJ}/dict/dict_letter2word
 
 ###### USE FOR ALIGNMNENT ######
-DICTFILE_ALIGN=${PRJ}/dict/dict_tri2tri # Dictionary used during forced alignment
+DICTFILE_ALIGN=${DICTFILE_ROOT}/dict_tri2tri # Dictionary used during forced alignment
 
 #######################################################
 ################### COMMANDS FILES ####################
 #######################################################
+
+TOKENS_ROOT=${PRJ}/commands/supplemental/dl_cmp/dim20/thr1/train/pt93/sd1248
 
 ###### 
 # USAGE:
@@ -150,16 +158,16 @@ DICTFILE_ALIGN=${PRJ}/dict/dict_tri2tri # Dictionary used during forced alignmen
 TOKENS_ALL=${PRJ}/commands/commands_tri_internal.all
 
 ###### USE FOR INITIAL TRAINING ######
-TOKENS_ORIGINAL=${PRJ}/commands/commands_letter
+TOKENS_ORIGINAL=${TOKENS_ROOT}/commands_letter
 # TOKENS_ORIGINAL_SKSP=${PRJ}/commands/commands_letter_isolated
 
 ###### USE FOR MAIN TRAINING ######
-TOKENS=${PRJ}/commands/commands_tri_internal
-TOKENS_WORD=${PRJ}/commands/commands_word
-TOKENS_WORD_SKSP=${PRJ}/commands/commands_word_sksp
+TOKENS=${TOKENS_ROOT}/commands_tri_internal
+TOKENS_WORD=${TOKENS_ROOT}/commands_word
+TOKENS_WORD_SKSP=${TOKENS_ROOT}/commands_word_sksp
 
 ###### USE FOR CROSS WORD TRILETTER ######
-TOKENS_CROSS=${PRJ}/commands/commands_tri_cross
+TOKENS_CROSS=${TOKENS_ROOT}/commands_tri_cross
 
 ###### USE FOR SINGLE LETTER MODELING ######
 # TOKENS=${PRJ}/commands/commands_letter
@@ -169,30 +177,32 @@ TOKENS_CROSS=${PRJ}/commands/commands_tri_cross
 ##################### MLF FILES #######################
 #######################################################
 
-###### 
+######
 # USAGE:
 # MLF_LOCATION_ORIGINAL is used for initial training steps on isolated letters.
 # Triletter modeling uses the MLF_LOCATION file for training.
 ######
 
+MLF_ROOT=${PRJ}/mlf/supplemental/dl_cmp/dim20/thr1/train/pt93/sd1248
+
 ###### USE FOR INITIAL TRAINING ######
-MLF_LOCATION_ORIGINAL=${PRJ}/mlf/labels.mlf_letter # used for building model and results
-MLF_LOCATION_ORIGINAL_SKSP=${PRJ}/mlf/labels.mlf_letter_sksp # used for building model and results
+MLF_LOCATION_ORIGINAL=${MLF_ROOT}/labels.mlf_letter # used for building model and results
+MLF_LOCATION_ORIGINAL_SKSP=${MLF_ROOT}/labels.mlf_letter_sksp # used for building model and results
 
 ###### USE FOR MAIN TRAINING ######
-MLF_LOCATION=${PRJ}/mlf/labels.mlf_tri_internal
-MLF_LOCATION_SKSP=${PRJ}/mlf/labels.mlf_tri_internal_sksp
-MLF_LOCATION_WORD=${PRJ}/mlf/labels.mlf_word
-MLF_LOCATION_WORD_SKSP=${PRJ}/mlf/labels.mlf_word_sksp
+MLF_LOCATION=${MLF_ROOT}/labels.mlf_tri_internal
+MLF_LOCATION_SKSP=${MLF_ROOT}/labels.mlf_tri_internal_sksp
+MLF_LOCATION_WORD=${MLF_ROOT}/labels.mlf_word
+MLF_LOCATION_WORD_SKSP=${MLF_ROOT}/labels.mlf_word_sksp
 
 ###### USE FOR CROSS WORD TRILETTER ######
-MLF_LOCATION_CROSS=${PRJ}/mlf/labels.mlf_tri_cross
+MLF_LOCATION_CROSS=${MLF_ROOT}/labels.mlf_tri_cross
 
 ###### USE FOR SINGLE LETTER ######
 # MLF_LOCATION=${PRJ}/mlf/labels.mlf_letter
 # MLF_LOCATION_WORD=${PRJ}/mlf/labels.mlf_word
 
-MLF_LOCATION_GEN=${PRJ}/mlf/gen # Generated MLFs
+MLF_LOCATION_GEN=${MLF_ROOT}/gen # Generated MLFs
 
 WORD_LATTICE=${PRJ}/output/word.lattice
 # BIGRAM_LETTER_FILE=${PRJ}/output/bigram.letter
@@ -203,7 +213,7 @@ LM_DIR=${PRJ}/lang_models
 # NGRAM_WORD_FILE=${PRJ}/output/bigram.word
 
 HEDFILE1=${PRJ}/instr/mktri1_silsp.hed
-HEDFILE2=${PRJ}/instr/mktri2_tc.6state-pca20.hed
+HEDFILE2=${PRJ}/instr/mktri2_tc.6state-pca20-gmm2.hed
 STATS=${PRJ}/output/stats
 						#
 						#
@@ -230,8 +240,8 @@ OUTPUT_MLF=${EXT_DIR}/result.mlf_letter		# where HTK stores results
 						# .ext files
 OUTPUT_MLF_WORD=${EXT_DIR}/result.mlf_word
 
-LOG_RESULTS=${PRJ}/results/supplemental/dl_cmp/dim20/thr8/train/interpall2/pt107/sd5248/hresults.log_letter_grliwi_neg10ip_6state-pca20_20its_5tri-its_tc50
-LOG_RESULTS_WORD=${PRJ}/results/supplemental/dl_cmp/dim20/thr8/train/interpall2/pt107/sd5248/hresults.log_word_grliwi_neg10ip_6state-pca20_20its_5tri-its_tc50
+LOG_RESULTS=${PRJ}/results/supplemental/dl_cmp/dim20/thr1/train/pt93/sd1248/hresults.log_letter_grliwi_neg10ip_6state-pca20-gmm2_20its_5tri-its_tc50
+LOG_RESULTS_WORD=${PRJ}/results/supplemental/dl_cmp/dim20/thr1/train/pt93/sd1248/hresults.log_word_grliwi_neg10ip_6state-pca20-gmm2_20its_5tri-its_tc50
 
 HMM_TEMP_DIR=${PRJ}/models			# directory for storing
 						# intermediate models during

@@ -9,13 +9,13 @@ global args
 def parse_args():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     
-    parser.add_argument(
-        "--grammar_type",
-        type=str,
-        default="word",
-        choices=["word", "word_sksp", "letter", "cross_word"],
-        help="Grammar type (word or letter)."
-    )
+    # parser.add_argument(
+    #     "--grammar_type",
+    #     type=str,
+    #     default="word",
+    #     choices=["word", "word_sksp", "letter", "cross_word"],
+    #     help="Grammar type (word or letter)."
+    # )
     
 #################################################################
 ##### THIS IS THE OLD WAY OF DOING N GRAMS (ALSO INCORRECT) #####
@@ -35,18 +35,27 @@ def parse_args():
         help="Label file location"
     )
     
-    # parser.add_argument(
-    #     "--grammar_file",
-    #     type=str,
-    #     required=True,
-    #     help="Grammar file name"
-    # )
+    parser.add_argument(
+        "--grammar_file",
+        type=str,
+        required=True,
+        help="Grammar file name"
+    )
 
     return parser.parse_args()
 
-# def check_args(args):
-#     if args.n_gram <= 0:
-#         raise ValueError("Must pass n_gram > 0 (positive ints only)")
+def validate_grammar_file():
+    grammar_filename = os.path.basename(args.grammar_file)
+    return grammar_filename == "grammar_letter_isolated" or \
+            grammar_filename == "grammar_word_isolated" or \
+            grammar_filename == "grammar_word_isolated_sksp"
+
+def check_args(args):
+    if not validate_grammar_file():
+        raise ValueError("Invalid grammar filename")
+   
+    # if args.n_gram <= 0:
+    #     raise ValueError("Must pass n_gram > 0 (positive ints only)")
 
 ########## GENERIC HELPERS ##########
 # def get_grammar_file():
@@ -118,60 +127,58 @@ def get_words():
 
 ########## WORD LEVEL GRAMMAR WRITERS ##########
 # Grammar for 1 gram
-def write_word_grammar(tokens, grammar_file):
+def write_word_grammar(tokens):
     token_options = ' | '.join(tokens)
     
     line_1 = f"$word = {token_options};\n"
-    if args.grammar_type == "cross_word":
-        line_2 = f"({ENTER} < $word > {EXIT})\n"  # This may be incorrect
-    else:
-        # line_2 = f"({ENTER} < $word {SPACE} > $word {EXIT})\n"
-        if args.grammar_type == "word":
-            line_2 = f"({ENTER} {{ $word _ }} $word {EXIT})\n"
-        elif args.grammar_type == "word_sksp":
-            line_2 = f"({ENTER} {{ $word }} $word {EXIT})\n"
+    # if args.grammar_type == "cross_word":
+    #     line_2 = f"({ENTER} < $word > {EXIT})\n"  # This may be incorrect
+    # else:
     
-    with open(grammar_file, 'w') as f:
+    if args.grammar_file.endswith("grammar_word_isolated"):
+        line_2 = f"({ENTER} {{ $word _ }} $word {EXIT})\n"
+    elif args.grammar_file.endswith("grammar_word_isolated_sksp"):
+        line_2 = f"({ENTER} {{ $word }} $word {EXIT})\n"
+    
+    with open(args.grammar_file, 'w') as f:
         f.writelines([line_1, "\n", line_2])
 
 # Force the phrase (none gram)
-def write_word_grammar_phrase(phrases, grammar_file):
+def write_word_grammar_phrase(phrases):
     phrase_options = ' | '.join(phrases)
 
     line_1 = f"$phrase = {phrase_options};\n"
     line_2 = f"({ENTER} $phrase {EXIT})\n"
 
-    with open(grammar_file, 'w') as f:
+    with open(args.grammar_file, 'w') as f:
         f.writelines([line_1, "\n", line_2])
 
 ########## LETTER LEVEL GRAMMAR WRITERS ##########
-def write_letter_grammar(letters, grammar_file):
+def write_letter_grammar(letters):
     letter_options = ' | '.join(letters)
 
     line_1 = f"$char = {letter_options};\n"
     line_2 = f"({ENTER} < $char > {EXIT})\n"
     
-    with open(grammar_file, 'w') as f:
+    with open(args.grammar_file, 'w') as f:
         f.writelines([line_1, "\n", line_2])
 
 if __name__ == "__main__":
     args = parse_args()
-    # check_args(args)
+    check_args(args)
     print(args)
     
-    if args.grammar_type == "letter":
-        grammar_file = "grammar/grammar_letter_isolated"
-    elif args.grammar_type == "word":
-        grammar_file = "grammar/grammar_word_isolated"
-    else:
-        grammar_file = "grammar/grammar_word_isolated_sksp"
+    # if args.grammar_file.endswith("letter"):
+    #     grammar_file = "grammar/grammar_letter_isolated"
+    # elif args.grammar_file.endswith("word"):
+    #     grammar_file = "grammar/grammar_word_isolated"
+    # else:
+    #     grammar_file = "grammar/grammar_word_isolated_sksp"
 
-    if "letter" not in args.grammar_type:
-        # tokens = get_tokens(args.n_gram)
+    if "letter" not in args.grammar_file:
         tokens = get_tokens(1)
-        write_word_grammar(tokens, grammar_file)
+        write_word_grammar(tokens)
     else:
-        # letters = get_letters(args.n_gram)
         letters = get_letters(1)
-        write_letter_grammar(letters, grammar_file)
+        write_letter_grammar(letters)
 

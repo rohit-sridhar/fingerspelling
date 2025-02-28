@@ -21,13 +21,17 @@ TRAIN_FILE = "./scripts/train.sh"
 TEST_FILE = "./scripts/test.sh"
 PREPARE_FILE = "./scripts/prepare_files.sh"
 HEDFILE2 = "./instr/mktri2_tc.hed"
-SENTENCES_FILE = os.path.join(GRAMMAR_ROOT, "sentences.txt")
 
 TOT_PREPARE = "./scripts/cv/test_on_train.sh"
 EXT_FILE_LIST = "all-extfiles"
 TRAIN_LIST = "./trainsets/training-extfiles"
 TEST_LIST = "./testsets/testing-extfiles"
 GEN_TOT_NAME = "./scripts/gen_train_test_name.sh"
+
+GRAMMARFILE_ROOT_VARNAME = "GRAMMARFILE_ROOT"
+DICTFILE_ROOT_VARNAME = "DICTFILE_ROOT"
+TOKENS_ROOT_VARNAME = "TOKENS_ROOT"
+MLF_ROOT_VARNAME = "MLF_ROOT"
 
 IP_VARNAME = "INSERT_PENALTY"
 NUM_ITS_VARNAME = "NUM_HMM_DIR"
@@ -66,55 +70,55 @@ HOTEI_THREADS = "8"
 
 # the GRAMMAR_FILE_DICTS shoudl be deprecated since grammar_types are no longer in use.
 LETTER_GRAMMAR_FILE_DICT = {
-    "grliwins": "${PRJ}/grammar/grammar_letter_isolated_ns",
-    "grliwinw": "${PRJ}/grammar/grammar_letter_isolated_new",
-    "grliwi": "${PRJ}/grammar/grammar_letter_isolated",
-    "grliw2g": "${PRJ}/grammar/grammar_letter_isolated",
-    "grliw3g": "${PRJ}/grammar/grammar_letter_isolated",
-    "grliw4g": "${PRJ}/grammar/grammar_letter_isolated",
-    "grliw5g": "${PRJ}/grammar/grammar_letter_isolated",
-    "grliwph": "${PRJ}/grammar/grammar_letter_isolated",
-    "grl2gwi": "${PRJ}/grammar/grammar_letter_2gram",
-    "grl2gw2g": "${PRJ}/grammar/grammar_letter_2gram",
-    "grl2gw3g": "${PRJ}/grammar/grammar_letter_2gram",
-    "grl2gw4g": "${PRJ}/grammar/grammar_letter_2gram",
-    "grl2gw5g": "${PRJ}/grammar/grammar_letter_2gram",
-    "grl2gwph": "${PRJ}/grammar/grammar_letter_2gram",
-    "grl3gwi": "${PRJ}/grammar/grammar_letter_3gram",
-    "grl3gw2g": "${PRJ}/grammar/grammar_letter_3gram",
-    "grl3gw3g": "${PRJ}/grammar/grammar_letter_3gram",
-    "grl3gw5g": "${PRJ}/grammar/grammar_letter_3gram",
-    "grl3gwph": "${PRJ}/grammar/grammar_letter_3gram",
-    "grl4gw4g": "${PRJ}/grammar/grammar_letter_4gram",
-    "grl5gw5g": "${PRJ}/grammar/grammar_letter_5gram",
-    "grlwdwi": "${PRJ}/grammar/grammar_letter_word",
-    "grlwdwph": "${PRJ}/grammar/grammar_letter_word",
+    "grliwins": "${GRAMMARFILE_ROOT}/grammar_letter_isolated_ns",
+    "grliwinw": "${GRAMMARFILE_ROOT}/grammar_letter_isolated_new",
+    "grliwi": "${GRAMMARFILE_ROOT}/grammar_letter_isolated",
+    "grliw2g": "${GRAMMARFILE_ROOT}/grammar_letter_isolated",
+    "grliw3g": "${GRAMMARFILE_ROOT}/grammar_letter_isolated",
+    "grliw4g": "${GRAMMARFILE_ROOT}/grammar_letter_isolated",
+    "grliw5g": "${GRAMMARFILE_ROOT}/grammar_letter_isolated",
+    "grliwph": "${GRAMMARFILE_ROOT}/grammar_letter_isolated",
+    "grl2gwi": "${GRAMMARFILE_ROOT}/grammar_letter_2gram",
+    "grl2gw2g": "${GRAMMARFILE_ROOT}/grammar_letter_2gram",
+    "grl2gw3g": "${GRAMMARFILE_ROOT}/grammar_letter_2gram",
+    "grl2gw4g": "${GRAMMARFILE_ROOT}/grammar_letter_2gram",
+    "grl2gw5g": "${GRAMMARFILE_ROOT}/grammar_letter_2gram",
+    "grl2gwph": "${GRAMMARFILE_ROOT}/grammar_letter_2gram",
+    "grl3gwi": "${GRAMMARFILE_ROOT}/grammar_letter_3gram",
+    "grl3gw2g": "${GRAMMARFILE_ROOT}/grammar_letter_3gram",
+    "grl3gw3g": "${GRAMMARFILE_ROOT}/grammar_letter_3gram",
+    "grl3gw5g": "${GRAMMARFILE_ROOT}/grammar_letter_3gram",
+    "grl3gwph": "${GRAMMARFILE_ROOT}/grammar_letter_3gram",
+    "grl4gw4g": "${GRAMMARFILE_ROOT}/grammar_letter_4gram",
+    "grl5gw5g": "${GRAMMARFILE_ROOT}/grammar_letter_5gram",
+    "grlwdwi": "${GRAMMARFILE_ROOT}/grammar_letter_word",
+    "grlwdwph": "${GRAMMARFILE_ROOT}/grammar_letter_word",
 }
 
 WORD_GRAMMAR_FILE_DICT = {
-    "grliwins": "${PRJ}/grammar/grammar_word_isolated_ns",
-    "grliwinw": "${PRJ}/grammar/grammar_word_isolated",
-    "grliwi": "${PRJ}/grammar/grammar_word_isolated",
-    "grliw2g": "${PRJ}/grammar/grammar_word_2gram",
-    "grliw3g": "${PRJ}/grammar/grammar_word_3gram",
-    "grliw4g": "${PRJ}/grammar/grammar_word_4gram",
-    "grliw5g": "${PRJ}/grammar/grammar_word_5gram",
-    "grliwph": "${PRJ}/grammar/grammar_word_phrase",
-    "grl2gwi": "${PRJ}/grammar/grammar_word_isolated",
-    "grl2gw2g": "${PRJ}/grammar/grammar_word_2gram",
-    "grl2gw3g": "${PRJ}/grammar/grammar_word_3gram",
-    "grl2gw4g": "${PRJ}/grammar/grammar_word_4gram",
-    "grl2gw5g": "${PRJ}/grammar/grammar_word_5gram",
-    "grl2gwph": "${PRJ}/grammar/grammar_word_phrase",
-    "grl3gwi": "${PRJ}/grammar/grammar_word_isolated",
-    "grl3gw2g": "${PRJ}/grammar/grammar_word_2gram",
-    "grl3gw3g": "${PRJ}/grammar/grammar_word_3gram",
-    "grl3gw5g": "${PRJ}/grammar/grammar_word_5gram",
-    "grl3gwph": "${PRJ}/grammar/grammar_word_phrase",
-    "grl4gw4g": "${PRJ}/grammar/grammar_word_4gram",
-    "grl5gw5g": "${PRJ}/grammar/grammar_word_5gram",
-    "grlwdwi": "${PRJ}/grammar/grammar_word_isolated",
-    "grlwdwph": "${PRJ}/grammar/grammar_word_phrase",
+    "grliwins": "${GRAMMARFILE_ROOT}/grammar_word_isolated_ns",
+    "grliwinw": "${GRAMMARFILE_ROOT}/grammar_word_isolated",
+    "grliwi": "${GRAMMARFILE_ROOT}/grammar_word_isolated",
+    "grliw2g": "${GRAMMARFILE_ROOT}/grammar_word_2gram",
+    "grliw3g": "${GRAMMARFILE_ROOT}/grammar_word_3gram",
+    "grliw4g": "${GRAMMARFILE_ROOT}/grammar_word_4gram",
+    "grliw5g": "${GRAMMARFILE_ROOT}/grammar_word_5gram",
+    "grliwph": "${GRAMMARFILE_ROOT}/grammar_word_phrase",
+    "grl2gwi": "${GRAMMARFILE_ROOT}/grammar_word_isolated",
+    "grl2gw2g": "${GRAMMARFILE_ROOT}/grammar_word_2gram",
+    "grl2gw3g": "${GRAMMARFILE_ROOT}/grammar_word_3gram",
+    "grl2gw4g": "${GRAMMARFILE_ROOT}/grammar_word_4gram",
+    "grl2gw5g": "${GRAMMARFILE_ROOT}/grammar_word_5gram",
+    "grl2gwph": "${GRAMMARFILE_ROOT}/grammar_word_phrase",
+    "grl3gwi": "${GRAMMARFILE_ROOT}/grammar_word_isolated",
+    "grl3gw2g": "${GRAMMARFILE_ROOT}/grammar_word_2gram",
+    "grl3gw3g": "${GRAMMARFILE_ROOT}/grammar_word_3gram",
+    "grl3gw5g": "${GRAMMARFILE_ROOT}/grammar_word_5gram",
+    "grl3gwph": "${GRAMMARFILE_ROOT}/grammar_word_phrase",
+    "grl4gw4g": "${GRAMMARFILE_ROOT}/grammar_word_4gram",
+    "grl5gw5g": "${GRAMMARFILE_ROOT}/grammar_word_5gram",
+    "grlwdwi": "${GRAMMARFILE_ROOT}/grammar_word_isolated",
+    "grlwdwph": "${GRAMMARFILE_ROOT}/grammar_word_phrase",
 }
 
 SPACE = '_'

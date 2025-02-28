@@ -16,7 +16,7 @@ elif [ "$1" == "launch" ]; then
     fi
     
     sudo docker run \
-        -it \
+        -it --rm \
         -v "$fingerspelling_torch_path":"$fingerspelling_torch_path" \
         -v "$fingerspelling_data_path":"$fingerspelling_data_path" \
         -v "$continuous_bigram_path":"$continuous_bigram_path" \
