@@ -137,6 +137,10 @@ BASE_OUTPUT_MLF_WORD=$OUTPUT_MLF_WORD
 BASE_MLF_LOCATION=$MLF_LOCATION
 BASE_MLF_LOCATION_GEN=$MLF_LOCATION_GEN
 
+if [ ! -d "$BASE_MLF_LOCATION_GEN" ]; then
+    mkdir $BASE_MLF_LOCATION_GEN
+fi
+
 #clean up old training data
 rm -f $LOG_RESULTS
 rm -f $LOG_RESULTS_WORD
@@ -373,11 +377,11 @@ if [[ "${INITIALIZE_HMM}" == "yes" ]] ||
                 HMM_LOCATION=$HMM_ALL
             fi
 
-            ${HTKBIN}HCompV -A -T $TRACE_LEVEL -v ${MIN_VARIANCE} -S $TRAINING -l $n 	\
+            gdb --args ${HTKBIN}HCompV -A -T $TRACE_LEVEL -v ${MIN_VARIANCE} -S $TRAINING -l $n 	\
 	    		-I $MLF_LOCATION_ORIGINAL -o $n -m -M $HMM_TRAINING.0  	\
 	    		$HMM_LOCATION
             
-            gdb --args ${HTKBIN}HInit  -A -T $TRACE_LEVEL -v ${MIN_VARIANCE} -M $HMM_TRAINING.1 -l $n 	\
+            ${HTKBIN}HInit  -A -T $TRACE_LEVEL -v ${MIN_VARIANCE} -M $HMM_TRAINING.1 -l $n 	\
 		            -S $TRAINING -I $MLF_LOCATION_ORIGINAL -o $n 	\
 		    		$HMM_TRAINING.0/$n
 	  	    

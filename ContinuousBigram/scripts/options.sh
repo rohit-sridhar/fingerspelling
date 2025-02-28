@@ -99,10 +99,10 @@ VALIDATION_ITERATIONS=10 #Number of repeats or folds
 
 TT_NAME_SCRIPT=$SCRIPTS_DIR/gen_train_test_name.sh      # make consistent names
 
-OUTPUTFILE_ROOT=${PRJ}/output
+OUTPUTFILE_ROOT=${PRJ}/output/supplemental/dl_cmp/dim20/thr1/train/pt93/sd1248
 
-DATAFILES_LIST=${PRJ}/output/datafiles			# list of all data files
-DATA_SAMPLES=${PRJ}/output/all-extfiles
+DATAFILES_LIST=${OUTPUTFILE_ROOT}/datafiles			# list of all data files
+DATA_SAMPLES=${OUTPUTFILE_ROOT}/all-extfiles
 
 NUM_TEST_SAMPLES=100
 
@@ -204,17 +204,17 @@ MLF_LOCATION_CROSS=${MLF_ROOT}/labels.mlf_tri_cross
 
 MLF_LOCATION_GEN=${MLF_ROOT}/gen # Generated MLFs
 
-WORD_LATTICE=${PRJ}/output/word.lattice
-# BIGRAM_LETTER_FILE=${PRJ}/output/bigram.letter
+WORD_LATTICE=${OUTPUTFILE_ROOT}/word.lattice
+# BIGRAM_LETTER_FILE=${OUTPUTFILE_ROOT}bigram.letter
 
 NGRAM=1
 NGRAM_WORD=yes
 LM_DIR=${PRJ}/lang_models
-# NGRAM_WORD_FILE=${PRJ}/output/bigram.word
+# NGRAM_WORD_FILE=${OUTPUTFILE_ROOT}/bigram.word
 
 HEDFILE1=${PRJ}/instr/mktri1_silsp.hed
 HEDFILE2=${PRJ}/instr/mktri2_tc.6state-pca20-gmm2.hed
-STATS=${PRJ}/output/stats
+STATS=${OUTPUTFILE_ROOT}/stats
 						#
 						#
 GEN_EXT_FILES=no				# yes or no: generate .ext data
@@ -224,7 +224,7 @@ GEN_EXT_FILES=no				# yes or no: generate .ext data
 PREPARE_DATA=${UTIL_DIR}/prepare		# program for creating HTK-
 						# readable data from text
 
-EXT_DIR=${PRJ}/ext				# This is where HTK will put
+EXT_DIR=${PRJ}/ext/supplemental/dl_cmp/dim20/thr1/train/pt93/sd1248
 						# .ext files it generates
 						#
 GEN_GRAMMAR=no				# yes or no: generate grammar
@@ -243,7 +243,7 @@ OUTPUT_MLF_WORD=${EXT_DIR}/result.mlf_word
 LOG_RESULTS=${PRJ}/results/supplemental/dl_cmp/dim20/thr1/train/pt93/sd1248/hresults.log_letter_grliwi_neg10ip_6state-pca20-gmm2_20its_5tri-its_tc50
 LOG_RESULTS_WORD=${PRJ}/results/supplemental/dl_cmp/dim20/thr1/train/pt93/sd1248/hresults.log_word_grliwi_neg10ip_6state-pca20-gmm2_20its_5tri-its_tc50
 
-HMM_TEMP_DIR=${PRJ}/models			# directory for storing
+HMM_TEMP_DIR=${PRJ}/models/supplemental/dl_cmp/dim20/thr1/train/pt93/sd1248
 						# intermediate models during
 						# iterations of training
 
@@ -257,19 +257,23 @@ HMM_TRAINING=${HMM_TEMP_DIR}/hmm		# base name for iterations of
 # 	   basename will be erased!!		#
 #
 #  rm -f $TRAINING_BASENAME*
-TRAINING_DIR=${PRJ}/trainsets
-TRAINING_BASENAME="${TRAINING_DIR}/training-extfiles"	# all lists of training files
+# TRAINING_DIR=${PRJ}/trainsets
+
+TRAINING_BASENAME="${OUTPUTFILE_ROOT}/training-extfiles"	# all lists of training files
 						# will be named this with an
 					    	# index number appended to it.
+
 # WARNING: files in directory with this		#
 # 	   basename will be erased!!		#
 #
 #  rm -f $TEST_BASENAME*
-TESTING_DIR=${PRJ}/testsets
-TESTING_BASENAME="${TESTING_DIR}/testing-extfiles"	# all lists of testing files
+# TESTING_DIR=${PRJ}/testsets
+
+TESTING_BASENAME="${OUTPUTFILE_ROOT}/testing-extfiles"	# all lists of testing files
 						# will be named this with an
 					    	# index number appended to it.
 						#
+
 TRACE_LEVEL=1					# level of debugging
 						#
 ${HTKBIN=}					# check to see if the path of
