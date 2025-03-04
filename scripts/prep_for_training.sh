@@ -8,10 +8,6 @@
 mkdir $2/ext
 mkdir $2/models
 mkdir $2/output
-mkdir $2/trainsets
-mkdir $2/testsets
-touch $2/trainsets/training-extfiles0
-touch $2/testsets/testing-extfiles0
 
 
 ln -s $1/logs $2/logs
@@ -24,4 +20,18 @@ cp -r $1/commands $2/
 cp -r $1/dict $2/
 cp -r $1/grammar $2/
 cp -r $1/mlf $2/
+
+# Use these commands when transferring to PACE (Commented out for now).
+# mkdir ext
+# mkdir models
+# mkdir output
+# mkdir logs
+# mkdir -p data/supplemental/dl_cmp/dim20/thr0/
+# mkdir -p label/supplemental/dl_cmp/thr0/
+# mkdir results
+# mkdir commands
+# mkdir dict
+# mkdir grammar
+# mkdir mlf
+
 
