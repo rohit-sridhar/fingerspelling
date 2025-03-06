@@ -26,8 +26,10 @@ cp -r $1/mlf $2/
 # mkdir models
 # mkdir output
 # mkdir logs
-# mkdir -p data/supplemental/dl_cmp/dim20/thr0/
-# mkdir -p label/supplemental/dl_cmp/thr0/
+# mkdir -p data/supplemental/dl_cmp/dim20/thr0/train
+# mkdir -p data/supplemental/dl_cmp/dim20/thr0/val
+# mkdir -p label/supplemental/dl_cmp/thr0/train
+# mkdir -p label/supplemental/dl_cmp/thr0/val
 # mkdir results
 # mkdir commands
 # mkdir dict
