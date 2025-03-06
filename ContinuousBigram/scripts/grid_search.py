@@ -17,6 +17,8 @@ from utils import *
 # Modify edit_options to print out the modification
 # Modify get_name_ext to print out the appropriate extension
 
+## TODO: Figure out grammar types properly
+
 def parse_args():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     
@@ -649,18 +651,13 @@ def prepare_data(data_file, label_file, subdirs):
 
 # TODO Standardize the output file naming and name ext (with trace ext)
 # Note that grammar_type_arg is different from grammar_type.
-def gen_grammar(ip, tc, num_its, num_tri_its, hmmdef, subdirs, label_file, grammar_type=None, trace_value=None, grammar_type_arg='word'):
-    name_ext = get_name_ext(ip, tc, num_its, num_tri_its, hmmdef, grammar_type=grammar_type, trace_value=trace_value)
-    
-    log_dir = os.path.join(LOG_ROOT, subdirs)
-    _make_dir(log_dir)
-
-    log_file = os.path.join(log_dir, "output.log_" + name_ext + ".test_model")
-    
+# In this case grammar_type is hardcoded as grliwi, but it should be
+# hardcoded everywhere
+def gen_grammar(subdirs, label_file, grammar_type_arg='word'):
     if grammar_type_arg == "letter":
-        grammar_file = os.path.basename(LETTER_GRAMMAR_FILE_DICT[grammar_type])
+        grammar_file = os.path.basename(LETTER_GRAMMAR_FILE_DICT["grliwi"])
     else:
-        grammar_file = os.path.basename(WORD_GRAMMAR_FILE_DICT[grammar_type])
+        grammar_file = os.path.basename(WORD_GRAMMAR_FILE_DICT["grliwi"])
         if grammar_type_arg == "word_sksp":
             grammar_file += "_sksp"
     
@@ -675,8 +672,7 @@ def gen_grammar(ip, tc, num_its, num_tri_its, hmmdef, subdirs, label_file, gramm
     gen_grammar_args += ["--grammar_file", grammar_filepath]
 
     print("Gen Grammar Command: " + ' '.join(gen_grammar_args))
-    with open(log_file, "w") as f:
-        subprocess.run(gen_grammar_args, stdout=f, stderr=subprocess.STDOUT)
+    subprocess.run(gen_grammar_args, stderr=subprocess.STDOUT)
 
 def clear_results_files(ip, tc, num_its, num_tri_its, hmmdef, subdirs, grammar_type):
     name_ext = get_name_ext(ip, tc, num_its, num_tri_its, hmmdef, grammar_type=grammar_type)
@@ -719,6 +715,24 @@ if __name__ == "__main__":
         if args.prepare_data:
             prepare_data(data_file, label_file, subdirs)
         
+        gen_grammar(
+            subdirs,
+            label_file,
+            grammar_type_arg="word"
+        )
+        
+        gen_grammar(
+            subdirs,
+            label_file,
+            grammar_type_arg="word_sksp"
+        )
+        
+        gen_grammar(
+            subdirs,
+            label_file,
+            grammar_type_arg="letter"
+        )
+        
         for arg_tup in arg_iter:
             ip = arg_tup[0]
             hmmdef = arg_tup[1]
@@ -740,46 +754,7 @@ if __name__ == "__main__":
                 grammar_type=grammar_type,
                 trace_value=trace_value,
             )
-
-            gen_grammar(
-                ip,
-                tc,
-                num_its,
-                num_tri_its,
-                hmmdef,
-                subdirs,
-                label_file,
-                grammar_type=grammar_type,
-                trace_value=trace_value,
-                grammar_type_arg="word"
-            )
-            
-            gen_grammar(
-                ip,
-                tc,
-                num_its,
-                num_tri_its,
-                hmmdef,
-                subdirs,
-                label_file,
-                grammar_type=grammar_type,
-                trace_value=trace_value,
-                grammar_type_arg="word_sksp"
-            )
-            
-            gen_grammar(
-                ip,
-                tc,
-                num_its,
-                num_tri_its,
-                hmmdef,
-                subdirs,
-                label_file,
-                grammar_type=grammar_type,
-                trace_value=trace_value,
-                grammar_type_arg="letter"
-            )
-            
+ 
             if args.clear_hresults:
                 clear_results_files(
                     ip,
