@@ -99,7 +99,7 @@ VALIDATION_ITERATIONS=10 #Number of repeats or folds
 
 TT_NAME_SCRIPT=$SCRIPTS_DIR/gen_train_test_name.sh      # make consistent names
 
-OUTPUTFILE_ROOT=${PRJ}/output/supplemental/dl_cmp/dim20/thr1/train/pt93/sd1248
+OUTPUTFILE_ROOT=${PRJ}/output/supplemental/dl_cmp/dim20/thr0/train/pt93/sd2248
 
 DATAFILES_LIST=${OUTPUTFILE_ROOT}/datafiles			# list of all data files
 DATA_SAMPLES=${OUTPUTFILE_ROOT}/all-extfiles
@@ -110,7 +110,7 @@ NUM_TEST_SAMPLES=100
 #################### GRAMMAR FILES ####################
 #######################################################
 
-GRAMMARFILE_ROOT=${PRJ}/grammar/supplemental/dl_cmp/dim20/thr1/train/pt93/sd1248
+GRAMMARFILE_ROOT=${PRJ}/grammar/supplemental/dl_cmp/dim20/thr0/train/pt93/sd2248
 
 ###### USE FOR TRAINING ######
 GRAMMARFILE=${GRAMMARFILE_ROOT}/grammar_letter_isolated
@@ -126,7 +126,7 @@ SENTENCES_FILE=${PRJ}/grammar/sentences.txt
 ##################### DICT FILES ######################
 #######################################################
 
-DICTFILE_ROOT=${PRJ}/dict/supplemental/dl_cmp/dim20/thr1/train/pt93/sd1248
+DICTFILE_ROOT=${PRJ}/dict/supplemental/dl_cmp/dim20/thr0/train/pt93/sd2248
 
 ###### USE FOR MAIN TRAINING ######
 DICTFILE=${DICTFILE_ROOT}/dict_tri2letter
@@ -148,7 +148,7 @@ DICTFILE_ALIGN=${DICTFILE_ROOT}/dict_tri2tri # Dictionary used during forced ali
 ################### COMMANDS FILES ####################
 #######################################################
 
-TOKENS_ROOT=${PRJ}/commands/supplemental/dl_cmp/dim20/thr1/train/pt93/sd1248
+TOKENS_ROOT=${PRJ}/commands/supplemental/dl_cmp/dim20/thr0/train/pt93/sd2248
 
 ###### 
 # USAGE:
@@ -183,7 +183,7 @@ TOKENS_CROSS=${TOKENS_ROOT}/commands_tri_cross
 # Triletter modeling uses the MLF_LOCATION file for training.
 ######
 
-MLF_ROOT=${PRJ}/mlf/supplemental/dl_cmp/dim20/thr1/train/pt93/sd1248
+MLF_ROOT=${PRJ}/mlf/supplemental/dl_cmp/dim20/thr0/train/pt93/sd2248
 
 ###### USE FOR INITIAL TRAINING ######
 MLF_LOCATION_ORIGINAL=${MLF_ROOT}/labels.mlf_letter # used for building model and results
@@ -224,7 +224,7 @@ GEN_EXT_FILES=no				# yes or no: generate .ext data
 PREPARE_DATA=${UTIL_DIR}/prepare		# program for creating HTK-
 						# readable data from text
 
-EXT_DIR=${PRJ}/ext/supplemental/dl_cmp/dim20/thr1/train/pt93/sd1248
+EXT_DIR=${PRJ}/ext/supplemental/dl_cmp/dim20/thr0/train/pt93/sd2248
 						# .ext files it generates
 						#
 GEN_GRAMMAR=no				# yes or no: generate grammar
@@ -240,10 +240,10 @@ OUTPUT_MLF=${EXT_DIR}/result.mlf_letter		# where HTK stores results
 						# .ext files
 OUTPUT_MLF_WORD=${EXT_DIR}/result.mlf_word
 
-LOG_RESULTS=${PRJ}/results/supplemental/dl_cmp/dim20/thr1/train/pt93/sd1248/hresults.log_letter_grliwi_neg10ip_6state-pca20-gmm2_20its_5tri-its_tc50
-LOG_RESULTS_WORD=${PRJ}/results/supplemental/dl_cmp/dim20/thr1/train/pt93/sd1248/hresults.log_word_grliwi_neg10ip_6state-pca20-gmm2_20its_5tri-its_tc50
+LOG_RESULTS=${PRJ}/results/supplemental/dl_cmp/dim20/thr0/train/pt93/sd2248/hresults.log_letter_grliwi_neg10ip_6state-pca20-gmm2_20its_5tri-its_tc50
+LOG_RESULTS_WORD=${PRJ}/results/supplemental/dl_cmp/dim20/thr0/train/pt93/sd2248/hresults.log_word_grliwi_neg10ip_6state-pca20-gmm2_20its_5tri-its_tc50
 
-HMM_TEMP_DIR=${PRJ}/models/supplemental/dl_cmp/dim20/thr1/train/pt93/sd1248
+HMM_TEMP_DIR=${PRJ}/models/supplemental/dl_cmp/dim20/thr0/train/pt93/sd2248
 						# intermediate models during
 						# iterations of training
 

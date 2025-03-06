@@ -202,4 +202,5 @@ ContinuousBigram/viz/categorized_videos
 
 # Only ignore the old bigram files
 ContinuousBigram/scripts/make_bigram.old*
+ContinuousBigram/scripts/supplemental
 

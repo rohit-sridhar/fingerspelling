@@ -173,6 +173,16 @@ def _make_dir(dir_loc):
     if not(os.path.exists(dir_loc)):
         os.makedirs(dir_loc)
 
+# Makes the dir for the options file
+def _make_options_file(subdirs):
+    options_dir = os.path.join(SCRIPTS_ROOT, subdirs)
+    _make_dir(options_dir)
+
+    new_options_file = os.path.join(options_dir, OPTIONS_FILENAME)
+    original_options_file = os.path.join(SCRIPTS_ROOT, OPTIONS_FILENAME)
+
+    shutil.copy2(original_options_file, new_options_file)
+
 # Check args
 def check_args():
     if len(args.data_files) != len(args.label_files):
@@ -318,7 +328,7 @@ def edit_file(re_search, re_repl, file_to_edit):
     
 # The function below makes changes for triletter modeling. commands_word and
 # mlf location word stay the same (between single/tri) so those are not modified.
-def make_triletter_changes():
+def make_triletter_changes(subdirs):
     triletter_search = TRILETTER_VARNAME + "\s*=\s*(yes|no)"
     dictfile_search = "^DICTFILE\s*=\s*\$\{DICTFILE_ROOT\}\/dict_(tri|letter)2letter"
     dictfile_word_search = "^DICTFILE_WORD\s*=\s*\$\{DICTFILE_ROOT\}\/dict_(tri|letter)2word"
@@ -337,18 +347,20 @@ def make_triletter_changes():
         dictfile_word_repl = "DICTFILE_WORD=${DICTFILE_ROOT}/dict_tri2word"
         tokens_repl = "TOKENS=${TOKENS_ROOT}/commands_tri_internal"
         mlf_location_repl = "MLF_LOCATION=${MLF_ROOT}/labels.mlf_tri_internal"
+    
+    options_file = get_options_file(subdirs)
 
-    edit_file(triletter_search, triletter_repl, OPTIONS_FILE)
-    edit_file(dictfile_search, dictfile_repl, OPTIONS_FILE)
-    edit_file(dictfile_word_search, dictfile_word_repl, OPTIONS_FILE)
-    edit_file(tokens_search, tokens_repl, OPTIONS_FILE)
-    edit_file(mlf_location_search, mlf_location_repl, OPTIONS_FILE)
+    edit_file(triletter_search, triletter_repl, options_file)
+    edit_file(dictfile_search, dictfile_repl, options_file)
+    edit_file(dictfile_word_search, dictfile_word_repl, options_file)
+    edit_file(tokens_search, tokens_repl, options_file)
+    edit_file(mlf_location_search, mlf_location_repl, options_file)
  
-    subprocess.run(["grep", "^"+TRILETTER_VARNAME+"\s*=\s*", OPTIONS_FILE])
-    subprocess.run(["grep", "^DICTFILE\s*=\s*", OPTIONS_FILE])
-    subprocess.run(["grep", "^DICTFILE_WORD\s*=\s*", OPTIONS_FILE])
-    subprocess.run(["grep", "^TOKENS\s*=\s*", OPTIONS_FILE])
-    subprocess.run(["grep", "^MLF_LOCATION\s*=\s*", OPTIONS_FILE])
+    subprocess.run(["grep", "^"+TRILETTER_VARNAME+"\s*=\s*", options_file])
+    subprocess.run(["grep", "^DICTFILE\s*=\s*", options_file])
+    subprocess.run(["grep", "^DICTFILE_WORD\s*=\s*", options_file])
+    subprocess.run(["grep", "^TOKENS\s*=\s*", options_file])
+    subprocess.run(["grep", "^MLF_LOCATION\s*=\s*", options_file])
     
 
 # Edit options file with all new hyperparams (calls helper above)
@@ -362,7 +374,7 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, grammar_t
     num_threads = get_machine_info()
 
     # Handle triletter changes separately
-    make_triletter_changes()
+    make_triletter_changes(subdirs)
 
     ip_search = IP_VARNAME + "\s*=\s*-?[0-9]+(\.[0-9]+)*"
     ip_repl = IP_VARNAME + f"={ip}"
@@ -418,45 +430,51 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, grammar_t
 
     threads_search = THREADS_VARNAME + "\s*=\s*[0-9]+"
     threads_repl = THREADS_VARNAME + f"={num_threads}"
-
-    edit_file(ip_search, ip_repl, OPTIONS_FILE)
-    edit_file(tc_search, tc_repl, HEDFILE2)
-    edit_file(num_its_search, num_its_repl, OPTIONS_FILE)
-    edit_file(num_tri_its_search, num_tri_its_repl, OPTIONS_FILE)
-    edit_file(hmmdef_search, hmmdef_repl, OPTIONS_FILE)
-    edit_file(letter_results_search, letter_results_repl, OPTIONS_FILE)
-    edit_file(word_results_search, word_results_repl, OPTIONS_FILE)
-    edit_file(letter_grammar_search, letter_grammar_repl, OPTIONS_FILE)
-    edit_file(word_grammar_search, word_grammar_repl, OPTIONS_FILE)
-    edit_file(hedfile1_search, hedfile1_repl, OPTIONS_FILE)
-    edit_file(hedfile2_search, hedfile2_repl, OPTIONS_FILE)
-    edit_file(custom_silsp_search, custom_silsp_repl, OPTIONS_FILE)
-    edit_file(multi_process_search, multi_process_repl, OPTIONS_FILE)
-    edit_file(cross_word_search, cross_word_repl, OPTIONS_FILE)
-    edit_file(ngram_word_search, ngram_word_repl, OPTIONS_FILE)
-    edit_file(cross_word_hedfile1_search, cross_word_hedfile1_repl, hedfile1_local_file)
-    edit_file(trace_level_search, trace_level_repl, OPTIONS_FILE)
-    edit_file(threads_search, threads_repl, OPTIONS_FILE)
     
-    subprocess.run(["grep", "^" + IP_VARNAME + "\s*=\s*", OPTIONS_FILE])
-    subprocess.run(["grep", "^" + NUM_ITS_VARNAME + "\s*=\s*", OPTIONS_FILE])
-    subprocess.run(["grep", "^" + NUM_TRI_ITS_VARNAME + "\s*=\s*", OPTIONS_FILE])
-    subprocess.run(["grep", "^" + HMMDEF_VARNAME + "\s*=\s*", OPTIONS_FILE])
-    subprocess.run(["grep", "^" + LOG_LETTER_VARNAME + "\s*=\s*", OPTIONS_FILE])
-    subprocess.run(["grep", "^" + LOG_WORD_VARNAME + "\s*=\s*", OPTIONS_FILE])
-    subprocess.run(["grep", "^" + GRAMMAR_LETTER_VARNAME + "\s*=\s*", OPTIONS_FILE])
-    subprocess.run(["grep", "^" + GRAMMAR_WORD_VARNAME + "\s*=\s*", OPTIONS_FILE])
-    subprocess.run(["grep", "^" + HEDFILE1_VARNAME + "\s*=\s*", OPTIONS_FILE])
-    subprocess.run(["grep", "^" + HEDFILE2_VARNAME + "\s*=\s*", OPTIONS_FILE])
-    subprocess.run(["grep", "^" + CUSTOM_SILSP_VARNAME + "\s*=\s*", OPTIONS_FILE])
-    subprocess.run(["grep", "^" + MULTI_PROCESS_VARNAME + "\s*=\s*", OPTIONS_FILE])
-    subprocess.run(["grep", "^" + CROSS_WORD_VARNAME + "\s*=\s*", OPTIONS_FILE])
-    subprocess.run(["grep", "^" + NGRAM_WORD_VARNAME + "\s*=\s*", OPTIONS_FILE])
-    subprocess.run(["grep", "^" + TRACE_LEVEL_VARNAME + "\s*=\s*", OPTIONS_FILE])
-    subprocess.run(["grep", "^" + THREADS_VARNAME + "\s*=\s*", OPTIONS_FILE])
+    options_file = get_options_file(subdirs)
+
+    ## The commented out edit_file calls below are because they are
+    ## currently unnecessary and interfere with multiprocessing on PACE
+    edit_file(ip_search, ip_repl, options_file)
+    # edit_file(tc_search, tc_repl, HEDFILE2)
+    edit_file(num_its_search, num_its_repl, options_file)
+    edit_file(num_tri_its_search, num_tri_its_repl, options_file)
+    edit_file(hmmdef_search, hmmdef_repl, options_file)
+    edit_file(letter_results_search, letter_results_repl, options_file)
+    edit_file(word_results_search, word_results_repl, options_file)
+    edit_file(letter_grammar_search, letter_grammar_repl, options_file)
+    edit_file(word_grammar_search, word_grammar_repl, options_file)
+    edit_file(hedfile1_search, hedfile1_repl, options_file)
+    edit_file(hedfile2_search, hedfile2_repl, options_file)
+    edit_file(custom_silsp_search, custom_silsp_repl, options_file)
+    edit_file(multi_process_search, multi_process_repl, options_file)
+    edit_file(cross_word_search, cross_word_repl, options_file)
+    edit_file(ngram_word_search, ngram_word_repl, options_file)
+    # edit_file(cross_word_hedfile1_search, cross_word_hedfile1_repl, hedfile1_local_file)
+    edit_file(trace_level_search, trace_level_repl, options_file)
+    edit_file(threads_search, threads_repl, options_file)
+    
+    subprocess.run(["grep", "^" + IP_VARNAME + "\s*=\s*", options_file])
+    subprocess.run(["grep", "^" + NUM_ITS_VARNAME + "\s*=\s*", options_file])
+    subprocess.run(["grep", "^" + NUM_TRI_ITS_VARNAME + "\s*=\s*", options_file])
+    subprocess.run(["grep", "^" + HMMDEF_VARNAME + "\s*=\s*", options_file])
+    subprocess.run(["grep", "^" + LOG_LETTER_VARNAME + "\s*=\s*", options_file])
+    subprocess.run(["grep", "^" + LOG_WORD_VARNAME + "\s*=\s*", options_file])
+    subprocess.run(["grep", "^" + GRAMMAR_LETTER_VARNAME + "\s*=\s*", options_file])
+    subprocess.run(["grep", "^" + GRAMMAR_WORD_VARNAME + "\s*=\s*", options_file])
+    subprocess.run(["grep", "^" + HEDFILE1_VARNAME + "\s*=\s*", options_file])
+    subprocess.run(["grep", "^" + HEDFILE2_VARNAME + "\s*=\s*", options_file])
+    subprocess.run(["grep", "^" + CUSTOM_SILSP_VARNAME + "\s*=\s*", options_file])
+    subprocess.run(["grep", "^" + MULTI_PROCESS_VARNAME + "\s*=\s*", options_file])
+    subprocess.run(["grep", "^" + CROSS_WORD_VARNAME + "\s*=\s*", options_file])
+    subprocess.run(["grep", "^" + NGRAM_WORD_VARNAME + "\s*=\s*", options_file])
+    subprocess.run(["grep", "^" + TRACE_LEVEL_VARNAME + "\s*=\s*", options_file])
+    subprocess.run(["grep", "^" + THREADS_VARNAME + "\s*=\s*", options_file])
     subprocess.run([f"head -n 1 {hedfile1_local_file}"], shell=True)
 
 def edit_htk_root_file_options(subdirs):
+    options_file = get_options_file(subdirs)
+
     grammarfile_root_search = GRAMMARFILE_ROOT_VARNAME + "\s*=\s*\$\{PRJ\}\/grammar.*"
     grammarfile_root_repl = GRAMMARFILE_ROOT_VARNAME + os.path.join("=${PRJ}", GRAMMAR_ROOT, subdirs)
 
@@ -478,21 +496,21 @@ def edit_htk_root_file_options(subdirs):
     models_root_search = MODELS_ROOT_VARNAME + "\s*=\s*\$\{PRJ\}\/models.*"
     models_root_repl = MODELS_ROOT_VARNAME + os.path.join("=${PRJ}", MODELS_ROOT, subdirs)
 
-    edit_file(grammarfile_root_search, grammarfile_root_repl, OPTIONS_FILE)
-    edit_file(dictfile_root_search, dictfile_root_repl, OPTIONS_FILE)
-    edit_file(tokens_root_search, tokens_root_repl, OPTIONS_FILE)
-    edit_file(mlf_root_search, mlf_root_repl, OPTIONS_FILE)
-    edit_file(outputfile_root_search, outputfile_root_repl, OPTIONS_FILE)
-    edit_file(ext_dir_search, ext_dir_repl, OPTIONS_FILE)
-    edit_file(models_root_search, models_root_repl, OPTIONS_FILE)
+    edit_file(grammarfile_root_search, grammarfile_root_repl, options_file)
+    edit_file(dictfile_root_search, dictfile_root_repl, options_file)
+    edit_file(tokens_root_search, tokens_root_repl, options_file)
+    edit_file(mlf_root_search, mlf_root_repl, options_file)
+    edit_file(outputfile_root_search, outputfile_root_repl, options_file)
+    edit_file(ext_dir_search, ext_dir_repl, options_file)
+    edit_file(models_root_search, models_root_repl, options_file)
 
-    subprocess.run(["grep", GRAMMARFILE_ROOT_VARNAME + "\s*=\s*", OPTIONS_FILE])
-    subprocess.run(["grep", DICTFILE_ROOT_VARNAME + "\s*=\s*", OPTIONS_FILE])
-    subprocess.run(["grep", TOKENS_ROOT_VARNAME + "\s*=\s*", OPTIONS_FILE])
-    subprocess.run(["grep", MLF_ROOT_VARNAME + "\s*=\s*", OPTIONS_FILE])
-    subprocess.run(["grep", OUTPUTFILE_ROOT_VARNAME + "\s*=\s*", OPTIONS_FILE])
-    subprocess.run(["grep", EXT_DIR_VARNAME + "\s*=\s*", OPTIONS_FILE])
-    subprocess.run(["grep", MODELS_ROOT_VARNAME + "\s*=\s*", OPTIONS_FILE])
+    subprocess.run(["grep", GRAMMARFILE_ROOT_VARNAME + "\s*=\s*", options_file])
+    subprocess.run(["grep", DICTFILE_ROOT_VARNAME + "\s*=\s*", options_file])
+    subprocess.run(["grep", TOKENS_ROOT_VARNAME + "\s*=\s*", options_file])
+    subprocess.run(["grep", MLF_ROOT_VARNAME + "\s*=\s*", options_file])
+    subprocess.run(["grep", OUTPUTFILE_ROOT_VARNAME + "\s*=\s*", options_file])
+    subprocess.run(["grep", EXT_DIR_VARNAME + "\s*=\s*", options_file])
+    subprocess.run(["grep", MODELS_ROOT_VARNAME + "\s*=\s*", options_file])
     
     grammar_dir = os.path.join(GRAMMAR_ROOT, subdirs)
     dict_dir = os.path.join(DICT_ROOT, subdirs)
@@ -524,7 +542,8 @@ def test_model(ip, tc, num_its, num_tri_its, hmmdef, subdirs, grammar_type, trac
         new_model_path = args.test_model_path
     print(f"Model Dir: {new_model_path}")
 
-    test_args = [TEST_FILE, OPTIONS_FILE, "./testsets/testing-extfiles0", new_model_path]
+    options_file = get_options_file(subdirs)
+    test_args = [TEST_FILE, options_file, "./testsets/testing-extfiles0", new_model_path]
     print("Test Command: " + ' '.join(test_args))
     print(f"Log file: {log_file}")
 
@@ -540,7 +559,9 @@ def train_model(ip, tc, num_its, num_tri_its, hmmdef, subdirs, grammar_type, tra
     
     log_file = os.path.join(log_dir, "output.log_" + name_ext)
     
-    train_args = [TRAIN_FILE, OPTIONS_FILE]
+    options_file = get_options_file(subdirs)
+    train_args = [TRAIN_FILE, options_file]
+    
     print("Train Command: " + ' '.join(train_args))
     print(f"Output file: {log_file}")
     
@@ -614,9 +635,10 @@ def save_model(ip, tc, num_its, num_tri_its, hmmdef, subdirs, grammar_type):
     shutil.copy(curr_model_path, new_model_path)
 
 # Prepare data using scripts/prepare_files.sh. Not in use currently.
-def prepare_data(data_file, label_file):
-    prepare_command = [PREPARE_FILE, OPTIONS_FILE, data_file, label_file]
-    # cv_split_command = ' '.join([TOT_PREPARE, EXT_FILE_LIST, TRAIN_LIST, TEST_LIST, GEN_TOT_NAME, OPTIONS_FILE])
+def prepare_data(data_file, label_file, subdirs):
+    options_file = get_options_file(subdirs)
+    prepare_command = [PREPARE_FILE, options_file, data_file, label_file]
+    # cv_split_command = ' '.join([TOT_PREPARE, EXT_FILE_LIST, TRAIN_LIST, TEST_LIST, GEN_TOT_NAME, options_file])
     
     print(' '.join(prepare_command))
     # print(cv_split_command)
@@ -691,10 +713,11 @@ if __name__ == "__main__":
         label_file = args.label_files[i]
         
         subdirs = get_subdirectories(data_file)
+        _make_options_file(subdirs)
         edit_htk_root_file_options(subdirs)
 
         if args.prepare_data:
-            prepare_data(data_file, label_file)
+            prepare_data(data_file, label_file, subdirs)
         
         for arg_tup in arg_iter:
             ip = arg_tup[0]

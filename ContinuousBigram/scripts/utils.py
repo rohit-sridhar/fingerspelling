@@ -12,6 +12,7 @@ MLF_ROOT = "mlf/"
 DICT_ROOT = "dict/"
 TOKENS_ROOT = "commands/"
 EXT_ROOT = "ext/"
+SCRIPTS_ROOT = "scripts/"
 
 SUPP_DATA_FILES = "./data/supplemental/dl_cmp/dim20/thr0/all/data/"
 SUPP_LABEL_FILES = "./label/supplemental/dl_cmp/thr0/all/label/"
@@ -19,18 +20,18 @@ MAIN_DATA_FILES = "./data/main/dl_cmp/dim20/thr0/all/data/"
 MAIN_LABEL_FILES = "./label/main/dl_cmp/thr0/all/label/"
 
 MODEL_MACROS_FILE = "newMacros"
-GEN_GRAMMAR_FILE = "./scripts/gen_grammar.py"
-OPTIONS_FILE = "./scripts/options.sh"
-TRAIN_FILE = "./scripts/train.sh"
-TEST_FILE = "./scripts/test.sh"
-PREPARE_FILE = "./scripts/prepare_files.sh"
+OPTIONS_FILENAME = "options.sh"
+GEN_GRAMMAR_FILE = os.path.join(SCRIPTS_ROOT, "gen_grammar.py")
+TRAIN_FILE = os.path.join(SCRIPTS_ROOT, "train.sh")
+TEST_FILE = os.path.join(SCRIPTS_ROOT, "test.sh")
+PREPARE_FILE = os.path.join(SCRIPTS_ROOT, "prepare_files.sh")
 HEDFILE2 = "./instr/mktri2_tc.hed"
 
-TOT_PREPARE = "./scripts/cv/test_on_train.sh"
+TOT_PREPARE = os.path.join(SCRIPTS_ROOT, "cv", "test_on_train.sh")
 EXT_FILE_LIST = "all-extfiles"
 TRAIN_LIST = "./trainsets/training-extfiles"
 TEST_LIST = "./testsets/testing-extfiles"
-GEN_TOT_NAME = "./scripts/gen_train_test_name.sh"
+GEN_TOT_NAME = os.path.join(SCRIPTS_ROOT, "gen_train_test_name.sh")
 
 GRAMMARFILE_ROOT_VARNAME = "GRAMMARFILE_ROOT"
 DICTFILE_ROOT_VARNAME = "DICTFILE_ROOT"
@@ -162,6 +163,13 @@ MODIFY_DATA_METHODS = [
 ]
 
 ########## Utils functions for python scripts ##########
+
+##### OPTIONS FILE UTILS #####
+
+# Get the options file
+def get_options_file(subdirs):
+    return os.path.join(SCRIPTS_ROOT, subdirs, "options.sh")
+
 
 ##### LABELS UTILS #####
 
