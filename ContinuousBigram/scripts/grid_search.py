@@ -162,6 +162,12 @@ def parse_args():
     )
     
     parser.add_argument(
+        "--print_mode",
+        action="store_true",
+        help="If true, only prints. Does not train or test. Data will still be prepared and dirs/files will be created."
+    )
+    
+    parser.add_argument(
         "--custom_ext",
         type=str,
         default=None,
@@ -277,6 +283,11 @@ def get_hresults_filepaths(name_ext, subdirs, ip):
 
     return (letter_results, word_results)
 
+def get_ledfile_info(subdirs):
+    subdir_arr = subdirs.split(os.path.sep)
+    new_subdirs = '_'.join(subdir_arr)
+    return new_subdirs
+
 # Get grammar filepath based on grammar type
 def get_grammar_filepaths(grammar_type):
     letter_grammar = LETTER_GRAMMAR_FILE_DICT[grammar_type]
@@ -295,13 +306,6 @@ def get_bool_arg_info():
 
 def get_machine_info():
     return os.cpu_count()
-    # machine = os.environ["HOSTNAME_SERVER"]
-    # if machine == "benten":
-    #     return BENTEN_THREADS
-    # elif machine == "ebisu":
-    #     return EBISU_THREADS
-    # elif machine == "labworkstation-System-Product-Name":
-    #     return HOTEI_THREADS
 
 def get_subdirs(filepath):
     if filepath.startswith('.'):
@@ -375,9 +379,6 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, grammar_t
     hedfile2 = f"${{PRJ}}/instr/mktri2_tc.{hmmdef}.hed"
     num_threads = get_machine_info()
 
-    # Handle triletter changes separately
-    make_triletter_changes(subdirs)
-
     ip_search = IP_VARNAME + "\s*=\s*-?[0-9]+(\.[0-9]+)*"
     ip_repl = IP_VARNAME + f"={ip}"
 
@@ -438,7 +439,7 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, grammar_t
     ## The commented out edit_file calls below are because they are
     ## currently unnecessary and interfere with multiprocessing on PACE
     edit_file(ip_search, ip_repl, options_file)
-    # edit_file(tc_search, tc_repl, HEDFILE2)
+    # edit_file(tc_search, tc_repl, hedfile2)
     edit_file(num_its_search, num_its_repl, options_file)
     edit_file(num_tri_its_search, num_tri_its_repl, options_file)
     edit_file(hmmdef_search, hmmdef_repl, options_file)
@@ -476,6 +477,10 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, grammar_t
 
 def edit_htk_root_file_options(subdirs):
     options_file = get_options_file(subdirs)
+    led_file_info = get_ledfile_info(subdirs)
+    
+    # Handle triletter changes separately
+    make_triletter_changes(subdirs)
 
     grammarfile_root_search = GRAMMARFILE_ROOT_VARNAME + "\s*=\s*\$\{PRJ\}\/grammar.*"
     grammarfile_root_repl = GRAMMARFILE_ROOT_VARNAME + os.path.join("=${PRJ}", GRAMMAR_ROOT, subdirs)
@@ -497,6 +502,9 @@ def edit_htk_root_file_options(subdirs):
     
     models_root_search = MODELS_ROOT_VARNAME + "\s*=\s*\$\{PRJ\}\/models.*"
     models_root_repl = MODELS_ROOT_VARNAME + os.path.join("=${PRJ}", MODELS_ROOT, subdirs)
+    
+    ledfile_uniq_search = LEDFILE_UNIQ_VARNAME + "\s*=\s*.+"
+    ledfile_uniq_repl = LEDFILE_UNIQ_VARNAME + f"={led_file_info}"
 
     edit_file(grammarfile_root_search, grammarfile_root_repl, options_file)
     edit_file(dictfile_root_search, dictfile_root_repl, options_file)
@@ -505,6 +513,7 @@ def edit_htk_root_file_options(subdirs):
     edit_file(outputfile_root_search, outputfile_root_repl, options_file)
     edit_file(ext_dir_search, ext_dir_repl, options_file)
     edit_file(models_root_search, models_root_repl, options_file)
+    edit_file(ledfile_uniq_search, ledfile_uniq_repl, options_file)
 
     subprocess.run(["grep", GRAMMARFILE_ROOT_VARNAME + "\s*=\s*", options_file])
     subprocess.run(["grep", DICTFILE_ROOT_VARNAME + "\s*=\s*", options_file])
@@ -513,6 +522,7 @@ def edit_htk_root_file_options(subdirs):
     subprocess.run(["grep", OUTPUTFILE_ROOT_VARNAME + "\s*=\s*", options_file])
     subprocess.run(["grep", EXT_DIR_VARNAME + "\s*=\s*", options_file])
     subprocess.run(["grep", MODELS_ROOT_VARNAME + "\s*=\s*", options_file])
+    subprocess.run(["grep", "^" + LEDFILE_UNIQ_VARNAME + "\s*=\s*", options_file])
     
     grammar_dir = os.path.join(GRAMMAR_ROOT, subdirs)
     dict_dir = os.path.join(DICT_ROOT, subdirs)
@@ -549,8 +559,9 @@ def test_model(ip, tc, num_its, num_tri_its, hmmdef, subdirs, grammar_type, trac
     print("Test Command: " + ' '.join(test_args))
     print(f"Log file: {log_file}")
 
-    with open(log_file, "a") as f:
-        subprocess.run(test_args, stdout=f, stderr=subprocess.STDOUT)
+    if not(args.print_mode):
+        with open(log_file, "a") as f:
+            subprocess.run(test_args, stdout=f, stderr=subprocess.STDOUT)
 
 # Runs the train model script
 def train_model(ip, tc, num_its, num_tri_its, hmmdef, subdirs, grammar_type, trace_value):
@@ -567,8 +578,9 @@ def train_model(ip, tc, num_its, num_tri_its, hmmdef, subdirs, grammar_type, tra
     print("Train Command: " + ' '.join(train_args))
     print(f"Output file: {log_file}")
     
-    # with open(log_file, "w") as f:
-    #     subprocess.run(train_args, stdout=f, stderr=subprocess.STDOUT)
+    if not(args.print_mode):
+        with open(log_file, "w") as f:
+            subprocess.run(train_args, stdout=f, stderr=subprocess.STDOUT)
 
 def get_results(results_file, letter_results=True):
     with open(results_file, "r") as f:
@@ -634,7 +646,8 @@ def save_model(ip, tc, num_its, num_tri_its, hmmdef, subdirs, grammar_type):
     print(f"Current Model Dir: {curr_model_path}")
     print(f"New Model Dir: {new_model_path}")
 
-    shutil.copy(curr_model_path, new_model_path)
+    if not(args.print_mode):
+        shutil.copy(curr_model_path, new_model_path)
 
 # Prepare data using scripts/prepare_files.sh. Not in use currently.
 def prepare_data(data_file, label_file, subdirs):
@@ -642,7 +655,7 @@ def prepare_data(data_file, label_file, subdirs):
     prepare_command = [PREPARE_FILE, options_file, data_file, label_file]
     # cv_split_command = ' '.join([TOT_PREPARE, EXT_FILE_LIST, TRAIN_LIST, TEST_LIST, GEN_TOT_NAME, options_file])
     
-    print(' '.join(prepare_command))
+    print(f"Prepare Data: {' '.join(prepare_command)}")
     # print(cv_split_command)
 
     subprocess.run(prepare_command)
@@ -755,16 +768,16 @@ if __name__ == "__main__":
                 trace_value=trace_value,
             )
  
-            # if args.clear_hresults:
-            #     clear_results_files(
-            #         ip,
-            #         tc,
-            #         num_its,
-            #         num_tri_its,
-            #         hmmdef,
-            #         subdirs,
-            #         grammar_type,
-            #     )
+            if args.clear_hresults:
+                clear_results_files(
+                    ip,
+                    tc,
+                    num_its,
+                    num_tri_its,
+                    hmmdef,
+                    subdirs,
+                    grammar_type,
+                )
 
             if args.test_model:
                 test_model(
@@ -789,26 +802,26 @@ if __name__ == "__main__":
                     trace_value
                 )
             
-            #     save_model(
-            #         ip,
-            #         tc,
-            #         num_its,
-            #         num_tri_its,
-            #         hmmdef,
-            #         subdirs,
-            #         grammar_type,
-            #     )
+                save_model(
+                    ip,
+                    tc,
+                    num_its,
+                    num_tri_its,
+                    hmmdef,
+                    subdirs,
+                    grammar_type,
+                )
 
-            # if args.results_csv is not None:
-            #     add_results_to_csv(
-            #         ip,
-            #         tc,
-            #         num_its,
-            #         num_tri_its,
-            #         hmmdef,
-            #         subdirs,
-            #         grammar_type,
-            #     )
+            if args.results_csv is not None:
+                add_results_to_csv(
+                    ip,
+                    tc,
+                    num_its,
+                    num_tri_its,
+                    hmmdef,
+                    subdirs,
+                    grammar_type,
+                )
             
             print()
 

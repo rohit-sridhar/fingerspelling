@@ -38,21 +38,21 @@ python $SCRIPTS_DIR/gen_mlf.py --ext_loc $EXT_DIR/data/ --datafiles_list $DATAFI
 # scripts/gen_mlf_phrase.sh $DATAFILES_LIST ext $OPTIONS_FILE > mlf/labels.mlf_phrase
 
 echo "Generating commands (word, tri, cross) and MLF (tri/cross) files ...."
-touch instr/mkcmd_word.led
-touch instr/mkcmd_letter.led
+touch LEDFILE_WORD
+touch LEDFILE_LETTER
 
-HLEd -b -n $TOKENS_WORD_SKSP instr/mkcmd_word.led $MLF_LOCATION_WORD_SKSP
-HLEd -b -n $TOKENS_WORD instr/mkcmd_word.led $MLF_LOCATION_WORD
+HLEd -b -n $TOKENS_WORD_SKSP LEDFILE_WORD $MLF_LOCATION_WORD_SKSP
+HLEd -b -n $TOKENS_WORD LEDFILE_WORD $MLF_LOCATION_WORD
 
-# HLEd -b -n $TOKENS_ORIGINAL_SKSP instr/mkcmd_letter.led $MLF_LOCATION_ORIGINAL_SKSP
-HLEd -b -n $TOKENS_ORIGINAL instr/mkcmd_letter.led $MLF_LOCATION_ORIGINAL
+# HLEd -b -n $TOKENS_ORIGINAL_SKSP LEDFILE_LETTER $MLF_LOCATION_ORIGINAL_SKSP
+HLEd -b -n $TOKENS_ORIGINAL LEDFILE_LETTER $MLF_LOCATION_ORIGINAL
 
 HLEd -n $TOKENS -i $MLF_LOCATION instr/mktri_internal.led $MLF_LOCATION_ORIGINAL
 HLEd -n $TOKENS -i $MLF_LOCATION_SKSP instr/mktri_internal.led $MLF_LOCATION_ORIGINAL_SKSP
 HLEd -n $TOKENS_CROSS -i $MLF_LOCATION_CROSS instr/mktri_cross.led $MLF_LOCATION_ORIGINAL
 
-rm -f instr/mkcmd_word.led
-rm -f instr/mkcmd_letter.led
+rm -f LEDFILE_WORD
+rm -f LEDFILE_LETTER
 
 sort -o $TOKENS_ORIGINAL $TOKENS_ORIGINAL
 # sort -o $TOKENS_ORIGINAL_SKSP $TOKENS_ORIGINAL_SKSP

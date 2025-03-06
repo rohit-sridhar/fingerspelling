@@ -214,6 +214,11 @@ LM_DIR=${PRJ}/lang_models
 
 HEDFILE1=${PRJ}/instr/mktri1_silsp.hed
 HEDFILE2=${PRJ}/instr/mktri2_tc.6state-pca20-gmm2.hed
+
+LEDFILE_UNIQ=tmp
+LEDFILE_WORD=${PRJ}/instr/mkcmd_word.${LEDFILE_UNIQ}.led
+LEDFILE_LETTER=${PRJ}/instr/mkcmd_letter.${LEDFILE_UNIQ}.led
+
 STATS=${OUTPUTFILE_ROOT}/stats
 						#
 						#
