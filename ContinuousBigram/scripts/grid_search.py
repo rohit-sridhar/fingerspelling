@@ -567,8 +567,8 @@ def train_model(ip, tc, num_its, num_tri_its, hmmdef, subdirs, grammar_type, tra
     print("Train Command: " + ' '.join(train_args))
     print(f"Output file: {log_file}")
     
-    with open(log_file, "w") as f:
-        subprocess.run(train_args, stdout=f, stderr=subprocess.STDOUT)
+    # with open(log_file, "w") as f:
+    #     subprocess.run(train_args, stdout=f, stderr=subprocess.STDOUT)
 
 def get_results(results_file, letter_results=True):
     with open(results_file, "r") as f:
@@ -755,16 +755,16 @@ if __name__ == "__main__":
                 trace_value=trace_value,
             )
  
-            if args.clear_hresults:
-                clear_results_files(
-                    ip,
-                    tc,
-                    num_its,
-                    num_tri_its,
-                    hmmdef,
-                    subdirs,
-                    grammar_type,
-                )
+            # if args.clear_hresults:
+            #     clear_results_files(
+            #         ip,
+            #         tc,
+            #         num_its,
+            #         num_tri_its,
+            #         hmmdef,
+            #         subdirs,
+            #         grammar_type,
+            #     )
 
             if args.test_model:
                 test_model(
@@ -789,26 +789,26 @@ if __name__ == "__main__":
                     trace_value
                 )
             
-                save_model(
-                    ip,
-                    tc,
-                    num_its,
-                    num_tri_its,
-                    hmmdef,
-                    subdirs,
-                    grammar_type,
-                )
+            #     save_model(
+            #         ip,
+            #         tc,
+            #         num_its,
+            #         num_tri_its,
+            #         hmmdef,
+            #         subdirs,
+            #         grammar_type,
+            #     )
 
-            if args.results_csv is not None:
-                add_results_to_csv(
-                    ip,
-                    tc,
-                    num_its,
-                    num_tri_its,
-                    hmmdef,
-                    subdirs,
-                    grammar_type,
-                )
+            # if args.results_csv is not None:
+            #     add_results_to_csv(
+            #         ip,
+            #         tc,
+            #         num_its,
+            #         num_tri_its,
+            #         hmmdef,
+            #         subdirs,
+            #         grammar_type,
+            #     )
             
             print()
 
