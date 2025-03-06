@@ -22,18 +22,18 @@ cp -r $1/grammar $2/
 cp -r $1/mlf $2/
 
 # Use these commands when transferring to PACE (Commented out for now).
-# mkdir ext
-# mkdir models
-# mkdir output
-# mkdir logs
-# mkdir -p data/supplemental/dl_cmp/dim20/thr0/train
-# mkdir -p data/supplemental/dl_cmp/dim20/thr0/val
-# mkdir -p label/supplemental/dl_cmp/thr0/train
-# mkdir -p label/supplemental/dl_cmp/thr0/val
-# mkdir results
-# mkdir commands
-# mkdir dict
-# mkdir grammar
-# mkdir mlf
+# mkdir ContinuousBigram/ext
+# mkdir ContinuousBigram/models
+# mkdir ContinuousBigram/output
+# mkdir ContinuousBigram/logs
+# mkdir -p ContinuousBigram/data/supplemental/dl_cmp/dim20/thr0/train
+# mkdir -p ContinuousBigram/data/supplemental/dl_cmp/dim20/thr0/val
+# mkdir -p ContinuousBigram/label/supplemental/dl_cmp/thr0/train
+# mkdir -p ContinuousBigram/label/supplemental/dl_cmp/thr0/val
+# mkdir ContinuousBigram/results
+# mkdir ContinuousBigram/commands
+# mkdir ContinuousBigram/dict
+# mkdir ContinuousBigram/grammar
+# mkdir ContinuousBigram/mlf
 
 
