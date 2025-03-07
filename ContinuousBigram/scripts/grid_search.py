@@ -269,11 +269,10 @@ def get_hresults_filepaths(name_ext, subdirs, ip):
         results_dir = os.path.join(results_dir, model_results_dir)
         _make_dir(results_dir)
         
-        #### START HACKY. Need to rm insertion penalty from model names     ####
+        #### TODO Need to rm insertion penalty from model names     ####
         model_name_split = model_name.split("_")
         model_name_split[1] = get_ip_ext(ip)
         model_name = "_".join(model_name_split)
-        ####################              END HACKY         ####################
 
         letter_results_file = '.'.join(["hresults", "log_letter", model_name])
         word_results_file = '.'.join(["hresults", "log_word", model_name])
