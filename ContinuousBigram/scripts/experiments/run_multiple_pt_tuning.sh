@@ -4,17 +4,19 @@ typeset -a first_ten_participants=(93 227 161 254 2 242 112 31 9 107)
 
 # typeset -a rem_participants=(242 112 31 9 107 188 13 181 26 195 136 241 109 53 216 89 239 22 111 0 95 38 157 196 15 251 253 219 47 73 121 246 166 141 54 223 213 20 99 40 122 27 245 240 221 33 155 128 250 158 117 6 148 135 143 207 175 81 137 63 184 113 56 51 150 217 203)
 
-# typeset -a seeds=("1248" "2248" "3248" "4248" "5248" "6248" "7248" "8248" "9248" "10248")
+# typeset -a seeds=(1248 2248 3248 4248 5248 6248 7248 8248 9248 10248)
 typeset -a seeds=(1248 2248 3248 4248 5248)
 # typeset -a thresholds=(1 2 4 6 8)
 typeset -a thresholds=(1 4 8)
 typeset -a interpolations=(1 2)
 
+output_dir="pt_first_ten_results"
+
 ############################## TRAIN MULTIPLE NO INTERPOLATION ##############################
 # for participant in "${first_ten_participants[@]}"; do
 #     for seed in "${seeds[@]}"; do
 #         for threshold in "${thresholds[@]}"; do
-#             python scripts/grid_search.py --data_files ./data/supplemental/dl_cmp/dim20/thr${threshold}/train/pt${participant}/sd${seed}/data/ --label_files ./label/supplemental/dl_cmp/thr${threshold}/train/pt${participant}/sd${seed}/label/ --hmmdefs 6state-pca20 6state-pca20-gmm2 4state-pca20 4state-pca20-gmm2 3state-pca20 3state-pca20-gmm2 --results_csv ./output/pt_first_ten_results/results_pt${participant}_tuning.csv --prepare_data --clear_hresults
+#             python scripts/grid_search.py --data_files ./data/supplemental/dl_cmp/dim20/thr${threshold}/train/pt${participant}/sd${seed}/data/ --label_files ./label/supplemental/dl_cmp/thr${threshold}/train/pt${participant}/sd${seed}/label/ --hmmdefs 6state-pca20 6state-pca20-gmm2 4state-pca20 4state-pca20-gmm2 3state-pca20 3state-pca20-gmm2 --results_csv ./output/$output_dir/results_pt${participant}_tuning.csv --prepare_data --clear_hresults
 #         done
 #     done
 # done
@@ -25,7 +27,7 @@ for participant in "${first_ten_participants[@]}"; do
     for seed in "${seeds[@]}"; do
         for threshold in "${thresholds[@]}"; do
             for interpolation in "${interpolations[@]}"; do
-                python scripts/grid_search.py --data_files ./data/supplemental/dl_cmp/dim20/thr${threshold}/train/interpall${interpolation}/pt${participant}/sd${seed}/data/ --label_files ./label/supplemental/dl_cmp/thr${threshold}/train/pt${participant}/sd${seed}/label/ --hmmdefs 6state-pca20 6state-pca20-gmm2 4state-pca20 4state-pca20-gmm2 3state-pca20 3state-pca20-gmm2 --results_csv ./output/pt_first_ten_results/results_pt${participant}_tuning.csv --prepare_data --clear_hresults
+                python scripts/grid_search.py --data_files ./data/supplemental/dl_cmp/dim20/thr${threshold}/train/interpall${interpolation}/pt${participant}/sd${seed}/data/ --label_files ./label/supplemental/dl_cmp/thr${threshold}/train/pt${participant}/sd${seed}/label/ --hmmdefs 6state-pca20 6state-pca20-gmm2 4state-pca20 4state-pca20-gmm2 3state-pca20 3state-pca20-gmm2 --results_csv ./output/$output_dir/results_pt${participant}_tuning.csv --prepare_data --clear_hresults
             done
         done
     done

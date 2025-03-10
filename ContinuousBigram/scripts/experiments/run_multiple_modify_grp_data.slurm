@@ -10,21 +10,29 @@ typeset -a seeds=(1248 2248)
 typeset -a ptgrps=(fpl111 fpl112 fpl311 fpl312 fpl511 fpl512) 
 typeset -a data_splits=(train val)
 
+# Lines below are for slurm job
+root="/data/hmm_modeling/fingerspelling/ContinuousBigram"
+cd $root
+grp_idx=$(( SLURM_ARRAY_TASK_ID ))
+# pt_idx=$((SLURM_ARRAY_TASK_ID / ${#seeds[@]}))
+# sd_idx=$((SLURM_ARRAY_TASK_ID % ${#seeds[@]}))
+
 ############################## IMPORT MULTIPLE ##############################
 
 echo ""
 echo "STARTING IMPORT"
+echo "GRP IDX: ${grp_idx}"
 echo ""
 
 # data_thr0_supplemental_sd5248_grpfpl112_right.pkl.train
 
-for data_split in ${data_splits[@]}; do
-    for grp in "${ptgrps[@]}"; do
-        for seed in "${seeds[@]}"; do
-            python scripts/modify_data.py --data_loc /data/deep_learning/fingerspelling_torch/data/data_thr0_supplemental_sd${seed}_grp${grp}_right.pkl.${data_split} --new_data_loc ./data/supplemental/dl_cmp/dim20/thr0/${data_split}/grp${grp}/sd${seed}/data --new_label_loc ./label/supplemental/dl_cmp/thr0/${data_split}/grp${grp}/sd${seed}/label/ --method import
-        done
-    done
-done
+# for data_split in ${data_splits[@]}; do
+#     for grp in "${ptgrps[$grp_idx]}"; do
+#         for seed in "${seeds[@]}"; do
+#             echo "python scripts/modify_data.py --data_loc /data/deep_learning/fingerspelling_torch/data/data_thr0_supplemental_sd${seed}_grp${grp}_right.pkl.${data_split} --new_data_loc ./data/supplemental/dl_cmp/dim20/thr0/${data_split}/grp${grp}/sd${seed}/data --new_label_loc ./label/supplemental/dl_cmp/thr0/${data_split}/grp${grp}/sd${seed}/label/ --method import"
+#         done
+#     done
+# done
 
 
 ############################## THRESHOLD MULTIPLE (TRAIN) ##############################
@@ -39,7 +47,7 @@ echo "STARTING FRAME PER LETTER THRESHOLD"
 echo ""
 
 for data_split in ${data_splits[@]}; do
-    for grp in "${ptgrps[@]}"; do
+    for grp in "${ptgrps[$grp_idx]}"; do
         for seed in "${seeds[@]}"; do
             for threshold in "${thresholds[@]}"; do
                 python scripts/modify_data.py --data_loc ./data/supplemental/dl_cmp/dim20/thr0/${data_split}/grp${grp}/sd${seed}/data --label_loc ./label/supplemental/dl_cmp/thr0/${data_split}/grp${grp}/sd${seed}/label --new_data_loc ./data/supplemental/dl_cmp/dim20/thr${threshold}/${data_split}/grp${grp}/sd${seed}/data --new_label_loc ./label/supplemental/dl_cmp/thr${threshold}/${data_split}/grp${grp}/sd${seed}/label --method fpl_threshold --fpl_threshold ${threshold}
@@ -60,7 +68,7 @@ echo "STARTING INTERPOLATION"
 echo ""
 
 for data_split in ${data_splits[@]}; do
-    for grp in "${ptgrps[@]}"; do
+    for grp in "${ptgrps[$grp_idx]}"; do
         for seed in "${seeds[@]}"; do
             for threshold in "${thresholds[@]}"; do
                 for interpolation in "${interpolations[@]}"; do

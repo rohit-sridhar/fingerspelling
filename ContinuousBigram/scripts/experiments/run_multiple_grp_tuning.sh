@@ -2,8 +2,8 @@
 
 ## Bigger Experiment
 # typeset -a seeds=(1248 2248 3248 4248 5248)
-# typeset -a ptgrps=("fpl111" "fpl112" "fpl113" "fpl311" "fpl312" "fpl313" "fpl511" "fpl512" "fpl513")
-# typeset -a data_splits=("train" "val")
+# typeset -a ptgrps=(fpl111 fpl112 fpl113 fpl311 fpl312 fpl313 fpl511 fpl512 fpl513)
+# typeset -a data_splits=(train val)
 # typeset -a thresholds=(1 2 4 6 8)
 # typeset -a interpolations=(1 2)
 
