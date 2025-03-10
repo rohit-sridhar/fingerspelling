@@ -20,7 +20,7 @@ output_dir="grp_results"
 for seed in "${seeds[@]}"; do
     for threshold in "${thresholds[@]}"; do
         for grp in "${ptgrps[@]}"; do
-            python scripts/grid_search.py --data_files ./data/supplemental/dl_cmp/dim20/thr${threshold}/train/grp${grp}/sd${seed}/data/ --label_files ./label/supplemental/dl_cmp/thr${threshold}/train/grp${grp}/sd${seed}/label/ --hmmdefs 6state-pca20 6state-pca20-gmm2 4state-pca20 4state-pca20-gmm2 3state-pca20 3state-pca20-gmm2 --results_csv ./output/$output_dir/results_grp${grp}_tuning.csv --prepare_data --clear_hresults
+            python scripts/grid_search.py --data_files ./data/supplemental/dl_cmp/dim20/thr${threshold}/train/grp${grp}/sd${seed}/data/ --label_files ./label/supplemental/dl_cmp/thr${threshold}/train/grp${grp}/sd${seed}/label/ --hmmdefs 6state-pca20-gmm2 4state-pca20-gmm2 3state-pca20-gmm2 --results_csv ./output/$output_dir/results_grp${grp}_tuning.csv --prepare_data --clear_hresults
         done
     done
 done
@@ -31,7 +31,7 @@ for seed in "${seeds[@]}"; do
     for threshold in "${thresholds[@]}"; do
         for grp in "${ptgrps[@]}"; do
             for interpolation in "${interpolations[@]}"; do
-                python scripts/grid_search.py --data_files ./data/supplemental/dl_cmp/dim20/thr${threshold}/train/interpall${interpolation}/grp${grp}/sd${seed}/data/ --label_files ./label/supplemental/dl_cmp/thr${threshold}/train/grp${grp}/sd${seed}/label/ --hmmdefs 6state-pca20 6state-pca20-gmm2 4state-pca20 4state-pca20-gmm2 3state-pca20 3state-pca20-gmm2 --results_csv ./output/$output_dir/results_grp${grp}_tuning.csv --prepare_data --clear_hresults
+                python scripts/grid_search.py --data_files ./data/supplemental/dl_cmp/dim20/thr${threshold}/train/interpall${interpolation}/grp${grp}/sd${seed}/data/ --label_files ./label/supplemental/dl_cmp/thr${threshold}/train/grp${grp}/sd${seed}/label/ --hmmdefs 6state-pca20-gmm2 4state-pca20-gmm2 3state-pca20-gmm2 --results_csv ./output/$output_dir/results_grp${grp}_tuning.csv --prepare_data --clear_hresults
             done
         done
     done
