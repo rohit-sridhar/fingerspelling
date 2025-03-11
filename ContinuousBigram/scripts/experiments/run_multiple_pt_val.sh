@@ -1,14 +1,16 @@
 #!/bin/ksh
 
-typeset -a train_participants=("93" "227" "161" "254" "2")
-typeset -a train_seeds=("1248" "2248" "3248" "4248" "5248" "6248" "7248" "8248" "9248" "10248")
+##### This script needs to be modified. Check for what participant models we have.
 
-typeset -a val_participants=("93" "227" "161" "254" "2")
-typeset -a val_seeds=("1248" "2248" "3248" "4248" "5248" "6248" "7248" "8248" "9248" "10248")
+typeset -a train_participants=(93 227 161 254 2)
+typeset -a train_seeds=(1248 2248 3248 4248 5248 6248 7248 8248 9248 10248)
+
+typeset -a val_participants=(93 227 161 254 2)
+typeset -a val_seeds=(1248 2248 3248 4248 5248 6248 7248 8248 9248 10248)
 
 typeset -a thresholds=(1 2 4 6 8)
 typeset -a interpolations=(1 2)
-typeset -a hmmdefs=("6state-pca20" "6state-pca20-gmm2")
+typeset -a hmmdefs=(6state-pca20 6state-pca20-gmm2)
 
 ############################## CROSS PT CROSS SD VALIDATION NO INTERPOLATION ##############################
 for train_participant in "${train_participants[@]}"; do
