@@ -160,6 +160,7 @@ MODIFY_DATA_METHODS = [
     "match_triletters",
     "import",
     "sample",
+    "word_level",
 ]
 
 ########## Utils functions for python scripts ##########

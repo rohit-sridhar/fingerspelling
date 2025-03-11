@@ -20,29 +20,25 @@ def parse_args():
     parser.add_argument(
         "--data_loc",
         type=str,
-        required=True,
         help="Original data location (for all methods). Must end with /data (for naming convention), unless method is import."
     )
     
     parser.add_argument(
         "--new_data_loc",
         type=str,
-        required=True,
         help="Location to store new data (for all methods). Must end with /data (for naming convention)."
     )
     
     parser.add_argument(
         "--label_loc",
         type=str,
-        default="./label/label",
-        help="Location for label files (only for fpl_threshold, interpolation, threshold_duplication, duplication methods). Must end with /label (for naming convention)."
+        help="Location for label files (only for fpl_threshold, interpolation, threshold_duplication, duplication, word_level methods). Must end with /label (for naming convention)."
     )
     
     parser.add_argument(
         "--new_label_loc",
         type=str,
-        default=None,
-        help="Location to store new labels (only for fpl_threshold, import). Must end with /label (for naming convention)."
+        help="Location to store new labels (only for fpl_threshold, import, word_level methods). Must end with /label (for naming convention)."
     )
     
     parser.add_argument(
@@ -147,22 +143,27 @@ def _check_args():
     data_path_list = [args.data_loc, args.new_data_loc]
     label_path_list = [args.label_loc, args.new_label_loc]
     
-    if args.method != "import":
+    if args.method not in ("import", "word_level"):
         for path in data_path_list:
-            if not(path.endswith('/data')):
-                raise ValueError("Must pass a data path ends with /data.")
+            if path is None or not(path.endswith('/data')):
+                raise ValueError("Must pass a data path that ends with /data.")
     
-    for path in label_path_list:
-        if path is not None and not(path.endswith('/label')):
-            raise ValueError("Must pass a label path ends with /label.")
+    if args.method not in ("word_level"):
+        if args.new_data_loc is None or not(args.new_data_loc.endswith('/data')):
+                raise ValueError("Must pass a new data path that ends with /data.")
+        _make_dir(args.new_data_loc)
+
+    if args.method in ("fpl_threshold", "interpolation", "threshold_duplication", "duplication", "word_level"):
+        for path in label_path_list:
+            if path is None or not(path.endswith('/label')):
+                raise ValueError("Must pass a label path ends with /label.")
 
     if args.method == "match_triletters" and args.commands_file is None:
         raise ValueError("Must pass triletter commands file for match triletters.")
-
-    _make_dir(args.new_data_loc)
-    if args.method in ("match_triletters", "import", "sample", "fpl_threshold", "neg_fpl_threshold"):
-        if args.new_label_loc is None:
-            raise ValueError("Must pass new label location for [neg]_fpl_threshold/match_triletters/import/sample methods.")
+    
+    if args.method in ("match_triletters", "import", "sample", "fpl_threshold", "neg_fpl_threshold", "word_level"):
+        if args.new_label_loc is None or not(args.new_label_loc.endswith('/label')):
+            raise ValueError("Must pass new label location for [neg]_fpl_threshold/match_triletters/import/sample methods. It must end with /label.")
         _make_dir(args.new_label_loc)
     
     if args.method == "sample":
@@ -427,10 +428,37 @@ def sample_data(datafile, label_file, new_datafile, new_label_file, sample_ratio
         os.link(datafile, new_datafile)
         os.link(label_file, new_label_file)
     
+############### WORD LEVEL FUNCTIONS ###############
+def word_level(label_file, new_label_file):
+    with open(label_file, 'r') as lab:
+        label = lab.readlines()
+    
+    new_phrase = [label[0]]
+    
+    for char in label[1:-1]:
+        char2 = char.strip()
+        
+        if ord('a') <= ord(char2) <= ord('z'):
+            new_phrase.append(char2)
+        else:
+            new_phrase.append(char)   
+    new_phrase.append(label[-1])
+    
+    
+
+    print(new_phrase)
+
+def get_file_seq_ids():
+    if args.method != "word_level":
+        files = os.listdir(args.data_loc)
+    else:
+        files = os.listdir(args.label_loc)
+    return files
 
 if __name__ == "__main__":
     args = parse_args()
     print(args)
+
     _check_args()
     random.seed(args.seed)
 
@@ -440,11 +468,13 @@ if __name__ == "__main__":
 
     if args.method == "match_triletters":
         commands_triletters = read_triletters_from_commands()
-     
-    files = os.listdir(args.data_loc)
+    
+    files = get_file_seq_ids()
     for f in tqdm(files):
-        datafile = os.path.join(args.data_loc, f)
-        new_datafile = os.path.join(args.new_data_loc, f)
+        # This check occurs since data loc and new data loc are no longer required.
+        if args.method != "word_level":
+            datafile = os.path.join(args.data_loc, f)
+            new_datafile = os.path.join(args.new_data_loc, f)
         
         if args.method == "duplication":
             label_file = os.path.join(args.label_loc, f + '.lab')
@@ -477,4 +507,8 @@ if __name__ == "__main__":
             label_file = os.path.join(args.label_loc, f + '.lab')
             new_label_file = os.path.join(args.new_label_loc, f + '.lab')
             sample_data(datafile, label_file, new_datafile, new_label_file, args.sample_ratio)
+        elif args.method == "word_level":
+            label_file = os.path.join(args.label_loc, f)
+            new_label_file = os.path.join(args.new_label_loc, f)
+            word_level(label_file, new_label_file)
 
