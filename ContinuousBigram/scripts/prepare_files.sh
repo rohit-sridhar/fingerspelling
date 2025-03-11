@@ -12,17 +12,19 @@ OPTIONS_FILE=$1
 
 echo "Housekeeping ...."
 find $2/ -type f | sort -V  > $DATAFILES_LIST
-# find $2/* -type f | sort -V  > $DATAFILES_LIST
-# rm -rf $EXT_DIR/data/
-# rm -f $EXT_DIR/done
-rm -rf $EXT_DIR/*
 
-mkdir $EXT_DIR/data/
-find $3/ -name "*.lab" -type f | xargs cp -t $EXT_DIR/data/
-# cp -r $3/* $EXT_DIR/data/
+if [[ ! -f "${EXT_DIR}/done" ]]; then
+  echo "Cleaning up ext dir ...."
+  rm -rf $EXT_DIR/*
+  mkdir $EXT_DIR/data/
+  find $3/ -name "*.lab" -type f | xargs cp -t $EXT_DIR/data/
+  
+  echo "Generating ext files ...."
+  $SCRIPTS_DIR/gen_ext_files.sh $OPTIONS_FILE
+else
+  echo "Ext files exit. Skipping generation"
+fi
 
-echo "Generating ext files ...."
-$SCRIPTS_DIR/gen_ext_files.sh $OPTIONS_FILE
 # find $EXT_DIR/data/*.ext -type f | xargs readlink -f | sort -V > $DATA_SAMPLES
 find $EXT_DIR/data/ -name "*.ext" -type f | xargs readlink -f | sort -V > $DATA_SAMPLES
 
