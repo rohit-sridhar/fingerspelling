@@ -1,13 +1,22 @@
 #!/bin/ksh
 
-# typeset -a participants=(93 227 161 254 2)
+##### For all participants
+# typeset -a all_participants=(93 227 161 254 2 242 112 31 9 107 188 13 181 26 195 136 241 109 53 216 89 239 22 111 0 95 38 157 196 15 251 253 219 47 73 121 246 166 141 54 223 213 20 99 40 122 27 245 240 221 33 155 128 250 158 117 6 148 135 143 207 175 81 137 63 184 113 56 51 150 217 203)
+# 
+# typeset -a seeds=(1248 2248 3248 4248 5248 6248 7248 8248 9248 10248)
+# typeset -a data_splits=(train val)
+# 
+# typeset -a thresholds=(1 2 4 6 8)
+# typeset -a interpolations=(1 2)
 
-# typeset -a rem_participants=(242 112 31 9 107 188 13 181 26 195 136 241 109 53 216 89 239 22 111 0 95 38 157 196 15 251 253 219 47 73 121 246 166 141 54 223 213 20 99 40 122 27 245 240 221 33 155 128 250 158 117 6 148 135 143 207 175 81 137 63 184 113 56 51 150 217 203)
+##### For all participants
+typeset -a all_participants=(93 227 161 254 2 242 112 31 9 107)
 
-typeset -a all_participants=(93 227 161 254 2 242 112 31 9 107 188 13 181 26 195 136 241 109 53 216 89 239 22 111 0 95 38 157 196 15 251 253 219 47 73 121 246 166 141 54 223 213 20 99 40 122 27 245 240 221 33 155 128 250 158 117 6 148 135 143 207 175 81 137 63 184 113 56 51 150 217 203)
-
-typeset -a seeds=(1248 2248 3248 4248 5248 6248 7248 8248 9248 10248)
+typeset -a seeds=(1248 2248 3248 4248 5248)
 typeset -a data_splits=(train val)
+
+typeset -a thresholds=(1 4 8)
+typeset -a interpolations=(1 2)
 
 ############################## IMPORT MULTIPLE ##############################
 
@@ -29,7 +38,6 @@ done
 
 
 ############################## THRESHOLD MULTIPLE (TRAIN) ##############################
-typeset -a thresholds=(1 2 4 6 8)
 
 echo ""
 echo "STARTING FRAME PER LETTER THRESHOLD"
@@ -52,7 +60,6 @@ done
 done
 
 ############################## INTERPOLATE MULTIPLE (TRAIN) ##############################
-typeset -a interpolations=(1 2)
 
 echo ""
 echo "STARTING INTERPOLATION"

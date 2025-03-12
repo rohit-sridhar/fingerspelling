@@ -21,8 +21,6 @@ typeset -a interpolations=(1 2)
 root="/data/hmm_modeling/fingerspelling/ContinuousBigram"
 cd $root
 pt_idx=$(( SLURM_ARRAY_TASK_ID ))
-# pt_idx=$((SLURM_ARRAY_TASK_ID / ${#seeds[@]}))
-# sd_idx=$((SLURM_ARRAY_TASK_ID % ${#seeds[@]}))
 
 ############################## IMPORT MULTIPLE ##############################
 
@@ -74,7 +72,7 @@ echo ""
 
 for data_split in ${data_splits[@]}; do
 for participant in "${all_participants[$pt_idx]}"; do
-for seed in "${seeds[$sd_idx]}"; do
+for seed in "${seeds[@]}"; do
 for threshold in "${thresholds[@]}"; do
 for interpolation in "${interpolations[@]}"; do
     python scripts/modify_data.py \
