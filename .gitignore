@@ -204,3 +204,7 @@ ContinuousBigram/viz/categorized_videos
 ContinuousBigram/scripts/make_bigram.old*
 ContinuousBigram/scripts/supplemental
 
+# Ignore custom tmp instr files
+ContinuousBigram/instr/mkcmd_letter.*
+ContinuousBigram/instr/mkcmd_word.*
+

@@ -8,12 +8,14 @@
 
 ##### For pilot participants (top 15)
 typeset -a all_participants=(93 161 227 254 2 242 112 31 9 107 188 13 181 26 195)
-typeset -a seeds=(1248 2248 3248 4248 5248)
+##### For pilot participants (second 15)
+# typeset -a all_participants=(136 241 109 53 216 89 239 22 111 0 95 38 157 196 15)
 
+typeset -a seeds=(1248 2248 3248 4248 5248)
 typeset -a thresholds=(1 4 8)
 typeset -a interpolations=(1 2)
 
-output_dir="pt_top_15_results"
+output_dir="pt_results/top_15"
 
 # Two lines below are for slurm jobs
 root="/data/hmm_modeling/fingerspelling/ContinuousBigram"

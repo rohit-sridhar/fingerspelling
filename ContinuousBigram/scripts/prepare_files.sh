@@ -61,12 +61,6 @@ sort -o $TOKENS_ORIGINAL $TOKENS_ORIGINAL
 sort -o $TOKENS_WORD $TOKENS_WORD
 sort -o $TOKENS_WORD_SKSP $TOKENS_WORD_SKSP
 
-######## SKIP GENERATING THE GRAMMAR FILES. GENERATE IN GRID SEARCH INSTEAD ########
-# echo "Generating single letter/word context grammar files ...."
-# python scripts/gen_grammar.py --label_loc $3/ --grammar_file $GRAMMARFILE --grammar_type letter
-# python scripts/gen_grammar.py --label_loc $3/ --grammar_file $GRAMMARFILE_WORD --grammar_type word
-# python scripts/gen_grammar.py --label_loc $3/ --grammar_file $GRAMMARFILE_WORD_CROSS --grammar_type cross_word
-
 echo "Generating phrase list for language modeling"
 python $SCRIPTS_DIR/gen_phrases.py --label_loc $3/ --phrases_loc $SENTENCES_FILE
 

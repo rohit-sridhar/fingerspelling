@@ -61,7 +61,7 @@ done
 # typeset -a interpolations=(1 2)
 
 ## Pilot Experiment
-typeset -a interpolations=(1)
+typeset -a interpolations=(1 2)
 
 echo ""
 echo "STARTING INTERPOLATION"
