@@ -6,16 +6,20 @@
 
 # typeset -a thresholds=(1 2 4 6 8)
 
-##### For pilot participants (top 15)
-typeset -a all_participants=(93 161 227 254 2 242 112 31 9 107 188 13 181 26 195)
-##### For pilot participants (second 15)
+##### For participants (top 15)
+# typeset -a all_participants=(93 161 227 254 2 242 112 31 9 107 188 13 181 26 195)
+##### For participants (second 15)
 # typeset -a all_participants=(136 241 109 53 216 89 239 22 111 0 95 38 157 196 15)
+##### For participants (third 15)
+# typeset -a all_participants=(251 253 219 47 73 121 246 166 141 54 223 213 20 99 40)
+##### For participants (fourth 15)
+typeset -a all_participants=(122 27 245 240 221 33 155 128 250 158 117 6 148 135 143)
 
 typeset -a seeds=(1248 2248 3248 4248 5248)
 typeset -a thresholds=(1 4 8)
 typeset -a interpolations=(1 2)
 
-output_dir="pt_results/top_15"
+output_dir="pt_results/tot/fourth_15"
 
 # Two lines below are for slurm jobs
 root="/data/hmm_modeling/fingerspelling/ContinuousBigram"

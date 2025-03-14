@@ -14,7 +14,7 @@ typeset -a data_splits=(train val)
 typeset -a thresholds=(1 4 8)
 typeset -a interpolations=(1)
 
-output_dir="pilot_grp_results"
+output_dir="grp_results/tot"
 
 # Two lines below are for slurm jobs
 root="/data/hmm_modeling/fingerspelling/ContinuousBigram"

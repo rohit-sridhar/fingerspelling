@@ -13,7 +13,7 @@ typeset -a seeds=(1248 2248 3248 4248 5248)
 typeset -a thresholds=(1 4 8)
 typeset -a interpolations=(1 2)
 
-output_dir="pt_first_ten_results"
+output_dir="pt_results/top_10"
 
 ############################## TRAIN MULTIPLE NO INTERPOLATION ##############################
 for participant in "${first_ten_participants[@]}"; do

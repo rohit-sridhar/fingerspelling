@@ -646,7 +646,10 @@ def save_model(ip, tc, num_its, num_tri_its, hmmdef, subdirs, grammar_type):
     print(f"New Model Dir: {new_model_path}")
 
     if not(args.print_mode):
-        shutil.copy(curr_model_path, new_model_path)
+        if os.path.exists(curr_model_path):
+            shutil.copy(curr_model_path, new_model_path)
+        else:
+            print("Model wasn't created or is missing. Check the log file")
 
 # Prepare data using scripts/prepare_files.sh. Not in use currently.
 def prepare_data(data_file, label_file, subdirs):
