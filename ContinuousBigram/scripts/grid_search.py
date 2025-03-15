@@ -585,7 +585,10 @@ def get_results(results_file, letter_results=True):
     with open(results_file, "r") as f:
         results_lines = f.readlines()
     
-    results = ('0.0', '0.0')
+    results = None 
+    corr_match = None
+    acc_match = None
+    sent_match = None
     for line in results_lines:
         if line.startswith("WORD: "):
             corr_match = re.search("Corr=-?[0-9]+\.[0-9]+", line).group(0)
@@ -593,10 +596,15 @@ def get_results(results_file, letter_results=True):
         if line.startswith("SENT: "):
             sent_match = re.search("Correct=-?[0-9]+\.[0-9]+", line).group(0)
     
-    if letter_results:
-        results = [corr_match.split('=')[1], acc_match.split('=')[1]]
+    if corr_match is not None and acc_match is not None:
+        if letter_results:
+            results = [corr_match.split('=')[1], acc_match.split('=')[1]]
+        elif sent_match is not None:
+            results = [corr_match.split('=')[1], acc_match.split('=')[1], sent_match.split('=')[1]]
+        else:
+            print("No sentence results found. Check results file for error.")
     else:
-        results = [corr_match.split('=')[1], acc_match.split('=')[1], sent_match.split('=')[1]]
+        print("No word/letter results found. Check results file for error.")
     return results
 
 def add_results_to_csv(ip, tc, num_its, num_tri_its, hmmdef, subdirs, grammar_type):
@@ -608,23 +616,24 @@ def add_results_to_csv(ip, tc, num_its, num_tri_its, hmmdef, subdirs, grammar_ty
     
     letter_results = get_results(letter_results_file, letter_results=True)
     word_results = get_results(word_results_file, letter_results=False)
-
-    results = [letter_results_file] + letter_results + word_results
-    if os.path.exists(args.results_csv):
-        with open(args.results_csv, 'a', newline='') as f:
-            csvwriter = csv.writer(
-                f, delimiter='|',
-                quotechar='\\', quoting=csv.QUOTE_MINIMAL
-            )
-            csvwriter.writerow(results)
-    else:
-        with open(args.results_csv, 'w') as f:
-            csvwriter = csv.writer(
-                f, delimiter='|',
-                quotechar='\\', quoting=csv.QUOTE_MINIMAL
-            )
-            csvwriter.writerow(['letter_results_file','letter_corr', 'letter_acc', 'word_corr', 'word_acc', 'sent_corr'])
-            csvwriter.writerow(results)
+    
+    if letter_results is not None and word_results is not None:
+        results = [letter_results_file] + letter_results + word_results
+        if os.path.exists(args.results_csv):
+            with open(args.results_csv, 'a', newline='') as f:
+                csvwriter = csv.writer(
+                    f, delimiter='|',
+                    quotechar='\\', quoting=csv.QUOTE_MINIMAL
+                )
+                csvwriter.writerow(results)
+        else:
+            with open(args.results_csv, 'w') as f:
+                csvwriter = csv.writer(
+                    f, delimiter='|',
+                    quotechar='\\', quoting=csv.QUOTE_MINIMAL
+                )
+                csvwriter.writerow(['letter_results_file','letter_corr', 'letter_acc', 'word_corr', 'word_acc', 'sent_corr'])
+                csvwriter.writerow(results)
 
 def get_model_path(subdirs, ip, tc, num_its, num_tri_its, hmmdef):
     name_ext = get_name_ext(ip, tc, num_its, num_tri_its, hmmdef)  # Pass none for first arg because the model doesn't vary by grammar
