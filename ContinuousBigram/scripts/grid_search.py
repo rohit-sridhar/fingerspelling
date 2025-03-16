@@ -137,6 +137,12 @@ def parse_args():
     )
     
     parser.add_argument(
+        "--prepare_data_only",
+        action='store_true',
+        help="If true, will prepare data before training."
+    )
+    
+    parser.add_argument(
         "--test_model",
         action='store_true',
         help="If true, will run testing. If a model is not passed as an arg, will build a model name from other args (as in train time)"
@@ -756,7 +762,10 @@ if __name__ == "__main__":
             label_file,
             grammar_type_arg="letter"
         )
-        
+       
+        if args.prepare_data_only:
+            exit(0)
+
         for arg_tup in arg_iter:
             ip = arg_tup[0]
             hmmdef = arg_tup[1]
