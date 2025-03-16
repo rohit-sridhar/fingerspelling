@@ -435,19 +435,23 @@ def word_level(label_file, new_label_file):
     
     new_phrase = [label[0]]
     
-    for char in label[1:-1]:
+    for i,char in enumerate(label[1:-1], 1):
         char2 = char.strip()
-        
-        if ord('a') <= ord(char2) <= ord('z'):
+        next_char = label[i+1]
+
+        if ord('a') <= ord(char2) <= ord('z') and next_char not in (SPACE+'\n', EXIT+'\n'):
             new_phrase.append(char2)
         else:
-            new_phrase.append(char)   
+            new_phrase.append(char)
+    
     new_phrase.append(label[-1])
     
+
+    new_phrase = ''.join(new_phrase)
+
+    with open(new_label_file, 'w') as f:
+        f.write(new_phrase)
     
-
-    print(new_phrase)
-
 def get_file_seq_ids():
     if args.method != "word_level":
         files = os.listdir(args.data_loc)

@@ -7,7 +7,7 @@ if [ "$1" == "build" ]; then
     sudo docker build --no-cache -t $local_image .
 elif [ "$1" == "launch" ]; then
     # continuous_bigram_path="/scratch/fingerspelling"
-    continuous_bigram_path="/data/hmm_modeling/fingerspelling"
+    continuous_bigram_path="/scratch/fingerspelling"
     fingerspelling_torch_path="/data/deep_learning/fingerspelling_torch"
     fingerspelling_data_path="/data/parquet/asl-fingerspelling"
     
