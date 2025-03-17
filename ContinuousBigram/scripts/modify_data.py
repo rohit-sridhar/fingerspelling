@@ -227,7 +227,7 @@ def _check_args():
 
 ############### DATA DUPLICATION FUNCTIONS ###############
 
-def duplicate_frames(datafile, label_file, new_datafile, multiplier, dupe_all):
+def duplicate_frames(datafile, label_file, new_datafile, new_label_file, multiplier, dupe_all):
     with open(datafile, 'r') as df:
         frames = df.readlines()
     
@@ -244,8 +244,9 @@ def duplicate_frames(datafile, label_file, new_datafile, multiplier, dupe_all):
 
     with open(new_datafile, 'w') as new_datafile:
         new_datafile.writelines(new_frames)
+    os.link(label_file, new_label_file)
 
-def threshold_duplicate_frames(datafile, label_file, new_datafile, fpl_threshold):
+def threshold_duplicate_frames(datafile, label_file, new_datafile, new_label_file, fpl_threshold):
     with open(datafile, 'r') as df:
         frames = df.readlines()
     
@@ -268,6 +269,7 @@ def threshold_duplicate_frames(datafile, label_file, new_datafile, fpl_threshold
     print(f"Old: {len(frames)} New: {len(new_frames)} labels: {len(labels)}")
     with open(new_datafile, 'w') as new_datafile:
         new_datafile.writelines(new_frames)
+    os.link(label_file, new_label_file)
     
 
 ############### INTERPOLATION FUNCTIONS ###############
@@ -293,7 +295,7 @@ def _interpolate(frames):
     new_frames.append(frames[-1])
     return new_frames
 
-def interpolate_frames(datafile, label_file, new_datafile, num_interpolations, interp_all):
+def interpolate_frames(datafile, label_file, new_datafile, new_label_file, num_interpolations, interp_all):
     with open(datafile, 'r') as df:
         frames = df.readlines()
     
@@ -306,6 +308,7 @@ def interpolate_frames(datafile, label_file, new_datafile, num_interpolations, i
     
     with open(new_datafile, 'w') as new_datafile:
         new_datafile.writelines(frames)
+    os.link(label_file, new_label_file)
 
 ############### FPL THRESHOLD FUNCTIONS ###############
 
@@ -358,6 +361,7 @@ def dim_select(datafile, new_datafile, dims):
 
     with open(new_datafile, 'w') as f:
         f.writelines(new_frames)
+    os.link(label_file, new_label_file)
 
 ############### REMOVE Z FUNCTIONS ###############
 # Does not check to see if Z coordinates already removed
@@ -383,11 +387,9 @@ def remove_z(datafile, new_datafile):
 
     with open(new_datafile, 'w') as f:
         f.writelines(new_frames)
+    os.link(label_file, new_label_file)
 
 ############### MATCH TRILETTER FUNCTIONS ###############
-def copy(datafile, new_datafile):
-    os.link(datafile, new_datafile)
-
 def read_triletters_from_commands():
     with open(args.commands_file, "r") as f:
         triletters = f.readlines()
@@ -525,45 +527,32 @@ if __name__ == "__main__":
     
     files = get_file_seq_ids(data_loc)
     for f in tqdm(files):
-        # This check occurs since data loc and new data loc are no longer required.
-        if args.method in DATA_LOC_REQUIRED_METHODS:
-            datafile = os.path.join(data_loc, f)
-        if args.method in NEW_DATA_LOC_REQUIRED_METHODS:
-            new_datafile = os.path.join(new_data_loc, f)
+        datafile = os.path.join(data_loc, f)
+        new_datafile = os.path.join(new_data_loc, f)
         
+        label_file = os.path.join(label_loc, f + '.lab')
+        new_label_file = os.path.join(new_label_loc, f + '.lab')
+
         if args.method == "duplication":
-            label_file = os.path.join(label_loc, f + '.lab')
-            duplicate_frames(datafile, label_file, new_datafile, args.multiplier, args.dupe_all)
+            duplicate_frames(datafile, label_file, new_datafile, new_label_file, args.multiplier, args.dupe_all)
         if args.method == "threshold_duplication":
-            label_file = os.path.join(label_loc, f + '.lab')
-            threshold_duplicate_frames(datafile, label_file, new_datafile, args.fpl_threshold)
+            threshold_duplicate_frames(datafile, label_file, new_datafile, new_label_file, args.fpl_threshold)
         elif args.method == "interpolation":
-            label_file = os.path.join(label_loc, f + '.lab')
-            interpolate_frames(datafile, label_file, new_datafile, args.num_interpolations, args.interp_all)
+            interpolate_frames(datafile, label_file, new_datafile, new_label_file, args.num_interpolations, args.interp_all)
         elif args.method == "fpl_threshold":
-            label_file = os.path.join(label_loc, f + '.lab')
-            new_label_file = os.path.join(new_label_loc, f + '.lab')
             fpl_threshold_files(datafile, label_file, new_datafile, new_label_file, args.fpl_threshold)
         elif args.method == "neg_fpl_threshold":
-            label_file = os.path.join(label_loc, f + '.lab')
-            new_label_file = os.path.join(new_label_loc, f + '.lab')
             neg_fpl_threshold_files(datafile, label_file, new_datafile, new_label_file, args.fpl_threshold)
         elif args.method == "dim_select":
-            dim_select(datafile, new_datafile, args.dims_kept)
+            dim_select(datafile, label_file, new_datafile, new_label_file, args.dims_kept)
         elif args.method == "remove_z":
-            remove_z(datafile, new_datafile)
+            remove_z(datafile, label_file, new_datafile, new_label_file)
         elif args.method == "match_triletters":
-            label_file = os.path.join(label_loc, f + '.lab')
-            new_label_file = os.path.join(new_label_loc, f + '.lab')
             if match_triletters(datafile, label_file, commands_triletters):
-                copy(datafile, new_datafile)
-                copy(label_file, new_label_file)
+                os.link(datafile, new_datafile)
+                os.link(label_file, new_label_file)
         elif args.method == "sample":
-            label_file = os.path.join(label_loc, f + '.lab')
-            new_label_file = os.path.join(new_label_loc, f + '.lab')
             sample_data(datafile, label_file, new_datafile, new_label_file, args.sample_ratio)
         elif args.method == "word_level":
-            label_file = os.path.join(label_loc, f)
-            new_label_file = os.path.join(new_label_loc, f)
             word_level(label_file, new_label_file)
 

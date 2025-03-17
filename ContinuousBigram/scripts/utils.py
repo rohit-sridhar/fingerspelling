@@ -16,9 +16,9 @@ SCRIPTS_ROOT = "scripts/"
 
 #### These are here for import data (to create hard links)
 SUPP_DATA_FILES = "./data/supplemental/dl_cmp/dim20/thr0/all/data/"
-SUPP_LABEL_FILES = "./label/supplemental/dl_cmp/thr0/all/label/"
+SUPP_LABEL_FILES = "./label/supplemental/dl_cmp/dim20/thr0/all/label/"
 MAIN_DATA_FILES = "./data/main/dl_cmp/dim20/thr0/all/data/"
-MAIN_LABEL_FILES = "./label/main/dl_cmp/thr0/all/label/"
+MAIN_LABEL_FILES = "./label/main/dl_cmp/dim20/thr0/all/label/"
 
 MODEL_MACROS_FILE = "newMacros"
 OPTIONS_FILENAME = "options.sh"

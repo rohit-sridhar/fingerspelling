@@ -27,15 +27,8 @@ def parse_args():
         type=str,
         nargs='+',
         default=['./data/supplemental/dl_cmp/dim20/thr1/train/interpall1/pt2/data/'],
-        help="All the different datasets to test. (must end with /data)"
-    )
-
-    parser.add_argument(
-        "--label_files",
-        type=str,
-        nargs='+',
-        default=['./label/supplemental/dl_cmp/thr1/train/pt2/label/'],
-        help="All the different datasets to test. (must end with /label)"
+        help="All the different datasets to test. (must end with /data) " + \
+                "The label path is created from this path."
     )
     
     parser.add_argument(
@@ -199,9 +192,6 @@ def _make_options_file(subdirs):
 
 # Check args
 def check_args():
-    if len(args.data_files) != len(args.label_files):
-        raise ValueError("Data File and Label file length should match.")
-
     for i in range(len(args.data_files)):
         if args.data_files[i].endswith('/'):
             args.data_files[i] = args.data_files[i][:-1]
@@ -209,12 +199,6 @@ def check_args():
         if not(args.data_files[i].endswith('data')):
             raise ValueError("Data files must end with /data (last subdir).")
 
-        if args.label_files[i].endswith('/'):
-            args.label_files[i] = args.label_files[i][:-1]
-
-        if not(args.label_files[i].endswith('label')):
-            raise ValueError("Label files must end with /label (last subdir).")
-   
     if sorted(list(LETTER_GRAMMAR_FILE_DICT.keys())) != sorted(list(WORD_GRAMMAR_FILE_DICT.keys())):
         raise ValueError("Check Grammar Keys between Letter/Word.")
 
@@ -677,13 +661,9 @@ def gen_grammar(subdirs, label_file, grammar_type_arg='word'):
         if grammar_type_arg == "word_sksp":
             grammar_file += "_sksp"
     
-    # ngram_basename = grammar_file.split("_")[-1]  # Last token in grammar filename should be '1gram', '2gram', etc.
-    # ngram = "1" if ngram_basename == "isolated" else ngram_basename[0]
     grammar_filepath = os.path.join(GRAMMAR_ROOT, subdirs, grammar_file)
 
     gen_grammar_args = ['python', GEN_GRAMMAR_FILE]
-    # gen_grammar_args += ["--grammar_file", grammar_type_arg]   # Different grammar type from first arg
-    # gen_grammar_args += ["--n_gram", ngram]
     gen_grammar_args += ["--label_loc", label_file]
     gen_grammar_args += ["--grammar_file", grammar_filepath]
 
@@ -719,16 +699,15 @@ if __name__ == "__main__":
         args.ngrams
     )
     
-    for i in range(len(args.data_files)):
+    for data_file in args.data_files:
         # TODO Write prepare files function
-        data_file = args.data_files[i]
-        label_file = args.label_files[i]
-        
         subdirs = get_subdirectories(data_file)
+        label_file = os.path.join('label', subdirs, 'label')
+
         _make_options_file(subdirs)
         edit_htk_root_file_options(subdirs)
 
-        if args.prepare_data:
+        if args.prepare_data or args.prepare_data_only:
             prepare_data(data_file, label_file, subdirs)
         
         gen_grammar(
@@ -748,7 +727,8 @@ if __name__ == "__main__":
             label_file,
             grammar_type_arg="letter"
         )
-       
+        
+        # Exit here after prepare_files and gen_grammar finish
         if args.prepare_data_only:
             exit(0)
 
