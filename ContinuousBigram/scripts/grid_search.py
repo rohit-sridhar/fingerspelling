@@ -312,20 +312,6 @@ def get_bool_arg_info():
 def get_machine_info():
     return os.cpu_count()
 
-def get_subdirs(filepath):
-    if filepath.startswith('.'):
-        # return os.path.join(*(data_file.split('/')[2:-1]))
-        return filepath.split('/')[2:-1]
-    else:
-        return filepath.split('/')[1:-1]
-
-
-# Get the subdirectories of the data file (leave out root and filename)
-def get_subdirectories(filepath):
-    subdir_list = get_subdirs(filepath)
-    subdirs = os.path.join(*(subdir_list))
-    return subdirs
-
 # Helper to edit the options file with new hyperparam (for 1 param)
 def edit_file(re_search, re_repl, file_to_edit):
     with open(file_to_edit, 'r') as f:

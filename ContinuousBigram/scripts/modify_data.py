@@ -1,5 +1,6 @@
 import argparse
 import os
+import sys
 import shutil
 import random
 
@@ -14,37 +15,64 @@ global args
 
 ############### GENERAL HELPER FUNCTIONS ###############
 
+# This helper resticts which args are required through
+# args passed to another argname
+def required_by_set(argname, list_to_search):
+    try:
+        method_idx = sys.argv.index(argname) + 1
+    except ValueError:
+        method_idx = 0  # If --help is passed, this prevents an error
+    return sys.argv[method_idx] in list_to_search
+
 def parse_args():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    
+    parser.add_argument(
+        "--import_data_loc",
+        type=str,
+        required=required_by_set("--method", {"import"}),
+        help="Use with the import method only. Defines original location for imported data."
+    )
 
     parser.add_argument(
         "--data_loc",
         type=str,
-        help="Original data location (for all methods). Must end with /data (for naming convention), unless method is import."
+        required=required_by_set("--method", DATA_LOC_REQUIRED_METHODS),
+        help="Original data location (for all methods except word_level and import). " + \
+                "Must end with /data (for naming convention), " + \
+                "unless method is import. Used for label loc."
     )
     
     parser.add_argument(
         "--new_data_loc",
         type=str,
-        help="Location to store new data (for all methods). Must end with /data (for naming convention)."
+        required=required_by_set("--method", NEW_DATA_LOC_REQUIRED_METHODS),
+        help="Location to store new data (for all methods except word_level). " + \
+                "Must end with /data (for naming convention). " + \
+                "Subdirs passed here are used for new label loc."
     )
     
     parser.add_argument(
         "--label_loc",
         type=str,
-        help="Location for label files (only for fpl_threshold, interpolation, threshold_duplication, duplication, word_level methods). Must end with /label (for naming convention)."
+        required=required_by_set("--method", LABEL_LOC_REQUIRED_METHODS),
+        help="Location for label files (only for word_level methods). " + \
+                "Must end with /label (for naming convention)."
     )
     
     parser.add_argument(
         "--new_label_loc",
         type=str,
-        help="Location to store new labels (only for fpl_threshold, import, word_level methods). Must end with /label (for naming convention)."
+        required=required_by_set("--method", NEW_LABEL_LOC_REQUIRED_METHODS),
+        help="Location to store new labels (only for word_level methods). " + \
+                "Must end with /label (for naming convention)."
     )
     
     parser.add_argument(
         "--commands_file",
         type=str,
         default="commands/commands_tri_internal",
+        required=required_by_set("--method", {"match_triletters"}),
         help="File with triletter labels (only for match_triletters method)."
     )
 
@@ -52,6 +80,7 @@ def parse_args():
         "--char_map_file",
         type=str,
         default="/data/parquet/asl-fingerspelling/supplemental_character_to_prediction_index.json",
+        required=required_by_set("--method", {"import"}),
         help="Maps characters to indices and vice versa (only for import method)."
     )
 
@@ -67,6 +96,7 @@ def parse_args():
         "--multiplier",
         type=int,
         default=5,
+        required=required_by_set("--method", {"duplication"}),
         help="Multiplier to add new frames (only for duplication method)."
     )
 
@@ -74,6 +104,7 @@ def parse_args():
         "--num_interpolations",
         type=int,
         default=3,
+        required=required_by_set("--method", {"interpolation"}),
         help="Number of interpolations (only for interpolation)."
     )
 
@@ -81,18 +112,21 @@ def parse_args():
         "--fpl_threshold",
         type=int,
         default=4,
+        required=required_by_set("--method", {"fpl_threshold", "threshold_duplication"}),
         help="Minimum number of frames per label (only for fpl_threshold, threshold_duplication method)."
     )
 
     parser.add_argument(
         "--dupe_all",
         action="store_true",
+        required=required_by_set("--method", {"duplication"}),
         help="Duplicate all of the frames, as opposed to only those within the threshold (only for duplication method)."
     )
 
     parser.add_argument(
         "--interp_all",
         action="store_true",
+        required=required_by_set("--method", {"interpolation"}),
         help="Interpolate all of the frames, as opposed to only those within the threshold (only for interpolation method)."
     )
 
@@ -100,6 +134,7 @@ def parse_args():
         "--seed",
         type=int,
         default=7268,
+        required=required_by_set("--method", {"sample"}),
         help="Seed for randomization (only for sample method)."
     )
 
@@ -107,6 +142,7 @@ def parse_args():
         "--sample_ratio",
         type=float,
         default=None,
+        required=required_by_set("--method", {"sample"}),
         help="Seed for randomization (only for sample method)."
     )
     
@@ -115,6 +151,7 @@ def parse_args():
         type=int,
         nargs = '+',
         default = [0,3,4,7,8,11,12,15,16,19],
+        required=required_by_set("--method", {"dim_select"}),
         help="Dimensions to keep (int between 0 to 19; only for dim_select). Subtract MP by 1 (due to wrist centering)."
     )
     
@@ -133,44 +170,59 @@ def _rm_trailing_slash(path):
     else:
         return path
 
+# Get data/label paths and new data/label paths
+def get_data_label_paths(subdirs):
+    return os.path.join('data', subdirs, 'data')
+
 # Checks args and makes modifications.
 def _check_args():
-    args.data_loc = _rm_trailing_slash(args.data_loc)
-    args.new_data_loc = _rm_trailing_slash(args.new_data_loc)
-    args.label_loc = _rm_trailing_slash(args.label_loc)
-    args.new_label_loc = _rm_trailing_slash(args.new_label_loc)
-    
-    data_path_list = [args.data_loc, args.new_data_loc]
-    label_path_list = [args.label_loc, args.new_label_loc]
-    
-    if args.method not in ("import", "word_level"):
-        for path in data_path_list:
-            if path is None or not(path.endswith('/data')):
-                raise ValueError("Must pass a data path that ends with /data.")
-    
-    if args.method not in ("word_level"):
-        if args.new_data_loc is None or not(args.new_data_loc.endswith('/data')):
-                raise ValueError("Must pass a new data path that ends with /data.")
-        _make_dir(args.new_data_loc)
+    data_loc, label_loc, new_data_loc, new_label_loc = None, None, None, None
 
-    if args.method in ("fpl_threshold", "interpolation", "threshold_duplication", "duplication", "word_level"):
-        for path in label_path_list:
-            if path is None or not(path.endswith('/label')):
-                raise ValueError("Must pass a label path ends with /label.")
+    if args.method in DATA_LOC_REQUIRED_METHODS:
+        data_loc = _rm_trailing_slash(args.data_loc)
+        if data_loc is None or not(data_loc.endswith('/data')):
+            raise ValueError("Must pass a data path that ends with /data.")
+        
+        subdirs = get_subdirectories(data_loc)
+        label_loc = os.path.join('label', subdirs, 'label')
 
+    if args.method in LABEL_LOC_REQUIRED_METHODS:
+        label_loc = _rm_trailing_slash(args.label_loc)
+        if label_loc is None or not(label_loc.endswith('/label')):
+            raise ValueError("Must pass a label path ends with /label.")
+        
+        subdirs = get_subdirectories(label_loc)
+        data_loc = os.path.join('label', subdirs, 'label')
+        
+    if args.method in NEW_DATA_LOC_REQUIRED_METHODS:
+        new_data_loc = _rm_trailing_slash(args.new_data_loc)
+        if new_data_loc is None or not(new_data_loc.endswith('/data')):
+            raise ValueError("Must pass a new data path that ends with /data.")
+        
+        new_subdirs = get_subdirectories(new_data_loc)
+        new_label_loc = os.path.join('label', new_subdirs, 'label')
+
+    if args.method in NEW_LABEL_LOC_REQUIRED_METHODS:
+        new_label_loc = _rm_trailing_slash(args.new_label_loc)
+        if new_label_loc is None or not(new_label_loc.endswith('/label')):
+            raise ValueError("Must pass new label location for [neg]_fpl_threshold/match_triletters/import/sample methods. It must end with /label.")
+        
+        new_subdirs = get_subdirectories(new_label_loc)
+        new_data_loc = os.path.join('label', new_subdirs, 'label')
+    
+    _make_dir(new_label_loc)
+    _make_dir(new_data_loc)
+    
     if args.method == "match_triletters" and args.commands_file is None:
         raise ValueError("Must pass triletter commands file for match triletters.")
-    
-    if args.method in ("match_triletters", "import", "sample", "fpl_threshold", "neg_fpl_threshold", "word_level"):
-        if args.new_label_loc is None or not(args.new_label_loc.endswith('/label')):
-            raise ValueError("Must pass new label location for [neg]_fpl_threshold/match_triletters/import/sample methods. It must end with /label.")
-        _make_dir(args.new_label_loc)
     
     if args.method == "sample":
         if args.sample_ratio is None:
             raise ValueError("Must pass in a sample ratio when using the sample method.")
         if args.sample_ratio < 0 or args.sample_ratio > 1:
-            raise ValueError("Sample Ratio must be between 0 and 1 (inclusive).")
+            raise ValueError("Sample Ratio must be between 0 and 1 (exclusive).")
+    
+    return data_loc, new_data_loc, label_loc, new_label_loc
 
 
 ############### DATA DUPLICATION FUNCTIONS ###############
@@ -381,8 +433,8 @@ def get_labels(df, seq_id, idx_char_map, supplemental=True):
     
     return phrase
 
-def import_data():
-    df = pd.read_pickle(args.data_loc)
+def import_data(new_data_loc, new_label_loc):
+    df = pd.read_pickle(args.import_data_loc)
     dl_seq_ids = df.index.to_list()
     
     if os.path.basename(args.char_map_file).startswith("supplemental"):
@@ -397,8 +449,8 @@ def import_data():
     idx_char_map = get_idx_char_map(args.char_map_file)
 
     for seq_id in tqdm(dl_seq_ids):
-        new_datafile = os.path.join(args.new_data_loc, str(seq_id))
-        new_label_file = os.path.join(args.new_label_loc, str(seq_id) + ".lab")
+        new_datafile = os.path.join(new_data_loc, str(seq_id))
+        new_label_file = os.path.join(new_label_loc, str(seq_id) + ".lab")
         
         datafile = os.path.join(data_path, str(seq_id))
         label_file = os.path.join(label_path, str(seq_id) + ".lab")
@@ -445,74 +497,73 @@ def word_level(label_file, new_label_file):
             new_phrase.append(char)
     
     new_phrase.append(label[-1])
-    
-
     new_phrase = ''.join(new_phrase)
 
     with open(new_label_file, 'w') as f:
         f.write(new_phrase)
     
-def get_file_seq_ids():
-    if args.method != "word_level":
-        files = os.listdir(args.data_loc)
+def get_file_seq_ids(data_loc):
+    if args.method in LABEL_LOC_REQUIRED_METHODS:
+        files = os.listdir(label_loc)
     else:
-        files = os.listdir(args.label_loc)
+        files = os.listdir(data_loc)
     return files
 
 if __name__ == "__main__":
     args = parse_args()
     print(args)
 
-    _check_args()
+    data_loc, new_data_loc, label_loc, new_label_loc = _check_args()
     random.seed(args.seed)
 
     if args.method == "import":
-        import_data()
-        exit(0)
+        import_data(new_data_loc, new_label_loc)
+        sys.exit()
 
     if args.method == "match_triletters":
         commands_triletters = read_triletters_from_commands()
     
-    files = get_file_seq_ids()
+    files = get_file_seq_ids(data_loc)
     for f in tqdm(files):
         # This check occurs since data loc and new data loc are no longer required.
-        if args.method != "word_level":
-            datafile = os.path.join(args.data_loc, f)
-            new_datafile = os.path.join(args.new_data_loc, f)
+        if args.method in DATA_LOC_REQUIRED_METHODS:
+            datafile = os.path.join(data_loc, f)
+        if args.method in NEW_DATA_LOC_REQUIRED_METHODS:
+            new_datafile = os.path.join(new_data_loc, f)
         
         if args.method == "duplication":
-            label_file = os.path.join(args.label_loc, f + '.lab')
+            label_file = os.path.join(label_loc, f + '.lab')
             duplicate_frames(datafile, label_file, new_datafile, args.multiplier, args.dupe_all)
         if args.method == "threshold_duplication":
-            label_file = os.path.join(args.label_loc, f + '.lab')
+            label_file = os.path.join(label_loc, f + '.lab')
             threshold_duplicate_frames(datafile, label_file, new_datafile, args.fpl_threshold)
         elif args.method == "interpolation":
-            label_file = os.path.join(args.label_loc, f + '.lab')
+            label_file = os.path.join(label_loc, f + '.lab')
             interpolate_frames(datafile, label_file, new_datafile, args.num_interpolations, args.interp_all)
         elif args.method == "fpl_threshold":
-            label_file = os.path.join(args.label_loc, f + '.lab')
-            new_label_file = os.path.join(args.new_label_loc, f + '.lab')
+            label_file = os.path.join(label_loc, f + '.lab')
+            new_label_file = os.path.join(new_label_loc, f + '.lab')
             fpl_threshold_files(datafile, label_file, new_datafile, new_label_file, args.fpl_threshold)
         elif args.method == "neg_fpl_threshold":
-            label_file = os.path.join(args.label_loc, f + '.lab')
-            new_label_file = os.path.join(args.new_label_loc, f + '.lab')
+            label_file = os.path.join(label_loc, f + '.lab')
+            new_label_file = os.path.join(new_label_loc, f + '.lab')
             neg_fpl_threshold_files(datafile, label_file, new_datafile, new_label_file, args.fpl_threshold)
         elif args.method == "dim_select":
             dim_select(datafile, new_datafile, args.dims_kept)
         elif args.method == "remove_z":
             remove_z(datafile, new_datafile)
         elif args.method == "match_triletters":
-            label_file = os.path.join(args.label_loc, f + '.lab')
-            new_label_file = os.path.join(args.new_label_loc, f + '.lab')
+            label_file = os.path.join(label_loc, f + '.lab')
+            new_label_file = os.path.join(new_label_loc, f + '.lab')
             if match_triletters(datafile, label_file, commands_triletters):
                 copy(datafile, new_datafile)
                 copy(label_file, new_label_file)
         elif args.method == "sample":
-            label_file = os.path.join(args.label_loc, f + '.lab')
-            new_label_file = os.path.join(args.new_label_loc, f + '.lab')
+            label_file = os.path.join(label_loc, f + '.lab')
+            new_label_file = os.path.join(new_label_loc, f + '.lab')
             sample_data(datafile, label_file, new_datafile, new_label_file, args.sample_ratio)
         elif args.method == "word_level":
-            label_file = os.path.join(args.label_loc, f)
-            new_label_file = os.path.join(args.new_label_loc, f)
+            label_file = os.path.join(label_loc, f)
+            new_label_file = os.path.join(new_label_loc, f)
             word_level(label_file, new_label_file)
 
