@@ -502,6 +502,7 @@ def edit_htk_root_file_options(subdirs):
     edit_file(models_root_search, models_root_repl, options_file)
     edit_file(ledfile_uniq_search, ledfile_uniq_repl, options_file)
 
+    print("##### Set root files #####")
     subprocess.run(["grep", GRAMMARFILE_ROOT_VARNAME + "\s*=\s*", options_file])
     subprocess.run(["grep", DICTFILE_ROOT_VARNAME + "\s*=\s*", options_file])
     subprocess.run(["grep", TOKENS_ROOT_VARNAME + "\s*=\s*", options_file])
@@ -510,6 +511,7 @@ def edit_htk_root_file_options(subdirs):
     subprocess.run(["grep", EXT_DIR_VARNAME + "\s*=\s*", options_file])
     subprocess.run(["grep", MODELS_ROOT_VARNAME + "\s*=\s*", options_file])
     subprocess.run(["grep", "^" + LEDFILE_UNIQ_VARNAME + "\s*=\s*", options_file])
+    print("#####\n")
     
     grammar_dir = os.path.join(GRAMMAR_ROOT, subdirs)
     dict_dir = os.path.join(DICT_ROOT, subdirs)
@@ -654,7 +656,9 @@ def prepare_data(data_file, label_file, subdirs):
     prepare_command = [PREPARE_FILE, options_file, data_file, label_file]
     # cv_split_command = ' '.join([TOT_PREPARE, EXT_FILE_LIST, TRAIN_LIST, TEST_LIST, GEN_TOT_NAME, options_file])
     
+    print("##### Run prepare data #####")
     print(f"Prepare Data: {' '.join(prepare_command)}")
+    print("#####\n")
     # print(cv_split_command)
 
     subprocess.run(prepare_command)
@@ -702,7 +706,9 @@ def clear_results_files(ip, tc, num_its, num_tri_its, hmmdef, subdirs, grammar_t
 if __name__ == "__main__":
     args = parse_args()
     check_args()
+    print("##### Args #####")
     print(args)
+    print("#####\n")
     
     arg_iter = product(
         args.ip_values,
@@ -726,6 +732,7 @@ if __name__ == "__main__":
         if args.prepare_data or args.prepare_data_only:
             prepare_data(data_file, label_file, subdirs)
         
+        print("##### Run gen_grammar.py #####")
         gen_grammar(
             subdirs,
             label_file,
@@ -755,6 +762,7 @@ if __name__ == "__main__":
             label_file,
             grammar_type_arg="letter_whole_word"
         )
+        print("#####\n")
         
         # Exit here after prepare_files and gen_grammar finish
         if args.prepare_data_only:

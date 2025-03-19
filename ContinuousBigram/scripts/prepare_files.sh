@@ -10,42 +10,57 @@
 OPTIONS_FILE=$1
 . $OPTIONS_FILE
 
-echo "Housekeeping ...."
+echo "##### Housekeeping .... #####"
 find $2/ -type f | sort -V  > $DATAFILES_LIST
+echo "#####"
+echo ""
 
 if [[ ! -f "${EXT_DIR}/done" ]]; then
-  echo "Cleaning up ext dir ...."
+  echo "##### Cleaning up ext dir .... #####"
   rm -rf $EXT_DIR/*
   mkdir $EXT_DIR/data/
   find $3/ -name "*.lab" -type f | xargs cp -t $EXT_DIR/data/
+  echo "#####"
+  echo ""
   
-  echo "Generating ext files ...."
+  echo "##### Generating ext files .... #####"
   $SCRIPTS_DIR/gen_ext_files.sh $OPTIONS_FILE
+  echo "#####"
+  echo ""
 else
-  echo "Ext files exit. Skipping generation"
+  echo "##### Ext files exit. Skipping generation #####"
+  echo "#####"
+  echo ""
 fi
 
 # find $EXT_DIR/data/*.ext -type f | xargs readlink -f | sort -V > $DATA_SAMPLES
 find $EXT_DIR/data/ -name "*.ext" -type f | xargs readlink -f | sort -V > $DATA_SAMPLES
 
-# echo "Generating mlf letter files ...."
+echo "##### Generating mlf letter files .... #####"
 python $SCRIPTS_DIR/gen_mlf.py --ext_loc $EXT_DIR/data/ --datafiles_list $DATAFILES_LIST --mlf_file $MLF_LOCATION_ORIGINAL --mlf_type letter
 python $SCRIPTS_DIR/gen_mlf.py --ext_loc $EXT_DIR/data/ --datafiles_list $DATAFILES_LIST --mlf_file $MLF_LOCATION_ORIGINAL_SKSP --mlf_type letter --sksp
-echo "python $SCRIPTS_DIR/gen_mlf.py --ext_loc $EXT_DIR/data/ --datafiles_list $DATAFILES_LIST --mlf_file $MLF_LOCATION_ORIGINAL_WHOLE --mlf_type letter --whole_word"
 python $SCRIPTS_DIR/gen_mlf.py --ext_loc $EXT_DIR/data/ --datafiles_list $DATAFILES_LIST --mlf_file $MLF_LOCATION_ORIGINAL_WHOLE --mlf_type letter --whole_word
+echo "#####"
+echo ""
 
-echo "Generating mlf word files ...."
+echo "##### Generating mlf word files .... #####"
 python $SCRIPTS_DIR/gen_mlf.py --ext_loc $EXT_DIR/data/ --datafiles_list $DATAFILES_LIST --mlf_file $MLF_LOCATION_WORD --mlf_type word
 python $SCRIPTS_DIR/gen_mlf.py --ext_loc $EXT_DIR/data/ --datafiles_list $DATAFILES_LIST --mlf_file $MLF_LOCATION_WORD_SKSP --mlf_type word --sksp
 python $SCRIPTS_DIR/gen_mlf.py --ext_loc $EXT_DIR/data/ --datafiles_list $DATAFILES_LIST --mlf_file $MLF_LOCATION_WORD_WHOLE --mlf_type word --whole_word
+echo "#####"
+echo ""
 
-echo "Generating mlf phrase files ...."
+echo "##### Generating mlf phrase files .... #####"
 scripts/gen_mlf_phrase.sh $DATAFILES_LIST ext $OPTIONS_FILE > mlf/labels.mlf_phrase
+echo "#####"
+echo ""
 
-echo "Generating phrase list for language modeling"
+echo "##### Generating phrase list for language modeling #####"
 python $SCRIPTS_DIR/gen_phrases.py --label_loc $3/ --phrases_loc $SENTENCES_FILE
+echo "#####"
+echo ""
 
-echo "Generating dict (tri2letter/tri2word) files ...."
+echo "##### Generating dict (tri2letter/tri2word) files .... #####"
 python $SCRIPTS_DIR/gen_dict.py --label_loc $3/ --dict_type tri_letter --dict_loc $DICTFILE
 python $SCRIPTS_DIR/gen_dict.py --label_loc $3/ --dict_type tri_letter_whole --dict_loc $DICTFILE_WHOLE
 # python $SCRIPTS_DIR/gen_dict.py --label_loc $3/ --dict_type cross_letter --dict_loc $DICTFILE_CROSS
@@ -54,10 +69,15 @@ python $SCRIPTS_DIR/gen_dict.py --label_loc $3/ --dict_type tri_word --dict_loc 
 python $SCRIPTS_DIR/gen_dict.py --label_loc $3/ --dict_type tri_word_sksp --dict_loc $DICTFILE_WORD_SKSP
 python $SCRIPTS_DIR/gen_dict.py --label_loc $3/ --dict_type tri_word_whole --dict_loc $DICTFILE_WORD_WHOLE
 # python $SCRIPTS_DIR/gen_dict.py --label_loc $3/ --dict_type cross_word --dict_loc $DICTFILE_CROSS_WORD
+echo "#####"
+echo ""
 
-echo "Generating commands (word, tri, cross) and MLF (tri/cross) files ...."
+
+echo "##### Generating commands (word, tri, cross) and MLF (tri/cross) files .... #####"
 touch $LEDFILE_WORD
 touch $LEDFILE_LETTER
+echo "#####"
+echo ""
 
 HLEd -b -n $TOKENS_ORIGINAL $LEDFILE_LETTER $MLF_LOCATION_ORIGINAL
 HLEd -b -n $TOKENS_ORIGINAL_WHOLE $LEDFILE_LETTER $MLF_LOCATION_ORIGINAL_WHOLE
@@ -87,4 +107,8 @@ sort -o $TOKENS_WORD_WHOLE $TOKENS_WORD_WHOLE
 
 # Copy label files into ext dir one last time since HLEd
 # modifies the original label files as well
+echo "##### Copy label files back into ext dir (HLEd may have modified them .... #####"
 find $3/ -name "*.lab" -type f | xargs cp -t $EXT_DIR/data/
+echo "#####"
+echo ""
+

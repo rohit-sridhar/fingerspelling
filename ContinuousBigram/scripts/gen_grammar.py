@@ -21,12 +21,12 @@ def parse_args():
 ##### THIS IS THE OLD WAY OF DOING N GRAMS (ALSO INCORRECT) #####
 #################################################################
 
-    parser.add_argument(
-        "--n_gram",
-        type=int,
-        default=1,
-        help="For now you can only use n >= 1, (positive ints only)."
-    )
+    # parser.add_argument(
+    #     "--n_gram",
+    #     type=int,
+    #     default=1,
+    #     help="For now you can only use n >= 1, (positive ints only)."
+    # )
     
     parser.add_argument(
         "--label_loc",
@@ -55,29 +55,31 @@ def validate_grammar_file(grammar_file):
 def check_args(args):
     if not(validate_grammar_file(args.grammar_file)):
         raise ValueError("Must pass a grammar path that ends with appropriate filename")   
-    if args.n_gram <= 0:
-        raise ValueError("Must pass n_gram > 0 (positive ints only)")
+    # if args.n_gram <= 0:
+    #     raise ValueError("Must pass n_gram > 0 (positive ints only)")
 
 ########## WORD LEVEL GRAMMAR HELPERS ##########
 # Get a sorted list of all tokens in the label directory. Does not include
 # SPACE or ENTER/EXIT
-def get_tokens(n_gram):
+def get_tokens():
     tokens = set()
     files = get_label_files(args.label_loc)
     
     for label_file in files:
         phrase_tokens = collect_tokens(label_file)
-        if len(phrase_tokens) <= n_gram:
-            # tokens.add(f" {SPACE} ".join(phrase_tokens))
-            tokens.add(f" ".join(phrase_tokens))
-        else:
-            for i in range(len(phrase_tokens) - (n_gram - 1)):
-                # tokens.add(f" {SPACE} ".join(phrase_tokens[i:i+n_gram]))
-                tokens.add(f" ".join(phrase_tokens[i:i+n_gram]))
+        # if len(phrase_tokens) <= n_gram:
+        #     tokens.add(f" {SPACE} ".join(phrase_tokens))
+        #     tokens.add(f" ".join(phrase_tokens))
+        # else:
+        #     for i in range(len(phrase_tokens) - (n_gram - 1)):
+        #         tokens.add(f" {SPACE} ".join(phrase_tokens[i:i+n_gram]))
+        #     tokens.add(f" ".join(phrase_tokens[i:i+n_gram]))
+        tokens.add(f" ".join(phrase_tokens[i:i+1]))
     
     return sorted(list(tokens))
 
 # Gets phrases from the label files
+# def get_phrases(n_gram):
 def get_phrases():
     phrases = set()
     files = get_label_files(args.label_loc)
@@ -92,7 +94,8 @@ def get_phrases():
 
 ########## LETTER LEVEL GRAMMAR HELPERS ##########
 # Get a sorted list of all tokens in the label directory
-def get_letters(n_gram):
+# def get_letters(n_gram):
+def get_letters():
     tokens = get_tokens(1)  # Get tokens to get letters from them
     letters = set([SPACE])
     
