@@ -38,7 +38,7 @@ def parse_args():
         "--data_loc",
         type=str,
         required=required_by_set("--method", DATA_LOC_REQUIRED_METHODS),
-        help="Original data location (for all methods except word_level and import). " + \
+        help="Original data location (for all methods except whole_word and import). " + \
                 "Must end with /data (for naming convention), " + \
                 "unless method is import. Used for label loc."
     )
@@ -47,26 +47,26 @@ def parse_args():
         "--new_data_loc",
         type=str,
         required=required_by_set("--method", NEW_DATA_LOC_REQUIRED_METHODS),
-        help="Location to store new data (for all methods except word_level). " + \
+        help="Location to store new data (for all methods except whole_word). " + \
                 "Must end with /data (for naming convention). " + \
                 "Subdirs passed here are used for new label loc."
     )
     
-    parser.add_argument(
-        "--label_loc",
-        type=str,
-        required=required_by_set("--method", LABEL_LOC_REQUIRED_METHODS),
-        help="Location for label files (only for word_level methods). " + \
-                "Must end with /label (for naming convention)."
-    )
-    
-    parser.add_argument(
-        "--new_label_loc",
-        type=str,
-        required=required_by_set("--method", NEW_LABEL_LOC_REQUIRED_METHODS),
-        help="Location to store new labels (only for word_level methods). " + \
-                "Must end with /label (for naming convention)."
-    )
+    # parser.add_argument(
+    #     "--label_loc",
+    #     type=str,
+    #     required=required_by_set("--method", LABEL_LOC_REQUIRED_METHODS),
+    #     help="Location for label files (only for whole_word methods). " + \
+    #             "Must end with /label (for naming convention)."
+    # )
+    # 
+    # parser.add_argument(
+    #     "--new_label_loc",
+    #     type=str,
+    #     required=required_by_set("--method", NEW_LABEL_LOC_REQUIRED_METHODS),
+    #     help="Location to store new labels (only for whole_word methods). " + \
+    #             "Must end with /label (for naming convention)."
+    # )
     
     parser.add_argument(
         "--commands_file",
@@ -186,13 +186,13 @@ def _check_args():
         subdirs = get_subdirectories(data_loc)
         label_loc = os.path.join('label', subdirs, 'label')
 
-    if args.method in LABEL_LOC_REQUIRED_METHODS:
-        label_loc = _rm_trailing_slash(args.label_loc)
-        if label_loc is None or not(label_loc.endswith('/label')):
-            raise ValueError("Must pass a label path ends with /label.")
-        
-        subdirs = get_subdirectories(label_loc)
-        data_loc = os.path.join('label', subdirs, 'label')
+    # if args.method in LABEL_LOC_REQUIRED_METHODS:
+    #     label_loc = _rm_trailing_slash(args.label_loc)
+    #     if label_loc is None or not(label_loc.endswith('/label')):
+    #         raise ValueError("Must pass a label path ends with /label.")
+    #     
+    #     subdirs = get_subdirectories(label_loc)
+    #     data_loc = os.path.join('data', subdirs, 'data')
         
     if args.method in NEW_DATA_LOC_REQUIRED_METHODS:
         new_data_loc = _rm_trailing_slash(args.new_data_loc)
@@ -202,13 +202,13 @@ def _check_args():
         new_subdirs = get_subdirectories(new_data_loc)
         new_label_loc = os.path.join('label', new_subdirs, 'label')
 
-    if args.method in NEW_LABEL_LOC_REQUIRED_METHODS:
-        new_label_loc = _rm_trailing_slash(args.new_label_loc)
-        if new_label_loc is None or not(new_label_loc.endswith('/label')):
-            raise ValueError("Must pass new label location for [neg]_fpl_threshold/match_triletters/import/sample methods. It must end with /label.")
-        
-        new_subdirs = get_subdirectories(new_label_loc)
-        new_data_loc = os.path.join('label', new_subdirs, 'label')
+    # if args.method in NEW_LABEL_LOC_REQUIRED_METHODS:
+    #     new_label_loc = _rm_trailing_slash(args.new_label_loc)
+    #     if new_label_loc is None or not(new_label_loc.endswith('/label')):
+    #         raise ValueError("Must pass new label location for [neg]_fpl_threshold/match_triletters/import/sample methods. It must end with /label.")
+    #     
+    #     new_subdirs = get_subdirectories(new_label_loc)
+    #     new_data_loc = os.path.join('data', new_subdirs, 'data')
     
     _make_dir(new_label_loc)
     _make_dir(new_data_loc)
@@ -483,34 +483,28 @@ def sample_data(datafile, label_file, new_datafile, new_label_file, sample_ratio
         os.link(label_file, new_label_file)
     
 ############### WORD LEVEL FUNCTIONS ###############
-def word_level(label_file, new_label_file):
-    with open(label_file, 'r') as lab:
-        label = lab.readlines()
+# def whole_word(datafile, label_file, new_datafile, new_label_file):
+#     with open(label_file, 'r') as lab:
+#         label = lab.readlines()
+#     
+#     new_phrase = [label[0]]
+#     
+#     for i,char in enumerate(label[1:-1], 1):
+#         char2 = char.strip()
+#         next_char = label[i+1]
+# 
+#         if ord('a') <= ord(char2) <= ord('z') and next_char not in (SPACE+'\n', EXIT+'\n'):
+#             new_phrase.append(char2)
+#         else:
+#             new_phrase.append(char)
+#     
+#     new_phrase.append(label[-1])
+#     new_phrase = ''.join(new_phrase)
+# 
+#     with open(new_label_file, 'w') as f:
+#         f.write(new_phrase)
+#     os.link(datafile, new_datafile)
     
-    new_phrase = [label[0]]
-    
-    for i,char in enumerate(label[1:-1], 1):
-        char2 = char.strip()
-        next_char = label[i+1]
-
-        if ord('a') <= ord(char2) <= ord('z') and next_char not in (SPACE+'\n', EXIT+'\n'):
-            new_phrase.append(char2)
-        else:
-            new_phrase.append(char)
-    
-    new_phrase.append(label[-1])
-    new_phrase = ''.join(new_phrase)
-
-    with open(new_label_file, 'w') as f:
-        f.write(new_phrase)
-    
-def get_file_seq_ids(data_loc):
-    if args.method in LABEL_LOC_REQUIRED_METHODS:
-        files = os.listdir(label_loc)
-    else:
-        files = os.listdir(data_loc)
-    return files
-
 if __name__ == "__main__":
     args = parse_args()
     print(args)
@@ -525,7 +519,7 @@ if __name__ == "__main__":
     if args.method == "match_triletters":
         commands_triletters = read_triletters_from_commands()
     
-    files = get_file_seq_ids(data_loc)
+    files = os.listdir(data_loc)
     for f in tqdm(files):
         datafile = os.path.join(data_loc, f)
         new_datafile = os.path.join(new_data_loc, f)
@@ -553,6 +547,6 @@ if __name__ == "__main__":
                 os.link(label_file, new_label_file)
         elif args.method == "sample":
             sample_data(datafile, label_file, new_datafile, new_label_file, args.sample_ratio)
-        elif args.method == "word_level":
-            word_level(label_file, new_label_file)
+        # elif args.method == "whole_word":
+        #     whole_word(datafile, label_file, new_datafile, new_label_file)
 

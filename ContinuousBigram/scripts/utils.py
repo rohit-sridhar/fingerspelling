@@ -60,6 +60,7 @@ NGRAM_VARNAME = "NGRAM"
 TRACE_LEVEL_VARNAME = "TRACE_LEVEL"
 TRILETTER_VARNAME = "TRILETTER"
 THREADS_VARNAME = "THREADS"
+WHOLE_WORD_VARNAME = "WHOLE_WORD"
 
 # Next two params are LM utils
 BASE_PARAMETER = 1.5
@@ -161,7 +162,7 @@ MODIFY_DATA_METHODS = [
     "match_triletters",
     "import",
     "sample",
-    "word_level",
+    # "whole_word",
 ]
 
 DATA_LOC_REQUIRED_METHODS = {
@@ -198,13 +199,14 @@ NEW_DATA_LOC_REQUIRED_METHODS = {
 # new data loc are not required but labels are.
 # label loc and new label loc are built in modify_data.py
 # for other methods where they are required.
-LABEL_LOC_REQUIRED_METHODS = {
-    "word_level"
-}
 
-NEW_LABEL_LOC_REQUIRED_METHODS = {
-    "word_level"
-}
+# LABEL_LOC_REQUIRED_METHODS = {
+#     "whole_word"
+# }
+# 
+# NEW_LABEL_LOC_REQUIRED_METHODS = {
+#     "whole_word"
+# }
 
 ########## Utils functions for python scripts ##########
 

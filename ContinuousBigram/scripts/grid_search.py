@@ -142,6 +142,12 @@ def parse_args():
     )
     
     parser.add_argument(
+        "--whole_word",
+        action='store_true',
+        help="If true will model on the whole word level (words treated like letters, phrases like words)."
+    )
+    
+    parser.add_argument(
         "--test_model_path",
         type=str,
         default=None,
@@ -290,8 +296,9 @@ def get_bool_arg_info():
     multi_process = "yes" if not(args.no_multi_process) else "no"
     hedfile1 = "${PRJ}/instr/mktri1_silsp.hed" if not(args.no_custom_silsp) else "${PRJ}/instr/mktri1_orig.hed"
     cross_word = "yes" if args.cross_word else "no"
+    whole_word = "yes" if args.whole_word else "no"
 
-    return custom_silsp, multi_process, hedfile1, cross_word
+    return custom_silsp, multi_process, hedfile1, cross_word, whole_word
 
 def get_machine_info():
     return os.cpu_count()
@@ -350,7 +357,7 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, grammar_t
     letter_results, word_results = get_hresults_filepaths(name_ext, subdirs, ip)
     letter_grammar, word_grammar = get_grammar_filepaths(grammar_type)
 
-    custom_silsp, multi_process, hedfile1, cross_word = get_bool_arg_info()
+    custom_silsp, multi_process, hedfile1, cross_word, whole_word = get_bool_arg_info()
     hedfile2 = f"${{PRJ}}/instr/mktri2_tc.{hmmdef}.hed"
     num_threads = get_machine_info()
 
@@ -386,6 +393,9 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, grammar_t
     
     ngram_word_search = NGRAM_WORD_VARNAME + "\s*=\s*[0-9]"
     ngram_word_repl = NGRAM_WORD_VARNAME + f"={ngram}"
+    
+    whole_word_search = WHOLE_WORD_VARNAME + "\s*=\s*(yes|no)"
+    whole_word_repl = WHOLE_WORD_VARNAME + f"={whole_word}"
 
     cross_word_hedfile1_search = "^CL commands\/commands_tri_(internal|cross)$"
     cross_word_hedfile1_repl = "CL commands/commands_tri_cross" if args.cross_word else "CL commands/commands_tri_internal"
@@ -431,6 +441,7 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, grammar_t
     # edit_file(cross_word_hedfile1_search, cross_word_hedfile1_repl, hedfile1_local_file)
     edit_file(trace_level_search, trace_level_repl, options_file)
     edit_file(threads_search, threads_repl, options_file)
+    edit_file(whole_word_search, whole_word_repl, options_file)
     
     subprocess.run(["grep", "^" + IP_VARNAME + "\s*=\s*", options_file])
     subprocess.run(["grep", "^" + NUM_ITS_VARNAME + "\s*=\s*", options_file])
@@ -448,6 +459,7 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, grammar_t
     subprocess.run(["grep", "^" + NGRAM_WORD_VARNAME + "\s*=\s*", options_file])
     subprocess.run(["grep", "^" + TRACE_LEVEL_VARNAME + "\s*=\s*", options_file])
     subprocess.run(["grep", "^" + THREADS_VARNAME + "\s*=\s*", options_file])
+    subprocess.run(["grep", "^" + WHOLE_WORD_VARNAME + "\s*=\s*", options_file])
     subprocess.run([f"head -n 1 {hedfile1_local_file}"], shell=True)
 
 def edit_htk_root_file_options(subdirs):
@@ -654,13 +666,17 @@ def prepare_data(data_file, label_file, subdirs):
 # In this case grammar_type is hardcoded as grliwi, but it should be
 # hardcoded everywhere
 def gen_grammar(subdirs, label_file, grammar_type_arg='word'):
-    if grammar_type_arg == "letter":
+    if grammar_type_arg.startswith("letter"):
         grammar_file = os.path.basename(LETTER_GRAMMAR_FILE_DICT["grliwi"])
+        if grammar_type_arg == "letter_whole_word":
+            grammar_file += "_whole_word"
     else:
         grammar_file = os.path.basename(WORD_GRAMMAR_FILE_DICT["grliwi"])
         if grammar_type_arg == "word_sksp":
             grammar_file += "_sksp"
-    
+        elif grammar_type_arg == "word_whole_word":
+            grammar_file += "_whole_word"
+
     grammar_filepath = os.path.join(GRAMMAR_ROOT, subdirs, grammar_file)
 
     gen_grammar_args = ['python', GEN_GRAMMAR_FILE]
@@ -703,7 +719,7 @@ if __name__ == "__main__":
         # TODO Write prepare files function
         subdirs = get_subdirectories(data_file)
         label_file = os.path.join('label', subdirs, 'label')
-
+        
         _make_options_file(subdirs)
         edit_htk_root_file_options(subdirs)
 
@@ -725,7 +741,19 @@ if __name__ == "__main__":
         gen_grammar(
             subdirs,
             label_file,
+            grammar_type_arg="word_whole_word"
+        )
+        
+        gen_grammar(
+            subdirs,
+            label_file,
             grammar_type_arg="letter"
+        )
+        
+        gen_grammar(
+            subdirs,
+            label_file,
+            grammar_type_arg="letter_whole_word"
         )
         
         # Exit here after prepare_files and gen_grammar finish
