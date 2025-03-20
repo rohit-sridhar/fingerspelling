@@ -44,13 +44,42 @@ OPTIONS_FILE=$1
 . ${UTIL_DIR}/check_opts.sh
 
 # When Cross word is enabled this logic may need to be changed
-if [[ $NGRAM > 0 ]]; then
-    DICTFILE_WORD=$DICTFILE_WORD_SKSP
+if [[ $WORD_SKSP == "yes" ]]; then
+    # Grammar files
     GRAMMARFILE_WORD=$GRAMMARFILE_WORD_SKSP
+    
+    # Dict files
+    DICTFILE_WORD=$DICTFILE_WORD_SKSP
+
+    # Tokens files
     TOKENS_WORD=$TOKENS_WORD_SKSP
+
+    # MLF files
     MLF_LOCATION=$MLF_LOCATION_SKSP
     MLF_LOCATION_WORD=$MLF_LOCATION_WORD_SKSP
     MLF_LOCATION_ORIGINAL=$MLF_LOCATION_ORIGINAL_SKSP
+fi
+
+# Overwrites the choice made above because whole_word contains
+# no spaces. 
+if [[ $WHOLE_WORD == "no" ]]; then
+    # Grammar files
+    GRAMMARFILE=$GRAMMARFILE_WHOLE
+    GRAMMARFILE_WORD=$GRAMMARFILE_WORD_WHOLE
+
+    # Dict files
+    DICTFILE=$DICTFILE_WHOLE
+    DICTFILE_WORD=$DICTFILE_WORD_WHOLE
+
+    # Tokens files
+    TOKENS_ORIGINAL=$TOKENS_ORIGINAL_WHOLE
+    TOKENS=$TOKENS_WHOLE
+    TOKENS_WORD=$TOKENS_WORD_WHOLE
+
+    # MLF files
+    MLF_LOCATION=$MLF_LOCATION_WHOLE
+    MLF_LOCATION_WORD=$MLF_LOCATION_WORD_WHOLE
+    MLF_LOCATION_ORIGINAL=$MLF_LOCATION_ORIGINAL_WHOLE
 fi
 
 echo "DICTFILE_WORD: $DICTFILE_WORD"
@@ -156,62 +185,12 @@ do
 done
 
 # generate a list of all data samples HTK has avaliable to it.
-# ls ${EXT_DIR}/*.ext > $DATA_SAMPLES
 find ${EXT_DIR}/ | grep "\.ext$" | sort $SORT_OPTION > $DATA_SAMPLES
-
-# if [[ $BIGRAM_LETTER = "yes" ]]; then
-#     ${HTKBIN}HLStats -b $BIGRAM_LETTER_FILE -s $ENTER $EXIT -o $TOKENS_ORIGINAL $MLF_LOCATION_ORIGINAL
-#     ${HTKBIN}HBuild -n $BIGRAM_LETTER_FILE -s $ENTER $EXIT $TOKENS_ORIGINAL ${WORD_LATTICE}
-# else
-# fi
 
 ${HTKBIN}HParse -l ${GRAMMARFILE} ${WORD_LATTICE}
 
-# if [[ $WORD_LEVEL = "yes" ]] || [[ $WORD_LEVEL = "1" ]]; then
-#     if [[ $NGRAM_WORD = "yes" ]]; then
-#         ${HTKBIN}HLStats -b $BIGRAM_WORD_FILE -s $ENTER $EXIT -o $TOKENS_WORD_SKSP $MLF_LOCATION_WORD_SKSP
-#         ${HTKBIN}HBuild -n $BIGRAM_WORD_FILE -s $ENTER $EXIT $TOKENS_WORD_SKSP ${WORD_LATTICE}_word
-#     else
-#     ${HTKBIN}HParse -l ${GRAMMARFILE_WORD} ${WORD_LATTICE}_word
-#     fi
-# fi
-
-
 if [[ $WORD_LEVEL = "yes" ]] || [[ $WORD_LEVEL = "1" ]]; then
     ${HTKBIN}HParse -l ${GRAMMARFILE_WORD} ${WORD_LATTICE}_word
-    if [[ $NGRAM > 0 ]]; then
-        echo "Skipping HLM for now"
-        # ## Clean the lang_models/lm.all dir
-        # rm -rf $LM_DIR/lm.$NGRAM
-        # 
-        # # Init empty wordmap with Name header word_map
-        # LNewMap word_map $LM_DIR/empty.wmap
-        # 
-        # # Make a new directory for intermediates
-        # mkdir $ROOT/lm.$NGRAM
-        # 
-        # # Collect n grams from sentence file
-        # LGPrep -T 1 -d $ROOT/lm.$NGRAM -n $NGRAM_WORD -s "Fingerspelling All Sentences" $ROOT/empty.wmap grammar/sentences.txt
-        # 
-        # # Make lm.1 dir
-        # # mkdir $ROOT/lm.1
-        # 
-        # # Bring together n grams (remove dupes).
-        # # LGCopy -T 1 -d $ROOT/lm.1 $ROOT/lm.0/wmap $ROOT/lm.0/gram.*
-        # 
-        # # Make a new directory for intermediates
-        # # mkdir $ROOT/lm_all
-        # 
-        # # Seems to do little but add OOV words
-        # # LGCopy -T 1 -o -m $ROOT/lm_all/all.wmap -d $ROOT/lm_all/ -w $TOKENS_WORD_SKSP $ROOT/lm.0/wmap $ROOT/lm.1/data.*
-        # 
-        # # Get frequency counts
-        # LFoF -T 1 -n $NGRAM -f 64 $ROOT/lm.$NGRAM/wmap $ROOT/lm.$NGRAM/all.fof $ROOT/lm.$NGRAM/gram.*
-        # 
-        # # Builds the language model
-        # lm_file="ngram_lm"
-        # LBuild -T 1 -n $NGRAM $ROOT/lm.$NGRAM/wmap $ROOT/lm.$NGRAM/$lm_file $ROOT/lm.$NGRAM/gram.*
-    fi
 fi
 
 MIN_CYCLES=1

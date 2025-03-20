@@ -14,10 +14,11 @@ TOKENS_ROOT = "commands/"
 EXT_ROOT = "ext/"
 SCRIPTS_ROOT = "scripts/"
 
+#### These are here for import data (to create hard links)
 SUPP_DATA_FILES = "./data/supplemental/dl_cmp/dim20/thr0/all/data/"
-SUPP_LABEL_FILES = "./label/supplemental/dl_cmp/thr0/all/label/"
+SUPP_LABEL_FILES = "./label/supplemental/dl_cmp/dim20/thr0/all/label/"
 MAIN_DATA_FILES = "./data/main/dl_cmp/dim20/thr0/all/data/"
-MAIN_LABEL_FILES = "./label/main/dl_cmp/thr0/all/label/"
+MAIN_LABEL_FILES = "./label/main/dl_cmp/dim20/thr0/all/label/"
 
 MODEL_MACROS_FILE = "newMacros"
 OPTIONS_FILENAME = "options.sh"
@@ -59,6 +60,7 @@ NGRAM_VARNAME = "NGRAM"
 TRACE_LEVEL_VARNAME = "TRACE_LEVEL"
 TRILETTER_VARNAME = "TRILETTER"
 THREADS_VARNAME = "THREADS"
+WHOLE_WORD_VARNAME = "WHOLE_WORD"
 
 # Next two params are LM utils
 BASE_PARAMETER = 1.5
@@ -160,9 +162,70 @@ MODIFY_DATA_METHODS = [
     "match_triletters",
     "import",
     "sample",
+    # "whole_word",
 ]
 
+DATA_LOC_REQUIRED_METHODS = {
+    "duplication",
+    "threshold_duplication",
+    "interpolation",
+    "fpl_threshold",
+    "dim_select",
+    "remove_z",
+    "normalize",
+    "neg_fpl_threshold",
+    "match_triletters",
+    "sample",
+}
+
+NEW_DATA_LOC_REQUIRED_METHODS = {
+    "duplication",
+    "threshold_duplication",
+    "interpolation",
+    "fpl_threshold",
+    "dim_select",
+    "remove_z",
+    "normalize",
+    "neg_fpl_threshold",
+    "match_triletters",
+    "sample",
+    "import"
+}
+
+##### A note about the sets below. The two sets
+# are not a comprehensive list of methods in which
+# label loc and new label loc are required. They
+# are only a list of methods in which data loc and
+# new data loc are not required but labels are.
+# label loc and new label loc are built in modify_data.py
+# for other methods where they are required.
+
+# LABEL_LOC_REQUIRED_METHODS = {
+#     "whole_word"
+# }
+# 
+# NEW_LABEL_LOC_REQUIRED_METHODS = {
+#     "whole_word"
+# }
+
 ########## Utils functions for python scripts ##########
+
+##### SUBDIRECTORY UTILS #####
+
+# The functions below get the subdirectories for 
+def _get_subdirs(filepath):
+    if filepath.startswith('.'):
+        # return os.path.join(*(data_file.split('/')[2:-1]))
+        return filepath.split('/')[2:-1]
+    else:
+        return filepath.split('/')[1:-1]
+
+# Get the subdirectories of the data file (leave out root and filename)
+def get_subdirectories(filepath):
+    subdir_list = _get_subdirs(filepath)
+    subdirs = os.path.join(*(subdir_list))
+    return subdirs
+
 
 ##### OPTIONS FILE UTILS #####
 

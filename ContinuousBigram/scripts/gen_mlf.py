@@ -1,5 +1,6 @@
 import argparse
 import os
+import re
 
 from glob import glob
 from utils import *
@@ -45,6 +46,12 @@ def parse_args():
         help="Sample Period (in ms)"
     )
     
+    parser.add_argument(
+        "--whole_word",
+        action="store_true",
+        help="Whether to do word level (chars and words, words as phrases)."
+    )
+
     parser.add_argument(
         "--sksp",
         action="store_true",
@@ -93,24 +100,55 @@ def write_to_mlf(label_path, labels, label_ts):
         f.writelines(label_lines)
         f.write(".\n")
 
+def get_whole_word_letter_labels(labels):
+    inner_phrase = []
+    
+    for i,char in enumerate(labels[1:-1], 1):
+        char2 = char.strip()
+        next_char = labels[i+1]
+    
+        if ord('a') <= ord(char2) <= ord('z') and next_char not in (f"{SPACE}\n", f"{EXIT}\n"):
+            inner_phrase.append(char2)
+        elif char2 != SPACE:
+            inner_phrase.append(char)
+
+    # Last word is empty
+    inner_phrase = ''.join(inner_phrase).split("\n")[:-1]
+    inner_phrase = [f"{{{word}}}\n" for word in inner_phrase]
+    
+    new_phrase = [labels[0]] + inner_phrase + [labels[-1]]
+    return new_phrase
+
+def get_whole_word_word_labels(labels):
+    inner_phrase = [label.strip() for label in labels[1:-1]]
+    inner_phrase = ''.join(inner_phrase).split(SPACE)
+    inner_phrase = ''.join([f"{{{word}}}" for word in inner_phrase]) + "\n"
+    
+    new_phrase = [labels[0]] + [inner_phrase] + [labels[-1]]
+    return new_phrase
+
 # Get label level info
 def get_label_info(data_file):
     label_file = os.path.join(args.ext_loc, os.path.basename(data_file)) + ".lab"
     with open(label_file, "r") as f:
         labels = f.readlines()
-
+    
     full_label = ''.join([label.strip() for label in labels])
     with open(data_file, "r") as f:
         num_lines = len(f.readlines())
     
     num_labels = len(labels)
     if args.mlf_type == "letter" and args.sksp:
-        # labels = remove_spaces(labels)
         labels.insert(-1, SPACE + "\n")
         num_labels = len(labels)
+    elif args.mlf_type == "letter" and args.whole_word:
+        labels = get_whole_word_letter_labels(labels)
     elif args.mlf_type == "word":
-        labels = get_word_labels(labels)
-     
+        if args.whole_word:
+            labels = get_whole_word_word_labels(labels)
+        else:
+            labels = get_word_labels(labels)
+    
     total_duration = args.sample_period * num_lines 
     label_path = os.path.abspath(label_file)
     

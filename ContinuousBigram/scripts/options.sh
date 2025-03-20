@@ -82,6 +82,7 @@ CROSS_WORD=no # whether triletters should expand across words  TODO
 
 FORCE_ALIGN=no # Use to enable/disable forced alignment during training
 EXPORT_MLF=no # Use to export MLF for use outside project
+WHOLE_WORD=yes
 
 NUM_HMM_DIR=20 # number of hmm dirs to generate, has a direct relation to number of times HERest is called
 TRI_ITERATIONS=5 # number of HERest calls to make for triletter stages
@@ -114,8 +115,11 @@ GRAMMARFILE_ROOT=${PRJ}/grammar/supplemental/dl_cmp/dim20/thr0/train/pt93/sd2248
 
 ###### USE FOR TRAINING ######
 GRAMMARFILE=${GRAMMARFILE_ROOT}/grammar_letter_isolated
+GRAMMARFILE_WHOLE=${GRAMMARFILE_ROOT}/grammar_letter_isolated_whole
+
 GRAMMARFILE_WORD=${GRAMMARFILE_ROOT}/grammar_word_isolated
 GRAMMARFILE_WORD_SKSP=${GRAMMARFILE_ROOT}/grammar_word_isolated_sksp
+GRAMMARFILE_WORD_WHOLE=${GRAMMARFILE_ROOT}/grammar_word_isolated_whole
 
 ###### USE FOR CROSS WORD TRILETTER ######
 GRAMMARFILE_WORD_CROSS=${GRAMMARFILE_ROOT}/grammar_word_cross
@@ -130,8 +134,11 @@ DICTFILE_ROOT=${PRJ}/dict/supplemental/dl_cmp/dim20/thr0/train/pt93/sd2248
 
 ###### USE FOR MAIN TRAINING ######
 DICTFILE=${DICTFILE_ROOT}/dict_tri2letter
+DICTFILE_WHOLE=${DICTFILE_ROOT}/dict_tri2letter_whole
+
 DICTFILE_WORD=${DICTFILE_ROOT}/dict_tri2word
 DICTFILE_WORD_SKSP=${DICTFILE_ROOT}/dict_tri2word_sksp
+DICTFILE_WORD_WHOLE=${DICTFILE_ROOT}/dict_tri2word_whole
 
 ###### USE FOR CROSS WORD TRILETTER ######
 DICTFILE_CROSS=${DICTFILE_ROOT}/dict_tri2letter_cross
@@ -159,19 +166,19 @@ TOKENS_ALL=${PRJ}/commands/commands_tri_internal.all
 
 ###### USE FOR INITIAL TRAINING ######
 TOKENS_ORIGINAL=${TOKENS_ROOT}/commands_letter
+TOKENS_ORIGINAL_WHOLE=${TOKENS_ROOT}/commands_letter_whole
 # TOKENS_ORIGINAL_SKSP=${PRJ}/commands/commands_letter_isolated
 
 ###### USE FOR MAIN TRAINING ######
 TOKENS=${TOKENS_ROOT}/commands_tri_internal
+TOKENS_WHOLE=${TOKENS_ROOT}/commands_tri_internal_whole
+
 TOKENS_WORD=${TOKENS_ROOT}/commands_word
 TOKENS_WORD_SKSP=${TOKENS_ROOT}/commands_word_sksp
+TOKENS_WORD_WHOLE=${TOKENS_ROOT}/commands_word_whole
 
 ###### USE FOR CROSS WORD TRILETTER ######
 TOKENS_CROSS=${TOKENS_ROOT}/commands_tri_cross
-
-###### USE FOR SINGLE LETTER MODELING ######
-# TOKENS=${PRJ}/commands/commands_letter
-# TOKENS_WORD=${PRJ}/commands/commands_word
 
 #######################################################
 ##################### MLF FILES #######################
@@ -186,14 +193,21 @@ TOKENS_CROSS=${TOKENS_ROOT}/commands_tri_cross
 MLF_ROOT=${PRJ}/mlf/supplemental/dl_cmp/dim20/thr0/train/pt93/sd2248
 
 ###### USE FOR INITIAL TRAINING ######
+# The mlf letter files below BOTH contain spaces
+# despite one being designated sksp.
+
 MLF_LOCATION_ORIGINAL=${MLF_ROOT}/labels.mlf_letter # used for building model and results
 MLF_LOCATION_ORIGINAL_SKSP=${MLF_ROOT}/labels.mlf_letter_sksp # used for building model and results
+MLF_LOCATION_ORIGINAL_WHOLE=${MLF_ROOT}/labels.mlf_letter_whole # used for building model and results
 
 ###### USE FOR MAIN TRAINING ######
 MLF_LOCATION=${MLF_ROOT}/labels.mlf_tri_internal
 MLF_LOCATION_SKSP=${MLF_ROOT}/labels.mlf_tri_internal_sksp
+MLF_LOCATION_WHOLE=${MLF_ROOT}/labels.mlf_tri_internal_whole
+
 MLF_LOCATION_WORD=${MLF_ROOT}/labels.mlf_word
 MLF_LOCATION_WORD_SKSP=${MLF_ROOT}/labels.mlf_word_sksp
+MLF_LOCATION_WORD_WHOLE=${MLF_ROOT}/labels.mlf_word_whole
 
 ###### USE FOR CROSS WORD TRILETTER ######
 MLF_LOCATION_CROSS=${MLF_ROOT}/labels.mlf_tri_cross
@@ -207,10 +221,8 @@ MLF_LOCATION_GEN=${MLF_ROOT}/gen # Generated MLFs
 WORD_LATTICE=${OUTPUTFILE_ROOT}/word.lattice
 # BIGRAM_LETTER_FILE=${OUTPUTFILE_ROOT}bigram.letter
 
-NGRAM=1
-NGRAM_WORD=yes
+WORD_SKSP=yes
 LM_DIR=${PRJ}/lang_models
-# NGRAM_WORD_FILE=${OUTPUTFILE_ROOT}/bigram.word
 
 HEDFILE1=${PRJ}/instr/mktri1_silsp.hed
 HEDFILE2=${PRJ}/instr/mktri2_tc.6state-pca20-gmm2.hed

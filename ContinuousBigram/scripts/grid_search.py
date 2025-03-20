@@ -27,15 +27,8 @@ def parse_args():
         type=str,
         nargs='+',
         default=['./data/supplemental/dl_cmp/dim20/thr1/train/interpall1/pt2/data/'],
-        help="All the different datasets to test. (must end with /data)"
-    )
-
-    parser.add_argument(
-        "--label_files",
-        type=str,
-        nargs='+',
-        default=['./label/supplemental/dl_cmp/thr1/train/pt2/label/'],
-        help="All the different datasets to test. (must end with /label)"
+        help="All the different datasets to test. (must end with /data) " + \
+                "The label path is created from this path."
     )
     
     parser.add_argument(
@@ -137,9 +130,21 @@ def parse_args():
     )
     
     parser.add_argument(
+        "--prepare_data_only",
+        action='store_true',
+        help="If true, will prepare data before training."
+    )
+    
+    parser.add_argument(
         "--test_model",
         action='store_true',
         help="If true, will run testing. If a model is not passed as an arg, will build a model name from other args (as in train time)"
+    )
+    
+    parser.add_argument(
+        "--whole_word",
+        action='store_true',
+        help="If true will model on the whole word level (words treated like letters, phrases like words)."
     )
     
     parser.add_argument(
@@ -193,9 +198,6 @@ def _make_options_file(subdirs):
 
 # Check args
 def check_args():
-    if len(args.data_files) != len(args.label_files):
-        raise ValueError("Data File and Label file length should match.")
-
     for i in range(len(args.data_files)):
         if args.data_files[i].endswith('/'):
             args.data_files[i] = args.data_files[i][:-1]
@@ -203,12 +205,6 @@ def check_args():
         if not(args.data_files[i].endswith('data')):
             raise ValueError("Data files must end with /data (last subdir).")
 
-        if args.label_files[i].endswith('/'):
-            args.label_files[i] = args.label_files[i][:-1]
-
-        if not(args.label_files[i].endswith('label')):
-            raise ValueError("Label files must end with /label (last subdir).")
-   
     if sorted(list(LETTER_GRAMMAR_FILE_DICT.keys())) != sorted(list(WORD_GRAMMAR_FILE_DICT.keys())):
         raise ValueError("Check Grammar Keys between Letter/Word.")
 
@@ -300,25 +296,12 @@ def get_bool_arg_info():
     multi_process = "yes" if not(args.no_multi_process) else "no"
     hedfile1 = "${PRJ}/instr/mktri1_silsp.hed" if not(args.no_custom_silsp) else "${PRJ}/instr/mktri1_orig.hed"
     cross_word = "yes" if args.cross_word else "no"
+    whole_word = "yes" if args.whole_word else "no"
 
-    return custom_silsp, multi_process, hedfile1, cross_word
+    return custom_silsp, multi_process, hedfile1, cross_word, whole_word
 
 def get_machine_info():
     return os.cpu_count()
-
-def get_subdirs(filepath):
-    if filepath.startswith('.'):
-        # return os.path.join(*(data_file.split('/')[2:-1]))
-        return filepath.split('/')[2:-1]
-    else:
-        return filepath.split('/')[1:-1]
-
-
-# Get the subdirectories of the data file (leave out root and filename)
-def get_subdirectories(filepath):
-    subdir_list = get_subdirs(filepath)
-    subdirs = os.path.join(*(subdir_list))
-    return subdirs
 
 # Helper to edit the options file with new hyperparam (for 1 param)
 def edit_file(re_search, re_repl, file_to_edit):
@@ -374,7 +357,7 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, grammar_t
     letter_results, word_results = get_hresults_filepaths(name_ext, subdirs, ip)
     letter_grammar, word_grammar = get_grammar_filepaths(grammar_type)
 
-    custom_silsp, multi_process, hedfile1, cross_word = get_bool_arg_info()
+    custom_silsp, multi_process, hedfile1, cross_word, whole_word = get_bool_arg_info()
     hedfile2 = f"${{PRJ}}/instr/mktri2_tc.{hmmdef}.hed"
     num_threads = get_machine_info()
 
@@ -410,6 +393,9 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, grammar_t
     
     ngram_word_search = NGRAM_WORD_VARNAME + "\s*=\s*[0-9]"
     ngram_word_repl = NGRAM_WORD_VARNAME + f"={ngram}"
+    
+    whole_word_search = WHOLE_WORD_VARNAME + "\s*=\s*(yes|no)"
+    whole_word_repl = WHOLE_WORD_VARNAME + f"={whole_word}"
 
     cross_word_hedfile1_search = "^CL commands\/commands_tri_(internal|cross)$"
     cross_word_hedfile1_repl = "CL commands/commands_tri_cross" if args.cross_word else "CL commands/commands_tri_internal"
@@ -455,6 +441,7 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, grammar_t
     # edit_file(cross_word_hedfile1_search, cross_word_hedfile1_repl, hedfile1_local_file)
     edit_file(trace_level_search, trace_level_repl, options_file)
     edit_file(threads_search, threads_repl, options_file)
+    edit_file(whole_word_search, whole_word_repl, options_file)
     
     subprocess.run(["grep", "^" + IP_VARNAME + "\s*=\s*", options_file])
     subprocess.run(["grep", "^" + NUM_ITS_VARNAME + "\s*=\s*", options_file])
@@ -472,6 +459,7 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, grammar_t
     subprocess.run(["grep", "^" + NGRAM_WORD_VARNAME + "\s*=\s*", options_file])
     subprocess.run(["grep", "^" + TRACE_LEVEL_VARNAME + "\s*=\s*", options_file])
     subprocess.run(["grep", "^" + THREADS_VARNAME + "\s*=\s*", options_file])
+    subprocess.run(["grep", "^" + WHOLE_WORD_VARNAME + "\s*=\s*", options_file])
     subprocess.run([f"head -n 1 {hedfile1_local_file}"], shell=True)
 
 def edit_htk_root_file_options(subdirs):
@@ -678,20 +666,20 @@ def prepare_data(data_file, label_file, subdirs):
 # In this case grammar_type is hardcoded as grliwi, but it should be
 # hardcoded everywhere
 def gen_grammar(subdirs, label_file, grammar_type_arg='word'):
-    if grammar_type_arg == "letter":
+    if grammar_type_arg.startswith("letter"):
         grammar_file = os.path.basename(LETTER_GRAMMAR_FILE_DICT["grliwi"])
+        if grammar_type_arg == "letter_whole_word":
+            grammar_file += "_whole_word"
     else:
         grammar_file = os.path.basename(WORD_GRAMMAR_FILE_DICT["grliwi"])
         if grammar_type_arg == "word_sksp":
             grammar_file += "_sksp"
-    
-    # ngram_basename = grammar_file.split("_")[-1]  # Last token in grammar filename should be '1gram', '2gram', etc.
-    # ngram = "1" if ngram_basename == "isolated" else ngram_basename[0]
+        elif grammar_type_arg == "word_whole_word":
+            grammar_file += "_whole_word"
+
     grammar_filepath = os.path.join(GRAMMAR_ROOT, subdirs, grammar_file)
 
     gen_grammar_args = ['python', GEN_GRAMMAR_FILE]
-    # gen_grammar_args += ["--grammar_file", grammar_type_arg]   # Different grammar type from first arg
-    # gen_grammar_args += ["--n_gram", ngram]
     gen_grammar_args += ["--label_loc", label_file]
     gen_grammar_args += ["--grammar_file", grammar_filepath]
 
@@ -727,16 +715,15 @@ if __name__ == "__main__":
         args.ngrams
     )
     
-    for i in range(len(args.data_files)):
+    for data_file in args.data_files:
         # TODO Write prepare files function
-        data_file = args.data_files[i]
-        label_file = args.label_files[i]
-        
         subdirs = get_subdirectories(data_file)
+        label_file = os.path.join('label', subdirs, 'label')
+        
         _make_options_file(subdirs)
         edit_htk_root_file_options(subdirs)
 
-        if args.prepare_data:
+        if args.prepare_data or args.prepare_data_only:
             prepare_data(data_file, label_file, subdirs)
         
         gen_grammar(
@@ -754,9 +741,25 @@ if __name__ == "__main__":
         gen_grammar(
             subdirs,
             label_file,
+            grammar_type_arg="word_whole_word"
+        )
+        
+        gen_grammar(
+            subdirs,
+            label_file,
             grammar_type_arg="letter"
         )
         
+        gen_grammar(
+            subdirs,
+            label_file,
+            grammar_type_arg="letter_whole_word"
+        )
+        
+        # Exit here after prepare_files and gen_grammar finish
+        if args.prepare_data_only:
+            exit(0)
+
         for arg_tup in arg_iter:
             ip = arg_tup[0]
             hmmdef = arg_tup[1]
