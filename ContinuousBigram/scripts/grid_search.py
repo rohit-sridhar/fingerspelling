@@ -17,8 +17,6 @@ from utils import *
 # Modify edit_options to print out the modification
 # Modify get_name_ext to print out the appropriate extension
 
-## TODO: Figure out grammar types properly
-
 def parse_args():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     
@@ -345,11 +343,13 @@ def make_triletter_changes(subdirs):
     edit_file(tokens_search, tokens_repl, options_file)
     edit_file(mlf_location_search, mlf_location_repl, options_file)
  
+    print("##### Setting Triletter HTK Files #####")
     subprocess.run(["grep", "^"+TRILETTER_VARNAME+"\s*=\s*", options_file])
     subprocess.run(["grep", "^DICTFILE\s*=\s*", options_file])
     subprocess.run(["grep", "^DICTFILE_WORD\s*=\s*", options_file])
     subprocess.run(["grep", "^TOKENS\s*=\s*", options_file])
     subprocess.run(["grep", "^MLF_LOCATION\s*=\s*", options_file])
+    print("#####\n")
     
 
 # Edit options file with all new hyperparams (calls helper above)
@@ -446,6 +446,7 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     edit_file(threads_search, threads_repl, options_file)
     edit_file(whole_word_search, whole_word_repl, options_file)
     
+    print("##### Training Hyperparameters #####")
     subprocess.run(["grep", "^" + IP_VARNAME + "\s*=\s*", options_file])
     subprocess.run(["grep", "^" + NUM_ITS_VARNAME + "\s*=\s*", options_file])
     subprocess.run(["grep", "^" + NUM_TRI_ITS_VARNAME + "\s*=\s*", options_file])
@@ -464,6 +465,7 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     subprocess.run(["grep", "^" + THREADS_VARNAME + "\s*=\s*", options_file])
     subprocess.run(["grep", "^" + WHOLE_WORD_VARNAME + "\s*=\s*", options_file])
     subprocess.run([f"head -n 1 {hedfile1_local_file}"], shell=True)
+    print("#####\n")
 
 def edit_htk_root_file_options(subdirs):
     options_file = get_options_file(subdirs)
