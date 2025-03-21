@@ -21,12 +21,12 @@ def parse_args():
 ##### THIS IS THE OLD WAY OF DOING N GRAMS (ALSO INCORRECT) #####
 #################################################################
 
-    parser.add_argument(
-        "--n_gram",
-        type=int,
-        default=1,
-        help="For now you can only use n >= 1, (positive ints only)."
-    )
+    # parser.add_argument(
+    #     "--n_gram",
+    #     type=int,
+    #     default=1,
+    #     help="For now you can only use n >= 1, (positive ints only)."
+    # )
     
     parser.add_argument(
         "--label_loc",
@@ -47,37 +47,40 @@ def parse_args():
 
 def validate_grammar_file(grammar_file):
     return grammar_file.endswith('grammar_letter_isolated') or \
-            grammar_file.endswith('grammar_letter_isolated_whole_word') or \
+            grammar_file.endswith('grammar_letter_isolated_whole') or \
             grammar_file.endswith('grammar_word_isolated') or \
             grammar_file.endswith('grammar_word_isolated_sksp') or \
-            grammar_file.endswith('grammar_word_isolated_whole_word')
+            grammar_file.endswith('grammar_word_isolated_whole')
 
 def check_args(args):
     if not(validate_grammar_file(args.grammar_file)):
         raise ValueError("Must pass a grammar path that ends with appropriate filename")   
-    if args.n_gram <= 0:
-        raise ValueError("Must pass n_gram > 0 (positive ints only)")
+    # if args.n_gram <= 0:
+    #     raise ValueError("Must pass n_gram > 0 (positive ints only)")
 
 ########## WORD LEVEL GRAMMAR HELPERS ##########
 # Get a sorted list of all tokens in the label directory. Does not include
 # SPACE or ENTER/EXIT
-def get_tokens(n_gram):
+def get_tokens():
     tokens = set()
     files = get_label_files(args.label_loc)
     
     for label_file in files:
         phrase_tokens = collect_tokens(label_file)
-        if len(phrase_tokens) <= n_gram:
-            # tokens.add(f" {SPACE} ".join(phrase_tokens))
-            tokens.add(f" ".join(phrase_tokens))
-        else:
-            for i in range(len(phrase_tokens) - (n_gram - 1)):
-                # tokens.add(f" {SPACE} ".join(phrase_tokens[i:i+n_gram]))
-                tokens.add(f" ".join(phrase_tokens[i:i+n_gram]))
+        # if len(phrase_tokens) <= n_gram:
+        #     tokens.add(f" {SPACE} ".join(phrase_tokens))
+        #     tokens.add(f" ".join(phrase_tokens))
+        # else:
+        #     for i in range(len(phrase_tokens) - (n_gram - 1)):
+        #         tokens.add(f" {SPACE} ".join(phrase_tokens[i:i+n_gram]))
+        #     tokens.add(f" ".join(phrase_tokens[i:i+n_gram]))
+        for token in phrase_tokens:
+            tokens.add(token)
     
     return sorted(list(tokens))
 
 # Gets phrases from the label files
+# def get_phrases(n_gram):
 def get_phrases():
     phrases = set()
     files = get_label_files(args.label_loc)
@@ -92,22 +95,25 @@ def get_phrases():
 
 ########## LETTER LEVEL GRAMMAR HELPERS ##########
 # Get a sorted list of all tokens in the label directory
-def get_letters(n_gram):
-    tokens = get_tokens(1)  # Get tokens to get letters from them
+# def get_letters(n_gram):
+def get_letters():
+    tokens = get_tokens()  # Get tokens to get letters from them
     letters = set([SPACE])
     
     for token in tokens:
-        if len(token) <= n_gram:
-            letters.add(" ".join([*token]))
-        else:
-            for i in range(len(token) - (n_gram - 1)):
-                letters.add(" ".join(token[i:i+n_gram]))
+        # if len(token) <= n_gram:
+        #     letters.add(" ".join([*token]))
+        # else:
+        #     for i in range(len(token) - (n_gram - 1)):
+        #         letters.add(" ".join(token[i:i+n_gram]))
+        for i in range(len(token)):
+            letters.add(token[i])
 
     return sorted(list(letters))
 
 # Gets phrases from the label files
 def get_words():
-    tokens = get_tokens(1)  # Pass n gram 1 to just get tokens
+    tokens = get_tokens()  # Pass n gram 1 to just get tokens
     words = set()
 
     for token in tokens:
@@ -127,7 +133,7 @@ def write_word_grammar(tokens):
         line_2 = f"({ENTER} {{ $word _ }} $word {EXIT})\n"
     elif args.grammar_file.endswith("grammar_word_isolated_sksp"):
         line_2 = f"({ENTER} {{ $word }} $word {EXIT})\n"
-    elif args.grammar_file.endswith("grammar_word_isolated_whole_word"):
+    elif args.grammar_file.endswith("grammar_word_isolated_whole"):
         line_2 = f"({ENTER} {{ $word }} $word {EXIT})\n"
     
     with open(args.grammar_file, 'w') as f:
@@ -159,18 +165,18 @@ if __name__ == "__main__":
     print(args)
     
     if "letter" not in args.grammar_file:
-        if args.grammar_file.endswith("_whole_word"):
+        if args.grammar_file.endswith("_whole"):
             tokens = get_phrases()
             write_word_grammar_phrase(tokens)
         else:
-            tokens = get_tokens(1)
+            tokens = get_tokens()
             write_word_grammar(tokens)
     else:
-        if args.grammar_file.endswith("whole_word"):
-            letters = get_tokens(1)
+        if args.grammar_file.endswith("_whole"):
+            letters = get_tokens()
             letters = [f"{{{letter}}}" for letter in letters]
             write_letter_grammar(letters)
         else:
-            letters = get_letters(1)
+            letters = get_letters()
             write_letter_grammar(letters)
 
