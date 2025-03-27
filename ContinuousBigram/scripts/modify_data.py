@@ -3,6 +3,7 @@ import os
 import sys
 import shutil
 import random
+import json
 
 import numpy as np
 import pandas as pd
@@ -79,9 +80,15 @@ def parse_args():
     parser.add_argument(
         "--char_map_file",
         type=str,
-        default="/data/parquet/asl-fingerspelling/supplemental_character_to_prediction_index.json",
         required=required_by_set("--method", {"import"}),
         help="Maps characters to indices and vice versa (only for import method)."
+    )
+
+    parser.add_argument(
+        "--data_aug_map",
+        type=str,
+        required=required_by_set("--method", {"data_aug_interpolation"}),
+        help="Stores seq ids of all data files (only for data_aug methods)."
     )
 
     parser.add_argument(
@@ -104,7 +111,7 @@ def parse_args():
         "--num_interpolations",
         type=int,
         default=3,
-        required=required_by_set("--method", {"interpolation"}),
+        required=required_by_set("--method", {"interpolation", "data_aug_interpolation"}),
         help="Number of interpolations (only for interpolation)."
     )
 
@@ -126,7 +133,7 @@ def parse_args():
     parser.add_argument(
         "--interp_all",
         action="store_true",
-        required=required_by_set("--method", {"interpolation"}),
+        required=required_by_set("--method", {"interpolation", "data_aug_interpolation"}),
         help="Interpolate all of the frames, as opposed to only those within the threshold (only for interpolation method)."
     )
 
@@ -308,6 +315,7 @@ def interpolate_frames(datafile, label_file, new_datafile, new_label_file, num_i
     
     with open(new_datafile, 'w') as new_datafile:
         new_datafile.writelines(frames)
+
     os.link(label_file, new_label_file)
 
 ############### FPL THRESHOLD FUNCTIONS ###############
@@ -482,6 +490,25 @@ def sample_data(datafile, label_file, new_datafile, new_label_file, sample_ratio
         os.link(datafile, new_datafile)
         os.link(label_file, new_label_file)
     
+def data_aug_interpolation(curr_seq_id, datafile, label_file, new_data_loc, new_label_loc, data_aug_map, num_interpolations, interp_all):
+    next_seq_id = get_next_seq_id(data_aug_map)    
+
+    cp_datafile = os.path.join(new_data_loc, curr_seq_id)
+    cp_label_file = os.path.join(new_label_loc, curr_seq_id + ".lab")
+
+    new_datafile = os.path.join(new_data_loc, next_seq_id)
+    new_label_file = os.path.join(new_label_loc, next_seq_id + ".lab")
+    
+    interpolate_frames(datafile, label_file, new_datafile, new_label_file, num_interpolations, interp_all) 
+    os.link(datafile, cp_datafile)
+    os.link(label_file, cp_label_file)
+    
+    augmentation = f"{'interpall' if interp_all else 'interp'}" + str(num_interpolations)
+    data_aug_entry = get_data_aug_entry(curr_seq_id, augmentation, next_seq_id)
+    
+    data_aug_map[next_seq_id] = data_aug_entry
+    return data_aug_map
+
 ############### WORD LEVEL FUNCTIONS ###############
 # def whole_word(datafile, label_file, new_datafile, new_label_file):
 #     with open(label_file, 'r') as lab:
@@ -518,8 +545,13 @@ if __name__ == "__main__":
 
     if args.method == "match_triletters":
         commands_triletters = read_triletters_from_commands()
-    
+
+    if args.method.startswith("data_aug"):
+        with open(args.data_aug_map, "r") as f:
+            data_aug_map = json.load(f)
+
     files = os.listdir(data_loc)
+
     for f in tqdm(files):
         datafile = os.path.join(data_loc, f)
         new_datafile = os.path.join(new_data_loc, f)
@@ -547,6 +579,12 @@ if __name__ == "__main__":
                 os.link(label_file, new_label_file)
         elif args.method == "sample":
             sample_data(datafile, label_file, new_datafile, new_label_file, args.sample_ratio)
+        elif args.method == "data_aug_interpolation":
+            data_aug_map = data_aug_interpolation(f, datafile, label_file, new_data_loc, new_label_loc, data_aug_map, args.num_interpolations, args.interp_all)
         # elif args.method == "whole_word":
         #     whole_word(datafile, label_file, new_datafile, new_label_file)
+
+    if args.method.startswith("data_aug"):
+        with open(args.data_aug_map, "w") as f:
+            json.dump(data_aug_map, f, indent=4)
 

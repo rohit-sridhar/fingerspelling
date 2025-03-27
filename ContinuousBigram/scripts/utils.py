@@ -164,6 +164,7 @@ MODIFY_DATA_METHODS = [
     "match_triletters",
     "import",
     "sample",
+    "data_aug_interpolation",
     # "whole_word",
 ]
 
@@ -178,6 +179,7 @@ DATA_LOC_REQUIRED_METHODS = {
     "neg_fpl_threshold",
     "match_triletters",
     "sample",
+    "data_aug_interpolation"
 }
 
 NEW_DATA_LOC_REQUIRED_METHODS = {
@@ -191,7 +193,8 @@ NEW_DATA_LOC_REQUIRED_METHODS = {
     "neg_fpl_threshold",
     "match_triletters",
     "sample",
-    "import"
+    "import",
+    "data_aug_interpolation"
 }
 
 ##### A note about the sets below. The two sets
@@ -282,4 +285,26 @@ def get_idx_char_map(map_file):
     char_idx_map = get_char_idx_map(map_file)
     idx_char_map = {char_idx_map[key]:key for key in char_idx_map}
     return idx_char_map
+
+##### DATA AUGMENTATION UTILS #####
+def get_data_aug_entry(start_seq, augmentation, end_seq):
+    return " ".join([start_seq, "(" + augmentation + ")", end_seq])
+
+def get_next_seq_id(data_aug_map):
+    seq_ids = list(data_aug_map.keys())
+    seq_ids = [int(seq_id) for seq_id in seq_ids]
+    
+    next_seq_id = 0
+    if min(seq_ids) > 0:
+        next_seq_id = min(seq_ids) - 1
+    else:
+        while next_seq_id < len(seq_ids) - 1 and seq_ids[next_seq_id] + 1 == seq_ids[next_seq_id + 1]:
+            next_seq_id = seq_ids[next_seq_id + 1]
+        
+        if next_seq_id == len(seq_ids) - 1:
+            next_seq_id = max(seq_ids) + 1
+        else:
+            next_seq_id = seq_ids[next_seq_id] + 1
+    
+    return str(next_seq_id)
 
