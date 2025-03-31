@@ -208,3 +208,6 @@ ContinuousBigram/scripts/supplemental
 ContinuousBigram/instr/mkcmd_letter.*
 ContinuousBigram/instr/mkcmd_word.*
 
+# Ignore tag file for vim
+ContinuousBigram/scripts/tags
+
