@@ -180,14 +180,14 @@ def parse_args():
     return parser.parse_args()
 
 # Makes a dir if it doesn't already exist
-def _make_dir(dir_loc):
-    if not(os.path.exists(dir_loc)):
-        os.makedirs(dir_loc)
+# def _make_dir(dir_loc):
+#     if not(os.path.exists(dir_loc)):
+#         os.makedirs(dir_loc)
 
 # Makes the dir for the options file
 def _make_options_file(subdirs):
     options_dir = os.path.join(SCRIPTS_ROOT, subdirs)
-    _make_dir(options_dir)
+    make_dir(options_dir)
 
     new_options_file = os.path.join(options_dir, OPTIONS_FILENAME)
     original_options_file = os.path.join(SCRIPTS_ROOT, OPTIONS_FILENAME)
@@ -252,7 +252,7 @@ def get_name_ext(ip, tc, num_its, num_tri_its, hmmdef, trace_value=None):
 # Get the results filepath
 def get_hresults_filepaths(name_ext, subdirs, ip):
     results_dir = os.path.join(RESULTS_ROOT, subdirs)
-    _make_dir(results_dir)
+    make_dir(results_dir)
     
     if args.test_model_path is None:
         letter_results_file = '_'.join(["hresults.log_letter", name_ext])
@@ -262,7 +262,7 @@ def get_hresults_filepaths(name_ext, subdirs, ip):
         model_results_dir = '_'.join(model_dir.split(os.path.sep)[1:])
 
         results_dir = os.path.join(results_dir, model_results_dir)
-        _make_dir(results_dir)
+        make_dir(results_dir)
         
         #### TODO Need to rm insertion penalty from model names     ####
         model_name_split = model_name.split("_")
@@ -526,13 +526,13 @@ def edit_htk_root_file_options(subdirs):
     ext_dir = os.path.join(EXT_ROOT, subdirs)
     models_dir = os.path.join(MODELS_ROOT, subdirs)
     
-    _make_dir(grammar_dir)
-    _make_dir(dict_dir)
-    _make_dir(tokens_dir)
-    _make_dir(mlf_dir)
-    _make_dir(outputfile_dir)
-    _make_dir(ext_dir)
-    _make_dir(models_dir)
+    make_dir(grammar_dir)
+    make_dir(dict_dir)
+    make_dir(tokens_dir)
+    make_dir(mlf_dir)
+    make_dir(outputfile_dir)
+    make_dir(ext_dir)
+    make_dir(models_dir)
 
 # def test_model(ip, tc, num_its, num_tri_its, hmmdef, subdirs, grammar_type, trace_value):
 def test_model(ip, tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
@@ -540,7 +540,7 @@ def test_model(ip, tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
     name_ext = get_name_ext(ip, tc, num_its, num_tri_its, hmmdef, trace_value=trace_value)
     
     log_dir = os.path.join(LOG_ROOT, subdirs)
-    _make_dir(log_dir)
+    make_dir(log_dir)
 
     log_file = os.path.join(log_dir, "output.log_" + name_ext + ".test_model")
     
@@ -566,7 +566,7 @@ def train_model(ip, tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
     name_ext = get_name_ext(ip, tc, num_its, num_tri_its, hmmdef, trace_value=trace_value)
     
     log_dir = os.path.join(LOG_ROOT, subdirs)
-    _make_dir(log_dir)
+    make_dir(log_dir)
     
     log_file = os.path.join(log_dir, "output.log_" + name_ext)
     
@@ -650,7 +650,7 @@ def save_model(ip, tc, num_its, num_tri_its, hmmdef, subdirs):
 
     name_ext = get_name_ext(ip, tc, num_its, num_tri_its, hmmdef)  # Pass none for first arg because the model doesn't vary by grammar
     new_model_dir, new_model_path = get_model_path(subdirs, ip, tc, num_its, num_tri_its, hmmdef)
-    _make_dir(new_model_dir)
+    make_dir(new_model_dir)
     
     print(f"Current Model Dir: {curr_model_path}")
     print(f"New Model Dir: {new_model_path}")

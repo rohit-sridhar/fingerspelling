@@ -14,24 +14,6 @@ root="/data/hmm_modeling/fingerspelling/ContinuousBigram"
 cd $root
 pt_idx=$(( SLURM_ARRAY_TASK_ID ))
 
-############################## IMPORT MULTIPLE ##############################
-
-echo ""
-echo "STARTING IMPORT"
-echo ""
-
-# for data_split in ${data_splits[@]}; do
-# for participant in "${all_participants[@]}"; do
-# for seed in "${seeds[@]}"; do
-#     python scripts/modify_data.py \
-#         --import_data_loc /data/deep_learning/fingerspelling_torch/data/data_thr0_supplemental_sd${seed}_pt${participant}_right.pkl.${data_split} \
-#         --new_data_loc ./data/supplemental/dl_cmp/dim20/thr0/${data_split}/pt${participant}/sd${seed}/data \
-#         --method import
-# done
-# done
-# done
-
-
 ############################## THRESHOLD MULTIPLE ##############################
 
 echo ""

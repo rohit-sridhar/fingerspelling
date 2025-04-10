@@ -1,5 +1,7 @@
 FROM rohitsridhar91/asl_sign_recognizer:latest
 
-WORKDIR /scratch/fingerspelling/ContinuousBigram
+WORKDIR /data/hmm_modeling/fingerspelling/ContinuousBigram
+
+RUN mkdir /root/tmp
 
 CMD ["bash"]

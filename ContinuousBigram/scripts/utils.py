@@ -1,5 +1,6 @@
 import os
 import json
+import shutil
 
 from glob import glob
 
@@ -216,6 +217,19 @@ NEW_DATA_LOC_REQUIRED_METHODS = {
 ########## Utils functions for python scripts ##########
 
 ##### SUBDIRECTORY UTILS #####
+
+# Makes a dir if it doesn't exist. If it does exist, makes dir based
+# on arg rmdir
+def make_dir(dir_loc, rmdir=False):
+    if os.path.exists(dir_loc) and rmdir:
+        shutil.rmtree(dir_loc)
+        os.makedirs(dir_loc)
+        print(f"Deleted {dir_loc} and recreated it")
+    elif not(os.path.exists(dir_loc)):
+        os.makedirs(dir_loc)
+        print(f"Created {dir_loc}")
+    else:
+        print(f"Did not create {dir_loc} since rmdir is {rmdir}")
 
 # The functions below get the subdirectories for 
 def _get_subdirs(filepath):

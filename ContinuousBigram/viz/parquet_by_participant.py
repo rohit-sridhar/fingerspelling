@@ -7,10 +7,16 @@ from tqdm import tqdm
 
 from constants import *
 
+# TODO Add proper relative import later
+import sys
+sys.path.append('../scripts')
+
+from utils import *
+
 def parse_args():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    parser.add_argument("--participant_id", type=int, default=2, help="Participant ID.")
+    parser.add_argument("--pt_id", type=int, default=2, help="Participant ID.")
 
     return parser.parse_args()
 
@@ -43,15 +49,17 @@ if __name__ == "__main__":
     print(args)
 
     metadata = pd.read_csv(SUPPLEMENTAL_METADATA)
-    metadata = metadata[metadata.participant_id == args.participant_id]
+    metadata = metadata[metadata.participant_id == args.pt_id]
     
     pq_files = os.listdir(SUPPLEMENTAL_LANDMARKS)
     seq_ids = set(metadata.sequence_id.tolist())
     all_data = process_pq_files(pq_files, seq_ids)
     
-    pt_parquet = os.path.join(LOCAL_DATA, f"participant{args.participant_id}.parquet")
+    pt_parquet = os.path.join(LOCAL_DATA, f"{PT_STR(args.pt_id)}.parquet")
+    make_dir(LOCAL_DATA, rmdir=False)
     all_data.to_parquet(pt_parquet)
 
-    print(all_data)
-    print(set(all_data.index.values.tolist()))
+    print(f"{pt_parquet} created!")
+    # print(all_data)
+    # print(set(all_data.index.values.tolist()))
 

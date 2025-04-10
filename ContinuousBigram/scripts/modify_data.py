@@ -53,22 +53,6 @@ def parse_args():
                 "Subdirs passed here are used for new label loc."
     )
     
-    # parser.add_argument(
-    #     "--label_loc",
-    #     type=str,
-    #     required=required_by_set("--method", LABEL_LOC_REQUIRED_METHODS),
-    #     help="Location for label files (only for whole_word methods). " + \
-    #             "Must end with /label (for naming convention)."
-    # )
-    # 
-    # parser.add_argument(
-    #     "--new_label_loc",
-    #     type=str,
-    #     required=required_by_set("--method", NEW_LABEL_LOC_REQUIRED_METHODS),
-    #     help="Location to store new labels (only for whole_word methods). " + \
-    #             "Must end with /label (for naming convention)."
-    # )
-    
     parser.add_argument(
         "--commands_file",
         type=str,
@@ -165,10 +149,10 @@ def parse_args():
     return parser.parse_args()
 
 # Make dir and overwrite if path exists already
-def _make_dir(dir_loc):
-    if os.path.exists(dir_loc):
-        shutil.rmtree(dir_loc)
-    os.makedirs(dir_loc)
+# def _make_dir(dir_loc):
+#     if os.path.exists(dir_loc):
+#         shutil.rmtree(dir_loc)
+#     os.makedirs(dir_loc)
 
 # Remove trailing slash from a path
 def _rm_trailing_slash(path):
@@ -217,8 +201,8 @@ def _check_args():
     #     new_subdirs = get_subdirectories(new_label_loc)
     #     new_data_loc = os.path.join('data', new_subdirs, 'data')
     
-    _make_dir(new_label_loc)
-    _make_dir(new_data_loc)
+    make_dir(new_label_loc, rmdir=True)
+    make_dir(new_data_loc, rmdir=True)
     
     if args.method == "match_triletters" and args.commands_file is None:
         raise ValueError("Must pass triletter commands file for match triletters.")
@@ -491,7 +475,7 @@ def sample_data(datafile, label_file, new_datafile, new_label_file, sample_ratio
         os.link(label_file, new_label_file)
     
 def data_aug_interpolation(curr_seq_id, datafile, label_file, new_data_loc, new_label_loc, data_aug_map, num_interpolations, interp_all):
-    next_seq_id = get_next_seq_id(data_aug_map)    
+    next_seq_id = get_next_seq_id(data_aug_map)
 
     cp_datafile = os.path.join(new_data_loc, curr_seq_id)
     cp_label_file = os.path.join(new_label_loc, curr_seq_id + ".lab")
@@ -499,7 +483,7 @@ def data_aug_interpolation(curr_seq_id, datafile, label_file, new_data_loc, new_
     new_datafile = os.path.join(new_data_loc, next_seq_id)
     new_label_file = os.path.join(new_label_loc, next_seq_id + ".lab")
     
-    interpolate_frames(datafile, label_file, new_datafile, new_label_file, num_interpolations, interp_all) 
+    interpolate_frames(datafile, label_file, new_datafile, new_label_file, num_interpolations, interp_all)
     os.link(datafile, cp_datafile)
     os.link(label_file, cp_label_file)
     

@@ -19,30 +19,6 @@ typeset -a interpolations=(1 2)
 # typeset -a thresholds=(1 2 4 6 8)
 # typeset -a interpolations=(1 2)
 
-############################## IMPORT MULTIPLE ##############################
-
-
-
-echo ""
-echo "STARTING IMPORT"
-echo ""
-
-for data_split in ${data_splits[@]}; do
-for participant in "${all_participants[@]}"; do
-pid=()
-for seed in "${seeds[@]}"; do
-    python scripts/modify_data.py \
-        --import_data_loc /data/deep_learning/fingerspelling_torch/data/data_thr0_supplemental_sd${seed}_pt${participant}_right.pkl.${data_split} \
-        --new_data_loc ./data/supplemental/dl_cmp/dim20/thr0/${data_split}/pt${participant}/sd${seed}/data \
-        --char_map_file /data/parquet/asl-fingerspelling/supplemental_character_to_prediction_index.json \
-        --method import &
-    pid+=("$!")
-done
-wait "${pid[@]}"
-done
-done
-
-
 ############################## THRESHOLD MULTIPLE ##############################
 
 echo ""

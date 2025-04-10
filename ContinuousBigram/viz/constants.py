@@ -3,26 +3,39 @@ import os
 import json
 
 from enum import Enum, auto
+from pathlib import Path
 
-LOCAL_DATA = "./data"
+VIDEO_DATA = Path("./videos")
 OUTPUT_MODEL = 'model.tflite'
 
-SUPPLEMENTAL_METADATA = "/data/parquet/asl-fingerspelling/supplemental_metadata.csv"
-SUPPLEMENTAL_LANDMARKS = "/data/parquet/asl-fingerspelling/supplemental_landmarks"
+# SUPPLEMENTAL_METADATA = "/data/parquet/asl-fingerspelling/supplemental_metadata.csv"
+# SUPPLEMENTAL_LANDMARKS = "/data/parquet/asl-fingerspelling/supplemental_landmarks"
 
 PARQUET_FEATURE_LIST = [
+    'sequence_id',
+    'frame',
     *[
         f'{coord}_{hand}_{i}'
-        for hand in ['left_hand', 'right_hand']
+        for hand in ['right']
         for coord in ['x', 'y', 'z']
         for i in range(21)
     ],
-    'frame',
-    'sequence_id'
 ]
 
-PARQUET_LH_FEATURES = [i for i in range(0, 63)]
-PARQUET_RH_FEATURES = [i for i in range(63, 126)]
+# PARQUET_FEATURE_LIST = [
+#     *[
+#         f'{coord}_{hand}_{i}'
+#         for hand in ['left_hand', 'right_hand']
+#         for coord in ['x', 'y', 'z']
+#         for i in range(21)
+#     ],
+#     'frame',
+#     'sequence_id'
+# ]
+
+PARQUET_RH_FEATURES = [i for i in range(0, 63)]
+# PARQUET_LH_FEATURES = [i for i in range(0, 63)]
+# PARQUET_RH_FEATURES = [i for i in range(63, 126)]
 
 PARQUET_X = slice(0, 21)
 PARQUET_Y = slice(21, 42)
@@ -106,3 +119,4 @@ RING_OUT = [RING_PITCH, RING_YAW, RING_IP_TILT, RING_DP_TILT]
 PINKY_OUT = [PINKY_PITCH, PINKY_YAW, PINKY_IP_TILT, PINKY_DP_TILT]
 
 OUTBOUND_FEATURE_GROUPS = [INDEX_OUT, MIDDLE_OUT, RING_OUT, PINKY_OUT]
+
