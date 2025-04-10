@@ -431,9 +431,13 @@ def import_data(new_data_loc, new_label_loc):
     df = pd.read_pickle(args.import_data_loc)
     dl_seq_ids = df.index.to_list()
     
-    if os.path.basename(args.char_map_file).startswith("supplemental"):
+    if "/supplemental/" in new_data_loc:
         data_path = SUPP_DATA_FILES
         label_path = SUPP_LABEL_FILES
+        supplemental = True
+    elif "/supplemental_gen/" in new_data_loc:
+        data_path = SUPP_GEN_DATA_FILES
+        label_path = SUPP_GEN_LABEL_FILES
         supplemental = True
     else:
         data_path = ALL_DATA_PATH
