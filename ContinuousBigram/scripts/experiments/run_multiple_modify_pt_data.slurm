@@ -22,6 +22,7 @@ cd $root
 echo ""
 echo "STARTING FRAME PER LETTER THRESHOLD"
 echo "PT IDX: ${pt_idx}"
+echo "DATASET: ${dataset}"
 echo ""
 
 for data_split in ${data_splits[@]}; do
@@ -29,8 +30,8 @@ for participant in "${all_participants[$pt_idx]}"; do
 for seed in "${seeds[@]}"; do
 for threshold in "${thresholds[@]}"; do
     python scripts/modify_data.py \
-        --data_loc data/$datset/dim20/thr0/${data_split}/pt${participant}/sd${seed}/data \
-        --new_data_loc data/$dataset/dim20/thr${threshold}/${data_split}/pt${participant}/sd${seed}/data \
+        --data_loc data/${dataset}/dim20/thr0/${data_split}/pt${participant}/sd${seed}/data \
+        --new_data_loc data/${dataset}/dim20/thr${threshold}/${data_split}/pt${participant}/sd${seed}/data \
         --method fpl_threshold \
         --fpl_threshold ${threshold}
 done
@@ -50,8 +51,8 @@ for seed in "${seeds[@]}"; do
 for threshold in "${thresholds[@]}"; do
 for interpolation in "${interpolations[@]}"; do
     python scripts/modify_data.py \
-        --data_loc data/$dataset/dim20/thr${threshold}/${data_split}/pt${participant}/sd${seed}/data \
-        --new_data_loc data/$dataset/dim20/thr${threshold}/${data_split}/interpall${interpolation}/pt${participant}/sd${seed}/data \
+        --data_loc data/${dataset}/dim20/thr${threshold}/${data_split}/pt${participant}/sd${seed}/data \
+        --new_data_loc data/${dataset}/dim20/thr${threshold}/${data_split}/interpall${interpolation}/pt${participant}/sd${seed}/data \
         --method interpolation \
         --num_interpolations ${interpolation} \
         --interp_all
