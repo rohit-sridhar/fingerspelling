@@ -1,16 +1,25 @@
 #!/bin/bash
 
-# declare -a pts=(03ad 0a77 0ba8 0bea 13e3 163a 1bd5 1f86 1f91 2f35 2ff7 39a6 39e5 3a6e 3d12 494d 4c3d 4ddc 51f5 5b63 5d33 675f 6b92 6f68 711d 7f32 80fe 812c 8c4d 8e3b 917d 99cb 9b23 9d2b 9ed9 9ff4 a021 a362 a3d4 a3e7 a442 a6ed a95b b2d1 b718 bd21 c82a d05c d478 d69c dbf9 e3c0 e4fa ed8e f066 f418 f9ea fbb7 fe96 fede)
-declare -a pts=("03ad" "0a77" "0ba8" "0bea" "13e3") 
-# declare -a supp_pts=("93" "227" "161" "254" "2")
+declare -a pts=(3f8b 13e3 494d b2d1 c0df d3ab 8e3b fe96 8c4d a3d4 3a6e 3d12 f9ea 2ff7 e0f7 ed8e 51f5 a362 a6ed 0ba8) 
+# declare -a pts=(3f8b 13e3 494d b2d1 c0df d3ab 8e3b fe96 8c4d a3d4 3a6e 3d12 f9ea 2ff7 e0f7 ed8e 51f5 a362 a6ed 0ba8 812c 03ad a021 a442 1d72 711d a95b fa10 1bd5 6b92 5b63 bd21 1f91 917d fbb7 4ddc ab12 dbf9 99cb 39e5 4f1e 63a1 163a c82a f418 9d2b b718 39a6 4c3d 675f 9b23 9ed9 d478 f066 e3c0 fede 0a77 0bea d05c 9ff4 f760 7f32 80fe 19d3 6f68 a3e7 cf84 d69c 1f86 2f35 e4fa 5d33)
+# declare -a pts=(03ad 0a77 0ba8 0bea 13e3) 
+# declare -a supp_pts=(93 227 161 254 2)
 
-# for pt in ${pts[@]};
+# To visualize Kaggle supplemental data
+# pid=()
+# for pt in ${supp_pts[@]};
 # do
-#     python visualize.py --parquet_file /data/deep_learning/ISLR-ML/mputils/out/landmarks/all_pt.parquet --metadata_file /data/deep_learning/ISLR-ML/mputils/out/metadata/all_pt.csv --pt_id $pt > output/all_pt/$pt.txt 2>&1 &
+#     python visualize.py --parquet_file /data/deep_learning/ISLR-ML/mputils/out/landmarks/supplemental.parquet --metadata_file /data/parquet/asl-fingerspelling/supplemental_metadata.csv --pt_id $pt > output/supplemental/$pt.txt 2>&1 &
+#     pid+=("$!")
 # done
+# wait "${pid[@]}"
 
-for pt in ${supp_pts[@]};
+# To visualize newly generated supplemental data
+pid=()
+for pt in ${pts[@]};
 do
-    python visualize.py --parquet_file /data/deep_learning/ISLR-ML/mputils/out/landmarks/supplemental.parquet --metadata_file /data/parquet/asl-fingerspelling/supplemental_metadata.csv --pt_id $pt > output/supplemental/$pt.txt 2>&1 &
+    python visualize.py --parquet_file /data/deep_learning/ISLR-ML/mputils/out/landmarks/supplemental_gen.parquet --metadata_file /data/deep_learning/ISLR-ML/mputils/out/metadata/supplemental_gen.csv --pt_id $pt > output/supplemental_gen/$pt.txt 2>&1 &
+    pid+=("$!")
 done
+wait "${pid[@]}"
 
