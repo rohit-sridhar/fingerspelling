@@ -203,6 +203,7 @@ ContinuousBigram/viz/categorized_videos
 # Only ignore the old bigram files
 ContinuousBigram/scripts/make_bigram.old*
 ContinuousBigram/scripts/supplemental
+ContinuousBigram/scripts/supplemental_gen
 
 # Ignore custom tmp instr files
 ContinuousBigram/instr/mkcmd_letter.*
