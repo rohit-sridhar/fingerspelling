@@ -16,6 +16,7 @@ dataset=supplemental_gen
 root="/data/hmm_modeling/fingerspelling/ContinuousBigram"
 pt_idx=$(( SLURM_ARRAY_TASK_ID ))
 cd $root
+echo "Current directory: `pwd`"
 
 ############################## THRESHOLD MULTIPLE ##############################
 
