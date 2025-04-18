@@ -30,12 +30,6 @@ TRAIN_FILE = os.path.join(SCRIPTS_ROOT, "train.sh")
 TEST_FILE = os.path.join(SCRIPTS_ROOT, "test.sh")
 PREPARE_FILE = os.path.join(SCRIPTS_ROOT, "prepare_files.sh")
 
-TOT_PREPARE = os.path.join(SCRIPTS_ROOT, "cv", "test_on_train.sh")
-EXT_FILE_LIST = "all-extfiles"
-TRAIN_LIST = "./trainsets/training-extfiles"
-TEST_LIST = "./testsets/testing-extfiles"
-GEN_TOT_NAME = os.path.join(SCRIPTS_ROOT, "gen_train_test_name.sh")
-
 GRAMMARFILE_ROOT_VARNAME = "GRAMMARFILE_ROOT"
 DICTFILE_ROOT_VARNAME = "DICTFILE_ROOT"
 TOKENS_ROOT_VARNAME = "TOKENS_ROOT"
