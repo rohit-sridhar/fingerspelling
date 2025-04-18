@@ -6,6 +6,7 @@ import subprocess
 import shutil
 
 from itertools import product
+from pathlib import Path
 from utils import *
 
 ###### TO ADD A NEW HYPERPARAM #######
@@ -31,7 +32,7 @@ def parse_args():
     
     parser.add_argument(
         "--results_csv",
-        type=str,
+        type=Path,
         default=None,
         help="Results CSV to append results to. If the file does not exist, it is created. \
                 If it does exist, results are appended. If nothing is passed the results \
@@ -573,15 +574,15 @@ def add_results_to_csv(ip, tc, num_its, num_tri_its, hmmdef, subdirs):
     
     if letter_results is not None and word_results is not None:
         results = [letter_results_file] + letter_results + word_results
-        if os.path.exists(args.results_csv):
-            with open(args.results_csv, 'a', newline='') as f:
+        if args.results_csv.exists():
+            with open(str(args.results_csv), 'a', newline='') as f:
                 csvwriter = csv.writer(
                     f, delimiter='|',
                     quotechar='\\', quoting=csv.QUOTE_MINIMAL
                 )
                 csvwriter.writerow(results)
         else:
-            with open(args.results_csv, 'w') as f:
+            with open(str(args.results_csv), 'w') as f:
                 csvwriter = csv.writer(
                     f, delimiter='|',
                     quotechar='\\', quoting=csv.QUOTE_MINIMAL
