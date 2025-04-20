@@ -139,7 +139,7 @@ def parse_args():
     
     parser.add_argument(
         "--test_model_path",
-        type=str,
+        type=Path,
         default=None,
         help="Model path for testing."
     )
@@ -191,11 +191,15 @@ def check_args():
             raise ValueError("Data files must end with /data (last subdir).")
 
     if args.test_model_path is not None:
-        if args.test_model_path.startswith("."):
-            args.test_model_path = os.path.join(*args.test_model_path.split(os.path.sep)[1:])
-        
-        if not(args.test_model_path.startswith(MODELS_ROOT)):
+        args.test_model_path = Path(str(args.test_model_path).lstrip("./"))
+        if args.test_model_path.parts[0] + "/" != MODELS_ROOT:
             raise ValueError("Please pass a path where the first dir is (./)?model")
+            
+        # if args.test_model_path.startswith("."):
+        #     args.test_model_path = os.path.join(*args.test_model_path.split(os.path.sep)[1:])
+        # 
+        # if not(args.test_model_path.startswith(MODELS_ROOT)):
+        #     raise ValueError("Please pass a path where the first dir is (./)?model")
 
 def get_ip_ext(ip):
     ip_int = abs(int(ip))

@@ -162,7 +162,6 @@ MODIFY_DATA_METHODS = [
     "import",
     "sample",
     "data_aug_interpolation",
-    # "whole_word",
 ]
 
 DATA_LOC_REQUIRED_METHODS = {
