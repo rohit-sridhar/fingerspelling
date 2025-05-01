@@ -38,12 +38,12 @@ for seed in "${seeds[@]}"; do
 for val_seed in "${val_seeds[@]}"; do
 for threshold in "${thresholds[@]}"; do
 for hmmdef in "${hmmdefs[@]}"; do
-    echo "python scripts/grid_search.py "
-    echo "    --data_files ./data/${dataset}/dl_cmp/dim20/thr${threshold}/val/pt${participant}/sd${val_seed}/data/ "
-    echo "    --test_model_path ./models/${dataset}/dl_cmp/dim20/thr${threshold}/train/pt${participant}/sd${seed}/newMacros_neg10ip_${hmmdef}_20its_5tri-its_tc50 "
-    echo "    --results_csv ${output_dir}/results_pt${participant}_val.csv "
-    echo "    --ip_values -300 -250 -200 -150 -100 -50 -10 0 10 50 100 200 300 "
-    echo "    --test_model --prepare_data --clear_hresults"
+    python scripts/grid_search.py \
+        --data_files ./data/${dataset}/dim20/thr${threshold}/val/pt${participant}/sd${val_seed}/data/ \
+        --test_model_path ./models/${dataset}/dim20/thr${threshold}/train/pt${participant}/sd${seed}/newMacros_neg10ip_${hmmdef}_20its_5tri-its_tc50 \
+        --results_csv ${output_dir}/results_pt${participant}_val.csv \
+        --ip_values -300 -250 -200 -150 -100 -50 -10 0 10 50 100 200 300 \
+        --test_model --prepare_data --clear_hresults
 done
 done
 done
@@ -58,8 +58,8 @@ done
 # for interpolation in "${interpolations[@]}"; do
 # for hmmdef in "${hmmdefs[@]}"; do
 #     echo "python scripts/grid_search.py "
-#     echo "    --data_files ./data/${dataset}/dl_cmp/dim20/thr${threshold}/val/interpall${interpolation}/pt${participant}/sd${val_seed}/data/ "
-#     echo "    --test_model_path ./models/${dataset}/dl_cmp/dim20/thr${threshold}/train/interpall${interpolation}/pt${participant}/sd${seed}/newMacros_neg10ip_${hmmdef}_20its_5tri-its_tc50 "
+#     echo "    --data_files ./data/${dataset}/dim20/thr${threshold}/val/interpall${interpolation}/pt${participant}/sd${val_seed}/data/ "
+#     echo "    --test_model_path ./models/${dataset}/dim20/thr${threshold}/train/interpall${interpolation}/pt${participant}/sd${seed}/newMacros_neg10ip_${hmmdef}_20its_5tri-its_tc50 "
 #     echo "    --results_csv ${output_dir}/results_pt${participant}_val.csv "
 #     echo "    --ip_values -300 -250 -200 -150 -100 -50 -10 0 10 50 100 200 300 "
 #     echo "    --test_model --prepare_data --clear_hresults"
