@@ -2,6 +2,7 @@ import argparse
 import re
 import os
 import csv
+import sys
 import subprocess
 import shutil
 
@@ -318,11 +319,11 @@ def make_triletter_changes(subdirs):
     edit_file(mlf_location_search, mlf_location_repl, options_file)
  
     print("##### Setting Triletter HTK Files #####")
-    subprocess.run(["grep", "^"+TRILETTER_VARNAME+"\s*=\s*", options_file])
-    subprocess.run(["grep", "^DICTFILE\s*=\s*", options_file])
-    subprocess.run(["grep", "^DICTFILE_WORD\s*=\s*", options_file])
-    subprocess.run(["grep", "^TOKENS\s*=\s*", options_file])
-    subprocess.run(["grep", "^MLF_LOCATION\s*=\s*", options_file])
+    run_subprocess(["grep", "^"+TRILETTER_VARNAME+"\s*=\s*", options_file])
+    run_subprocess(["grep", "^DICTFILE\s*=\s*", options_file])
+    run_subprocess(["grep", "^DICTFILE_WORD\s*=\s*", options_file])
+    run_subprocess(["grep", "^TOKENS\s*=\s*", options_file])
+    run_subprocess(["grep", "^MLF_LOCATION\s*=\s*", options_file])
     print("#####\n")
     
 
@@ -408,22 +409,22 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     edit_file(whole_word_search, whole_word_repl, options_file)
     
     print("##### Training Hyperparameters #####")
-    subprocess.run(["grep", "^" + IP_VARNAME + "\s*=\s*", options_file])
-    subprocess.run(["grep", "^" + NUM_ITS_VARNAME + "\s*=\s*", options_file])
-    subprocess.run(["grep", "^" + NUM_TRI_ITS_VARNAME + "\s*=\s*", options_file])
-    subprocess.run(["grep", "^" + HMMDEF_VARNAME + "\s*=\s*", options_file])
-    subprocess.run(["grep", "^" + LOG_LETTER_VARNAME + "\s*=\s*", options_file])
-    subprocess.run(["grep", "^" + LOG_WORD_VARNAME + "\s*=\s*", options_file])
-    subprocess.run(["grep", "^" + HEDFILE1_VARNAME + "\s*=\s*", options_file])
-    subprocess.run(["grep", "^" + HEDFILE2_VARNAME + "\s*=\s*", options_file])
-    subprocess.run(["grep", "^" + CUSTOM_SILSP_VARNAME + "\s*=\s*", options_file])
-    subprocess.run(["grep", "^" + MULTI_PROCESS_VARNAME + "\s*=\s*", options_file])
-    subprocess.run(["grep", "^" + CROSS_WORD_VARNAME + "\s*=\s*", options_file])
-    subprocess.run(["grep", "^" + NGRAM_WORD_VARNAME + "\s*=\s*", options_file])
-    subprocess.run(["grep", "^" + TRACE_LEVEL_VARNAME + "\s*=\s*", options_file])
-    subprocess.run(["grep", "^" + THREADS_VARNAME + "\s*=\s*", options_file])
-    subprocess.run(["grep", "^" + WHOLE_WORD_VARNAME + "\s*=\s*", options_file])
-    subprocess.run([f"head -n 1 {hedfile1_local_file}"], shell=True)
+    run_subprocess(["grep", "^" + IP_VARNAME + "\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + NUM_ITS_VARNAME + "\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + NUM_TRI_ITS_VARNAME + "\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + HMMDEF_VARNAME + "\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + LOG_LETTER_VARNAME + "\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + LOG_WORD_VARNAME + "\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + HEDFILE1_VARNAME + "\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + HEDFILE2_VARNAME + "\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + CUSTOM_SILSP_VARNAME + "\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + MULTI_PROCESS_VARNAME + "\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + CROSS_WORD_VARNAME + "\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + NGRAM_WORD_VARNAME + "\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + TRACE_LEVEL_VARNAME + "\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + THREADS_VARNAME + "\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + WHOLE_WORD_VARNAME + "\s*=\s*", options_file])
+    run_subprocess([f"head -n 1 {hedfile1_local_file}"])
     print("#####\n")
 
 def edit_htk_root_file_options(subdirs):
@@ -467,14 +468,14 @@ def edit_htk_root_file_options(subdirs):
     edit_file(ledfile_uniq_search, ledfile_uniq_repl, options_file)
 
     print("##### Set root files #####")
-    subprocess.run(["grep", GRAMMARFILE_ROOT_VARNAME + "\s*=\s*", options_file])
-    subprocess.run(["grep", DICTFILE_ROOT_VARNAME + "\s*=\s*", options_file])
-    subprocess.run(["grep", TOKENS_ROOT_VARNAME + "\s*=\s*", options_file])
-    subprocess.run(["grep", MLF_ROOT_VARNAME + "\s*=\s*", options_file])
-    subprocess.run(["grep", OUTPUTFILE_ROOT_VARNAME + "\s*=\s*", options_file])
-    subprocess.run(["grep", EXT_DIR_VARNAME + "\s*=\s*", options_file])
-    subprocess.run(["grep", MODELS_ROOT_VARNAME + "\s*=\s*", options_file])
-    subprocess.run(["grep", "^" + LEDFILE_UNIQ_VARNAME + "\s*=\s*", options_file])
+    run_subprocess(["grep", GRAMMARFILE_ROOT_VARNAME + "\s*=\s*", options_file])
+    run_subprocess(["grep", DICTFILE_ROOT_VARNAME + "\s*=\s*", options_file])
+    run_subprocess(["grep", TOKENS_ROOT_VARNAME + "\s*=\s*", options_file])
+    run_subprocess(["grep", MLF_ROOT_VARNAME + "\s*=\s*", options_file])
+    run_subprocess(["grep", OUTPUTFILE_ROOT_VARNAME + "\s*=\s*", options_file])
+    run_subprocess(["grep", EXT_DIR_VARNAME + "\s*=\s*", options_file])
+    run_subprocess(["grep", MODELS_ROOT_VARNAME + "\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + LEDFILE_UNIQ_VARNAME + "\s*=\s*", options_file])
     print("#####\n")
     
     grammar_dir = os.path.join(GRAMMAR_ROOT, subdirs)
@@ -623,7 +624,7 @@ def prepare_data(data_file, label_file, subdirs):
     print(f"Prepare Data: {' '.join(prepare_command)}")
     print("#####\n")
 
-    subprocess.run(prepare_command)
+    run_subprocess(prepare_command)
 
 # TODO Standardize the output file naming and name ext (with trace ext)
 # Note that grammar_type_arg is different from grammar_type.
@@ -648,7 +649,7 @@ def gen_grammar(subdirs, label_file, grammar_type_arg='word'):
     gen_grammar_args += ["--grammar_file", grammar_filepath]
 
     print("Gen Grammar Command: " + ' '.join(gen_grammar_args))
-    subprocess.run(gen_grammar_args, stderr=subprocess.STDOUT)
+    run_subprocess(gen_grammar_args)
 
 # def clear_results_files(ip, tc, num_its, num_tri_its, hmmdef, subdirs, grammar_type):
 def clear_results_files(ip, tc, num_its, num_tri_its, hmmdef, subdirs):
@@ -691,6 +692,7 @@ if __name__ == "__main__":
 
         if args.prepare_data or args.prepare_data_only:
             prepare_data(data_file, label_file, subdirs)
+        sys.exit(0)
         
         print("##### Run gen_grammar.py #####")
         gen_grammar(

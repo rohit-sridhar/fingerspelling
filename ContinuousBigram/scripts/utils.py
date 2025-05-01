@@ -1,6 +1,7 @@
 import os
 import json
 import shutil
+import subprocess
 
 from glob import glob
 
@@ -211,6 +212,12 @@ NEW_DATA_LOC_REQUIRED_METHODS = {
 # }
 
 ########## Utils functions for python scripts ##########
+def run_subprocess(cmd):
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    if result.returncode == 0:
+        print(result.stdout)
+    else:
+        print(result.stderr)
 
 ##### SUBDIRECTORY UTILS #####
 
