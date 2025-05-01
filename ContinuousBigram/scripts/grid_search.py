@@ -513,7 +513,9 @@ def test_model(ip, tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
     print("Test Command: " + ' '.join(test_args))
     print(f"Log file: {log_file}")
 
-    if not(args.print_mode):
+    if args.print_mode:
+        run_subprocess(test_args)
+    else:
         with open(log_file, "a") as f:
             subprocess.run(test_args, stdout=f, stderr=subprocess.STDOUT)
 
@@ -692,7 +694,6 @@ if __name__ == "__main__":
 
         if args.prepare_data or args.prepare_data_only:
             prepare_data(data_file, label_file, subdirs)
-        sys.exit(0)
         
         print("##### Run gen_grammar.py #####")
         gen_grammar(
