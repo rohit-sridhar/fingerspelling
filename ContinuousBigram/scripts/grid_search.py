@@ -424,7 +424,7 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     run_subprocess(["grep", "^" + TRACE_LEVEL_VARNAME + "\s*=\s*", options_file])
     run_subprocess(["grep", "^" + THREADS_VARNAME + "\s*=\s*", options_file])
     run_subprocess(["grep", "^" + WHOLE_WORD_VARNAME + "\s*=\s*", options_file])
-    run_subprocess([f"head -n 1 {hedfile1_local_file}"])
+    run_subprocess(["head", "-n", "1", f"{hedfile1_local_file}"])
     print("#####\n")
 
 def edit_htk_root_file_options(subdirs):
