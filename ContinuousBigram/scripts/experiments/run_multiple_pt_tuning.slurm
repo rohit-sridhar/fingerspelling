@@ -22,10 +22,11 @@
 # typeset -a thresholds=(1 4 8)
 # typeset -a interpolations=(1 2)
 
+##### For debug
 typeset -a all_participants=(03ad)
 typeset -a seeds=(1248)
 typeset -a thresholds=(1 4)
-typeset -a interpolations=(1)
+# typeset -a interpolations=(1)
 
 dataset="supplemental_gen"
 output_dir="pt_results/tot/${dataset}"
@@ -47,13 +48,14 @@ echo ""
 echo "PT IDX: ${pt_idx}"
 echo ""
 
+# --hmmdefs 6state-pca20-gmm2 4state-pca20-gmm2 3state-pca20-gmm2 \
 ############################## TRAIN MULTIPLE NO INTERPOLATION ##############################
 for seed in "${seeds[@]}"; do
 for threshold in "${thresholds[@]}"; do
 for participant in "${all_participants[$pt_idx]}"; do
     python scripts/grid_search.py \
         --data_files ./data/${dataset}/dim20/thr${threshold}/train/pt${participant}/sd${seed}/data/ \
-        --hmmdefs 6state-pca20-gmm2 4state-pca20-gmm2 3state-pca20-gmm2 \
+        --hmmdefs 6state-pca20-gmm2 \
         --results_csv ./results/$output_dir/results_pt${participant}_tuning.csv \
         --prepare_data --clear_hresults
 done
@@ -61,17 +63,17 @@ done
 done
 
 ############################## TRAIN MULTIPLE WITH INTERPOLATION ##############################
-for seed in "${seeds[@]}"; do
-for threshold in "${thresholds[@]}"; do
-for interpolation in "${interpolations[@]}"; do
-for participant in ${all_participants[$pt_idx]}; do
-    python scripts/grid_search.py \
-        --data_files ./data/${dataset}/dim20/thr${threshold}/train/interpall${interpolation}/pt${participant}/sd${seed}/data/ \
-        --hmmdefs 6state-pca20-gmm2 4state-pca20-gmm2 3state-pca20-gmm2 \
-        --results_csv ./results/$output_dir/results_pt${participant}_tuning.csv \
-        --prepare_data --clear_hresults
-done
-done
-done
-done
+# for seed in "${seeds[@]}"; do
+# for threshold in "${thresholds[@]}"; do
+# for interpolation in "${interpolations[@]}"; do
+# for participant in ${all_participants[$pt_idx]}; do
+#     python scripts/grid_search.py \
+#         --data_files ./data/${dataset}/dim20/thr${threshold}/train/interpall${interpolation}/pt${participant}/sd${seed}/data/ \
+#         --hmmdefs 6state-pca20-gmm2 4state-pca20-gmm2 3state-pca20-gmm2 \
+#         --results_csv ./results/$output_dir/results_pt${participant}_tuning.csv \
+#         --prepare_data --clear_hresults
+# done
+# done
+# done
+# done
 

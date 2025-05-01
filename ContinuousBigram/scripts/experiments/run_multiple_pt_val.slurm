@@ -6,13 +6,13 @@
 # typeset -a seeds=(1248 2248 3248 4248 5248)
 # typeset -a val_seeds=(1248 2248 3248 4248 5248)
 
+##### For debug
 typeset -a participants=(03ad)
 typeset -a seeds=(1248)
 typeset -a val_seeds=(1248)
-
 typeset -a thresholds=(1 4)
 typeset -a interpolations=(1)
-typeset -a hmmdefs=(6state-pca20-gmm2 4state-pca20-gmm2 3state-pca20-gmm2)
+typeset -a hmmdefs=(6state-pca20-gmm2) # 4state-pca20-gmm2 3state-pca20-gmm2)
 
 dataset="supplemental_gen"
 output_dir="results/pt_results/val/${dataset}"
