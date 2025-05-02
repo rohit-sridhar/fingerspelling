@@ -18,14 +18,14 @@
 ##### For all supplemental gen participants
 # typeset -a all_participants=(3f8b 13e3 494d b2d1 c0df d3ab 8e3b fe96 8c4d a3d4 3a6e 3d12 f9ea 2ff7 e0f7 ed8e 51f5 a362 a6ed 0ba8 812c 03ad a021 a442 1d72 711d a95b fa10 1bd5 6b92 5b63 bd21 1f91 917d fbb7 4ddc ab12 dbf9 99cb 39e5 4f1e 63a1 163a c82a f418 9d2b b718 39a6 4c3d 675f 9b23 9ed9 d478 f066 e3c0 fede 0a77 0bea d05c 9ff4 f760 7f32 80fe 19d3 6f68 a3e7 cf84 d69c 1f86 2f35 e4fa 5d33)
 # 
-# typeset -a seeds=(1248 2248 3248 4248 5248)
-# typeset -a thresholds=(1 4 8)
-# typeset -a interpolations=(1 2)
+typeset -a seeds=(1248 2248 3248 4248 5248)
+typeset -a thresholds=(1 4 8)
+typeset -a interpolations=(1 2)
 
 ##### For debug
 typeset -a all_participants=(03ad)
-typeset -a seeds=(1248)
-typeset -a thresholds=(1 4)
+# typeset -a seeds=(1248)
+# typeset -a thresholds=(1 4)
 # typeset -a interpolations=(1)
 
 dataset="supplemental_gen"
@@ -40,40 +40,41 @@ if [ ! -d "$root/results/${output_dir}" ]; then
     mkdir -p "$root/results/${output_dir}"
 fi
 
-pt_idx=$(( SLURM_ARRAY_TASK_ID ))
+sd_idx=$(( SLURM_ARRAY_TASK_ID ))
+# pt_idx=$(( SLURM_ARRAY_TASK_ID ))
 # pt_idx=$((SLURM_ARRAY_TASK_ID / ${#seeds[@]}))
 # sd_idx=$((SLURM_ARRAY_TASK_ID % ${#seeds[@]}))
 
 echo ""
-echo "PT IDX: ${pt_idx}"
+echo "SD IDX: ${sd_idx}"
 echo ""
 
 # --hmmdefs 6state-pca20-gmm2 4state-pca20-gmm2 3state-pca20-gmm2 \
 ############################## TRAIN MULTIPLE NO INTERPOLATION ##############################
-for seed in "${seeds[@]}"; do
+for seed in "${seeds[$sd_idx]}"; do
 for threshold in "${thresholds[@]}"; do
-for participant in "${all_participants[$pt_idx]}"; do
+for participant in "${all_participants[@]}"; do
     python scripts/grid_search.py \
         --data_files ./data/${dataset}/dim20/thr${threshold}/train/pt${participant}/sd${seed}/data/ \
-        --hmmdefs 6state-pca20-gmm2 \
-        --results_csv ./results/$output_dir/results_pt${participant}_tuning.csv \
+        --hmmdefs 6state-pca20-gmm2 4state-pca20-gmm2 3state-pca20-gmm2 \
+        --results_csv ./results/$output_dir/results_pt${participant}_sd${seed}_tuning.csv \
         --prepare_data --clear_hresults
 done
 done
 done
 
 ############################## TRAIN MULTIPLE WITH INTERPOLATION ##############################
-# for seed in "${seeds[@]}"; do
-# for threshold in "${thresholds[@]}"; do
-# for interpolation in "${interpolations[@]}"; do
-# for participant in ${all_participants[$pt_idx]}; do
-#     python scripts/grid_search.py \
-#         --data_files ./data/${dataset}/dim20/thr${threshold}/train/interpall${interpolation}/pt${participant}/sd${seed}/data/ \
-#         --hmmdefs 6state-pca20-gmm2 4state-pca20-gmm2 3state-pca20-gmm2 \
-#         --results_csv ./results/$output_dir/results_pt${participant}_tuning.csv \
-#         --prepare_data --clear_hresults
-# done
-# done
-# done
-# done
+for seed in "${seeds[$sd_idx]}"; do
+for threshold in "${thresholds[@]}"; do
+for interpolation in "${interpolations[@]}"; do
+for participant in ${all_participants[$pt_idx]}; do
+    python scripts/grid_search.py \
+        --data_files ./data/${dataset}/dim20/thr${threshold}/train/interpall${interpolation}/pt${participant}/sd${seed}/data/ \
+        --hmmdefs 6state-pca20-gmm2 4state-pca20-gmm2 3state-pca20-gmm2 \
+        --results_csv ./results/$output_dir/results_pt${participant}_sd${seed}_tuning.csv \
+        --prepare_data --clear_hresults
+done
+done
+done
+done
 
