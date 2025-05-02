@@ -509,7 +509,8 @@ def test_model(ip, tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
     print(f"Model Dir: {new_model_path}")
 
     options_file = get_options_file(subdirs)
-    test_args = [TEST_FILE, options_file, "./testsets/testing-extfiles0", new_model_path]
+    test_data_file = get_test_data_file(subdirs)
+    test_args = [TEST_FILE, options_file, test_data_file, new_model_path]
     print("Test Command: " + ' '.join(test_args))
     print(f"Log file: {log_file}")
 

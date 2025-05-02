@@ -248,13 +248,13 @@ def get_subdirectories(filepath):
     subdirs = os.path.join(*(subdir_list))
     return subdirs
 
+def get_test_data_file(subdirs):
+    return os.path.join(OUTPUT_ROOT, subdirs, "testing-extfiles0")
 
 ##### OPTIONS FILE UTILS #####
-
 # Get the options file
 def get_options_file(subdirs):
     return os.path.join(SCRIPTS_ROOT, subdirs, "options.sh")
-
 
 ##### LABELS UTILS #####
 

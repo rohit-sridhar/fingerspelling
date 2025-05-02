@@ -427,7 +427,7 @@ else
 fi
 
 if [[ $MULTI_PROCESS = "yes" ]]; then
-	num_lines=`cat $TRAINING | wc -l` #   compute the num lines per file
+    num_lines=`cat $TRAINING | wc -l` #   compute the num lines per file
     lines_per_file=$(($num_lines / $THREADS))
     if [[ $lines_per_file -lt 1 ]]; then
         lines_per_file=1
@@ -696,10 +696,7 @@ echo "*****************************************************"
 ###############################################################################
 
 if [[ $MULTI_PROCESS = "yes" ]]; then
-	num_lines=`cat $TESTING | wc -l` #   compute the num lines in test file
-    threads=$((num_lines/THREADS))
-    
-	num_lines=`cat $TESTING | wc -l` #   compute the num lines per file
+    num_lines=`cat $TESTING | wc -l` #   compute the num lines in test file
     lines_per_file=$(($num_lines / $THREADS))
     if [[ $lines_per_file -lt 1 ]]; then
         lines_per_file=1
