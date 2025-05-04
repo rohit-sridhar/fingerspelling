@@ -67,7 +67,7 @@ done
 for seed in "${seeds[$sd_idx]}"; do
 for threshold in "${thresholds[@]}"; do
 for interpolation in "${interpolations[@]}"; do
-for participant in ${all_participants[$pt_idx]}; do
+for participant in ${all_participants[@]}; do
     python scripts/grid_search.py \
         --data_files ./data/${dataset}/dim20/thr${threshold}/train/interpall${interpolation}/pt${participant}/sd${seed}/data/ \
         --hmmdefs 6state-pca20-gmm2 4state-pca20-gmm2 3state-pca20-gmm2 \

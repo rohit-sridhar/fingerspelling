@@ -20,6 +20,7 @@ dataset=supplemental_gen
 # Two lines below are for slurm jobs
 root="/data/hmm_modeling/fingerspelling/ContinuousBigram"
 pt_idx=$(( SLURM_ARRAY_TASK_ID ))
+sd_idx=$(( SLURM_ARRAY_TASK_ID ))
 cd $root
 echo "Current directory: `pwd`"
 
@@ -27,13 +28,13 @@ echo "Current directory: `pwd`"
 
 echo ""
 echo "STARTING FRAME PER LETTER THRESHOLD"
-echo "PT IDX: ${pt_idx}"
+echo "SD IDX: ${sd_idx}"
 echo "DATASET: ${dataset}"
 echo ""
 
 for data_split in ${data_splits[@]}; do
-for participant in "${all_participants[$pt_idx]}"; do
-for seed in "${seeds[@]}"; do
+for participant in "${all_participants[@]}"; do
+for seed in "${seeds[$sd_idx]}"; do
 for threshold in "${thresholds[@]}"; do
     python scripts/modify_data.py \
         --data_loc data/${dataset}/dim20/thr0/${data_split}/pt${participant}/sd${seed}/data \
@@ -52,8 +53,8 @@ echo "STARTING INTERPOLATION"
 echo ""
 
 for data_split in ${data_splits[@]}; do
-for participant in "${all_participants[$pt_idx]}"; do
-for seed in "${seeds[@]}"; do
+for participant in "${all_participants[@]}"; do
+for seed in "${seeds[$sd_idx]}"; do
 for threshold in "${thresholds[@]}"; do
 for interpolation in "${interpolations[@]}"; do
     python scripts/modify_data.py \
