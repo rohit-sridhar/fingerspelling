@@ -8,8 +8,8 @@ from pathlib import Path
 VIDEO_DATA = Path("./videos")
 OUTPUT_MODEL = 'model.tflite'
 
-# SUPPLEMENTAL_METADATA = "/data/parquet/asl-fingerspelling/supplemental_metadata.csv"
-# SUPPLEMENTAL_LANDMARKS = "/data/parquet/asl-fingerspelling/supplemental_landmarks"
+SUPPLEMENTAL_METADATA = "/data/parquet/asl-fingerspelling/supplemental_metadata.csv"
+SUPPLEMENTAL_LANDMARKS = "/data/parquet/asl-fingerspelling/supplemental_landmarks"
 
 PARQUET_FEATURE_LIST = [
     'sequence_id',
