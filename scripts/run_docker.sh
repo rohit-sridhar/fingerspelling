@@ -20,11 +20,11 @@ elif [ "$1" == "launch" ]; then
     
     sudo docker run \
         -it --rm \
-        -v "$fingerspelling_torch_path":"$fingerspelling_torch_path" \
-        -v "$fingerspelling_data_path":"$fingerspelling_data_path" \
+        -v "$fingerspelling_torch_path":"$fingerspelling_torch_path":ro \
+        -v "$fingerspelling_data_path":"$fingerspelling_data_path":ro \
         -v "$continuous_bigram_path":"$continuous_bigram_path" \
-        -v "$islr_mputils_out_path":"$islr_mputils_out_path" \
-        -v "$vimrc_file":"/root/.vimrc" \
+        -v "$islr_mputils_out_path":"$islr_mputils_out_path":ro \
+        -v "$vimrc_file":"/root/.vimrc":ro \
         -e HOSTNAME_SERVER="$HOSTNAME" \
         --name $2 $local_image
 else

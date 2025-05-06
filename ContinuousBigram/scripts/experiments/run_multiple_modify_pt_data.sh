@@ -16,7 +16,7 @@ typeset -a data_splits=(train val)
 typeset -a thresholds=(1 4) 
 typeset -a interpolations=(1)
 
-dataset=supplemental
+dataset=supplemental_gen
 
 ############################## THRESHOLD MULTIPLE ##############################
 
