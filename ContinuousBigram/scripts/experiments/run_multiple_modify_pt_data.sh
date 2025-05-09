@@ -1,4 +1,4 @@
-#!/bin/ksh
+#!/bin/bash
 
 ##### For all participants
 # typeset -a all_participants=(93 227 161 254 2 242 112 31 9 107)
