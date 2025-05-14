@@ -16,7 +16,7 @@
 						##############################
 						#
 PRJ=`pwd`	# path to the current project
-SCRIPTS_DIR=$PRJ/scripts			# location of scripts directory
+SCRIPTS_DIR=${PRJ}/scripts			# location of scripts directory
 						# for this project.
 						#
 # UTIL_DIR=/usr/local/gt2k/utils			# location of utils directory

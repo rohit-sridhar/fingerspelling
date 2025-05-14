@@ -178,8 +178,14 @@ def _make_options_file(subdirs):
 
     new_options_file = os.path.join(options_dir, OPTIONS_FILENAME)
     original_options_file = os.path.join(SCRIPTS_ROOT, OPTIONS_FILENAME)
-
-    shutil.copy2(original_options_file, new_options_file)
+    copy_options_file = shutil.copy2(original_options_file, new_options_file)
+    
+    print("#####")
+    print(f"Context options file: {os.getcwd()}")
+    print(f"New options file: {new_options_file}")
+    print(f"Orig options file: {original_options_file}")
+    print(f"Copy options file: {copy_options_file}")
+    print("#####")
 
 # Check args
 def check_args():
@@ -692,6 +698,7 @@ if __name__ == "__main__":
         
         _make_options_file(subdirs)
         edit_htk_root_file_options(subdirs)
+        # sys.exit(0)
 
         if args.prepare_data or args.prepare_data_only:
             prepare_data(data_file, label_file, subdirs)
