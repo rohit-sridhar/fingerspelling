@@ -698,10 +698,10 @@ if __name__ == "__main__":
         
         _make_options_file(subdirs)
         edit_htk_root_file_options(subdirs)
-        # sys.exit(0)
 
         if args.prepare_data or args.prepare_data_only:
             prepare_data(data_file, label_file, subdirs)
+        sys.exit(0)
         
         print("##### Run gen_grammar.py #####")
         gen_grammar(
