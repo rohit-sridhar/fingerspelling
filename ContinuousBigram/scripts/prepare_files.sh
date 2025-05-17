@@ -19,9 +19,9 @@ find $2/ -type f | sort -V  > $DATAFILES_LIST
 echo "#####"
 echo ""
 
-# if [[ ! -f "${EXT_DIR}/done" ]]; then
-#   echo "##### Cleaning up ext dir .... #####"
-#   rm -rf $EXT_DIR/*
+if [[ ! -f "${EXT_DIR}/done" ]]; then
+  echo "##### Cleaning up ext dir .... #####"
+  echo "rm -rf $EXT_DIR/*"
 #   mkdir $EXT_DIR/data/
 #   find $3/ -name "*.lab" -type f | xargs cp -t $EXT_DIR/data/
 #   echo "#####"
@@ -30,11 +30,11 @@ echo ""
 #   $SCRIPTS_DIR/gen_ext_files.sh $OPTIONS_FILE
 #   echo "#####"
 #   echo ""
-# else
-#   echo "##### Ext files exit. Skipping generation #####"
-#   echo "#####"
-#   echo ""
-# fi
+else
+  echo "##### Ext files exit. Skipping generation #####"
+  echo "#####"
+  echo ""
+fi
 
 # # find $EXT_DIR/data/*.ext -type f | xargs readlink -f | sort -V > $DATA_SAMPLES
 # find $EXT_DIR/data/ -name "*.ext" -type f | xargs readlink -f | sort -V > $DATA_SAMPLES
