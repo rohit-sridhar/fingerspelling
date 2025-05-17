@@ -21,15 +21,15 @@ echo ""
 
 if [[ ! -f "${EXT_DIR}/done" ]]; then
   echo "##### Cleaning up ext dir .... #####"
-  echo "rm -rf $EXT_DIR/*"
-#   mkdir $EXT_DIR/data/
-#   find $3/ -name "*.lab" -type f | xargs cp -t $EXT_DIR/data/
-#   echo "#####"
-#   echo ""
-#   echo "##### Generating ext files .... #####"
-#   $SCRIPTS_DIR/gen_ext_files.sh $OPTIONS_FILE
-#   echo "#####"
-#   echo ""
+  rm -rf $EXT_DIR/*
+  mkdir $EXT_DIR/data/
+  find $3/ -name "*.lab" -type f | xargs cp -t $EXT_DIR/data/
+  echo "#####"
+  echo ""
+  echo "##### Generating ext files .... #####"
+  $SCRIPTS_DIR/gen_ext_files.sh $OPTIONS_FILE
+  echo "#####"
+  echo ""
 else
   echo "##### Ext files exit. Skipping generation #####"
   echo "#####"
