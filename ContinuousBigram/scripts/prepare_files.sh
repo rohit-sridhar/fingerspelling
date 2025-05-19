@@ -21,7 +21,10 @@ echo ""
 
 if [[ ! -f "${EXT_DIR}/done" ]]; then
   echo "##### Cleaning up ext dir .... #####"
+  echo "$OPTIONS_FILE"
+  echo "$EXT_DIR"
   echo "rm -rf $EXT_DIR/*"
+  echo ""
 #   mkdir $EXT_DIR/data/
 #   find $3/ -name "*.lab" -type f | xargs cp -t $EXT_DIR/data/
 #   echo "#####"
