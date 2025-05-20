@@ -34,8 +34,8 @@ echo ""
 
 ############################## USER DEP VALIDATION NO INTERPOLATION ##############################
 for participant in "${participants[@]}"; do
-for seed in "${seeds[$sd_idx]}"; do
-for val_seed in "${val_seeds[@]}"; do
+for seed in "${seeds[@]}"; do
+for val_seed in "${val_seeds[$sd_idx]}"; do
 for threshold in "${thresholds[@]}"; do
 for hmmdef in "${hmmdefs[@]}"; do
     python scripts/grid_search.py \
@@ -52,8 +52,8 @@ done
 
 ############################## USER DEP VALIDATION WITH INTERPOLATION ##############################
 # for participant in "${participants[@]}"; do
-# for seed in "${seeds[$sd_idx]}"; do
-# for val_seed in "${val_seeds[@]}"; do
+# for seed in "${seeds[@]}"; do
+# for val_seed in "${val_seeds[$sd_idx]}"; do
 # for threshold in "${thresholds[@]}"; do
 # for interpolation in "${interpolations[@]}"; do
 # for hmmdef in "${hmmdefs[@]}"; do
