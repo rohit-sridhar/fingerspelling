@@ -41,7 +41,7 @@ for hmmdef in "${hmmdefs[@]}"; do
     python scripts/grid_search.py \
         --data_files ./data/${dataset}/dim20/thr${threshold}/val/pt${participant}/sd${val_seed}/data/ \
         --test_model_path ./models/${dataset}/dim20/thr${threshold}/train/pt${participant}/sd${seed}/newMacros_neg10ip_${hmmdef}_20its_5tri-its_tc50 \
-        --results_csv ${output_dir}/results_pt${participant}_sd${seed}_val.csv \
+        --results_csv ${output_dir}/results_pt${participant}_valsd${val_seed}_val.csv \
         --ip_values -300 -150 -10 0 10 150 300 \
         --test_model --prepare_data --clear_hresults
 done
