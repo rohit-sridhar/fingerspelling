@@ -116,7 +116,7 @@ def parse_args():
     parser.add_argument(
         "--prepare_data",
         action='store_true',
-        help="If true, will prepare data before training."
+        help="If true, will prepare data before training. Warning: not thread safe."
     )
     
     parser.add_argument(
@@ -701,7 +701,7 @@ if __name__ == "__main__":
 
         if args.prepare_data or args.prepare_data_only:
             prepare_data(data_file, label_file, subdirs)
-        sys.exit(0)
+        # sys.exit(0)
         
         print("##### Run gen_grammar.py #####")
         gen_grammar(
