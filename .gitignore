@@ -199,6 +199,7 @@ ContinuousBigram/viz/data
 ContinuousBigram/viz/output
 ContinuousBigram/viz/videos
 ContinuousBigram/viz/categorized_videos
+ContinuousBigram/viz/frameview
 
 # Only ignore the old bigram files
 ContinuousBigram/scripts/make_bigram.old*
