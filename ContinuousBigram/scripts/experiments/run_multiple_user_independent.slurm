@@ -1,9 +1,15 @@
 #!/bin/ksh
 
 ##### For main run
-typeset -a participants=()
+typeset -a ptgrp1=(63a1 4c3d f418)
+typeset -a ptgrp2=(1d72 3a6e 0ba8)
+typeset -a ptgrp3=(a3e7 1bd5 fbb7)
+typeset -a ptgrp4=(675f fa10 a3d4)
+typeset -a ptgrp5=(f760 dbf9 13e3)
+typeset -a ptgrp6=(0a77 fe96 b2d1)
+typeset -A ptgrps=(0=
+
 typeset -a seeds=(1248 2248)
-typeset -a val_seeds=(1248 2248)
 typeset -a thresholds=(1 4)
 typeset -a interpolations=(1)
 typeset -a hmmdefs=(6state-pca20-gmm2 4state-pca20-gmm2 3state-pca20-gmm2)
@@ -38,16 +44,14 @@ echo ""
 ############################## USER DEP VALIDATION NO INTERPOLATION ##############################
 for participant in "${participants[$pt_idx]}"; do
 for seed in "${seeds[@]}"; do
-for val_seed in "${val_seeds[@]}"; do
 for threshold in "${thresholds[@]}"; do
 for hmmdef in "${hmmdefs[@]}"; do
     python scripts/grid_search.py \
         --data_files ./data/${dataset}/dim20/thr${threshold}/val/pt${participant}/sd${val_seed}/data/ \
         --test_model_path ./models/${dataset}/dim20/thr${threshold}/train/pt${participant}/sd${seed}/newMacros_neg10ip_${hmmdef}_20its_5tri-its_tc50 \
         --results_csv ${output_dir}/results_pt${participant}_sd${seed}_val.csv \
-        --ip_values -300 -150 -10 0 10 150 300 \
+        --ip_values -150 -10 0 10 150 \
         --test_model --prepare_data --clear_hresults
-done
 done
 done
 done
@@ -56,7 +60,6 @@ done
 ############################## USER DEP VALIDATION WITH INTERPOLATION ##############################
 for participant in "${participants[$pt_idx]}"; do
 for seed in "${seeds[@]}"; do
-for val_seed in "${val_seeds[@]}"; do
 for threshold in "${thresholds[@]}"; do
 for interpolation in "${interpolations[@]}"; do
 for hmmdef in "${hmmdefs[@]}"; do
@@ -64,9 +67,8 @@ for hmmdef in "${hmmdefs[@]}"; do
         --data_files ./data/${dataset}/dim20/thr${threshold}/val/interpall${interpolation}/pt${participant}/sd${val_seed}/data/ \
         --test_model_path ./models/${dataset}/dim20/thr${threshold}/train/interpall${interpolation}/pt${participant}/sd${seed}/newMacros_neg10ip_${hmmdef}_20its_5tri-its_tc50 \
         --results_csv ${output_dir}/results_pt${participant}_sd${seed}_val.csv \
-        --ip_values -300 -150 -10 0 10 150 300 \
+        --ip_values -150 -10 0 10 150 \
         --test_model --prepare_data --clear_hresults
-done
 done
 done
 done
