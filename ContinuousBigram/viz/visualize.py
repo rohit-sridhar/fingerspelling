@@ -44,10 +44,13 @@ def parse_args():
     parser.add_argument("--pt_id", type=str, default=None, help="Participant ID.")
     parser.add_argument("--parquet_file", type=Path, help="Parquet file with data to visualize.")
     parser.add_argument("--metadata_file", type=Path, help="Path to metadata for parquet file.")
+    parser.add_argument("--sample_rate", type=float, default=1.0, help="Sample rate for visualizer.")
     parser.add_argument("--verbose", action="store_true", help="Print more information.")
 
     return parser.parse_args()
     
+# Video Path: videos/1967755728/f418
+# /data/parquet/asl-fingerspelling/train_landmarks/1967755728.parquet
 def load_parquet(filename) -> pd.DataFrame:
     print(filename)
     parquet_array = pq.read_table(filename, columns=PARQUET_FEATURE_LIST, memory_map=True).to_pandas()
@@ -57,7 +60,7 @@ def render(data, filename, wireframe=True):
     x_features = [i for i in range(0, 21)]
     y_features = [i for i in range(21, 42)]
     z_features = [i for i in range(42, 63)]
-
+    
     last_good_frame = 0
     repeated = data[:]
     
@@ -158,7 +161,8 @@ def generate_videos():
     if args.pt_id is not None:
         metadata = metadata.astype({"participant_id" : str})
         pt_metadata = metadata.loc[metadata.participant_id == args.pt_id]
-        seq_ids = set(pt_metadata.index.values.tolist())
+        seq_ids = pt_metadata.index.values.tolist()
+        seq_ids = random.sample(seq_ids, math.floor(len(seq_ids)*args.sample_rate))
     
     print(f"Sequences Used: {len(seq_ids)}")
     for seq_id in seq_ids:
