@@ -9,8 +9,8 @@ elif [ "$1" == "launch" ]; then
     # continuous_bigram_path="/scratch/fingerspelling"
     continuous_bigram_path="/data/hmm_modeling/fingerspelling"
     fingerspelling_torch_path="/data/deep_learning/fingerspelling_torch"
-    fingerspelling_data_path="/data/parquet/asl-fingerspelling"
-    islr_mputils_out_path="/data/deep_learning/ISLR-ML/mputils/out"
+    fingerspelling_video_path="/data/sign_language_videos/fingerspelling_videos"
+    islr_mputils_out_path="/data/deep_learning/ISLR-ML/mputils"
     vimrc_file="$HOME/.vimrc"
     
     if [ "$2" == "" ]; then
@@ -21,7 +21,7 @@ elif [ "$1" == "launch" ]; then
     sudo docker run \
         -it --rm \
         -v "$fingerspelling_torch_path":"$fingerspelling_torch_path":ro \
-        -v "$fingerspelling_data_path":"$fingerspelling_data_path":ro \
+        -v "$fingerspelling_video_path":"$fingerspelling_video_path":ro \
         -v "$continuous_bigram_path":"$continuous_bigram_path" \
         -v "$islr_mputils_out_path":"$islr_mputils_out_path":ro \
         -v "$vimrc_file":"/root/.vimrc":ro \

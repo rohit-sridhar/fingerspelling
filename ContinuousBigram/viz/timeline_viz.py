@@ -135,16 +135,21 @@ def dropped_frame_analysis(metadata, source_file, source_folder=None,
                 paint_regions.append((start_fp, start_fp + region_len))
                 start += drop
 
-            plot_data.append((score, phrase, paint_regions))
+            plot_data.append((score, phrase, paint_regions, seq_id))
 
             ex_done += 1
             if limit != -1 and ex_done >= limit:
                 break
 
-        plot_data.sort()
+        plot_data.sort(key=lambda x: x[3])
 
-        plt.figure(figsize=(10, len(plot_data) * 0.08), dpi=80)
-        for i, (score, phrase, regions) in enumerate(plot_data):
+        # plt.figure(figsize=(10, len(plot_data) * 0.08), dpi=80)
+        plt.figure(figsize=(10, len(plot_data) * 0.5), dpi=80)
+        labels = []
+        ticks = []
+        for i, (score, phrase, regions, seq_id) in enumerate(plot_data):
+            labels.append(seq_id)
+            ticks.append(i)
             if not regions:
                 plt.hlines(i, 0, 1, 'lightgray', lw=2)
                 continue
@@ -160,11 +165,14 @@ def dropped_frame_analysis(metadata, source_file, source_folder=None,
             if regions[-1][1] < 1:
                 plt.hlines(i, regions[-1][1], 1, 'lightgray', lw=2)
 
-        score_data.extend([score for (score, _, _) in plot_data])
+        score_data.extend([score for (score, _, _, _) in plot_data])
 
-        plt.margins(x=0, y=0)
-        plt.gca().set_position([0.05, 0.01, 0.9, 0.98])
+        ax = plt.gca()
+        ax.set_yticks(ticks, labels)
+        ax.set_position([0.05, 0.01, 0.9, 0.98])
+
         plt.title(f'{file}.parquet')
+        plt.tight_layout()
         plt.savefig(f'{OUTPUT_FOLDER}/{file}_frames.png')
         plt.close()
 
