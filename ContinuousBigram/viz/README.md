@@ -1,5 +1,5 @@
 
-# Fingerspelling Video Viz!!
+# Fingerspelling Video Visualization!!
 
 ### Basic Steps
 
