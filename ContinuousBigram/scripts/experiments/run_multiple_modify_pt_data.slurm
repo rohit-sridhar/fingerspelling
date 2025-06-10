@@ -9,7 +9,7 @@ typeset -a thresholds=(1 2 4 6 8)
 typeset -a interpolations=(1 2)
 
 ##### For debug 
-# typeset -a all_participants=(03ad)
+# typeset -a all_participants=(03ad 3f8b)
 # typeset -a seeds=(1248)
 # typeset -a data_splits=(train val)
 # typeset -a thresholds=(1 4) 
