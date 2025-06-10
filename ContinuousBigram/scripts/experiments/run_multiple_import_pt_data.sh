@@ -29,7 +29,7 @@ for seed in "${seeds[@]}"; do
     python scripts/modify_data.py \
         --import_data_loc /data/deep_learning/fingerspelling_torch/data/data_thr0_${dataset}_sd${seed}_pt${participant}_right.pkl.${data_split} \
         --new_data_loc ./data/$dataset/dim20/thr0/${data_split}/pt${participant}/sd${seed}/data \
-        --char_map_file /data/parquet/asl-fingerspelling/${dataset}_character_to_prediction_index.json \
+        --char_map_file /data/deep_learning/fingerspelling_torch/${dataset}_character_to_prediction_index.json \
         --method import &
     pid+=("$!")
 done
