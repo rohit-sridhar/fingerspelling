@@ -6,7 +6,7 @@ typeset -a all_participants=(3f8b 13e3 494d b2d1 c0df d3ab 8e3b fe96 8c4d a3d4 3
 # typeset -a all_participants=(93 227 161 254 2 242 112 31 9 107 188 13 181 26 195 136 241 109 53 216 89 239 22 111 0 95 38 157 196 15 251 253 219 47 73 121 246 166 141 54 223 213 20 99 40 122 27 245 240 221 33 155 128 250 158 117 6 148 135 143 207 175 81 137 63 184 113 56 51 150 217 203)
 
 typeset -a seeds=(1248 2248 3248 4248 5248)
-typeset -a data_splits=(train val)
+typeset -a data_splits=(train val test)
 
 dataset=supplemental_gen
 

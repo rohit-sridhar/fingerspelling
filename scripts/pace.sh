@@ -15,7 +15,7 @@ dataset="supplemental_gen"
 
 # rsync -rHR --progress ./ContinuousBigram/label/$dataset/dim20/thr0/./train/pt3f8b ./ContinuousBigram/label/$dataset/dim20/thr0/./val/pt3f8b rsridhar37@login-phoenix.pace.gatech.edu:/storage/home/hcoda1/5/rsridhar37/p-ts133-0/ASL/fingerspelling/ContinuousBigram/label/$dataset/dim20/thr0/
 
-#### Sync everything under the train/val/test dir
-rsync -rHR --progress ./ContinuousBigram/data/$dataset/dim20/thr0/./train ./ContinuousBigram/data/$dataset/dim20/thr0/./val rsridhar37@login-phoenix.pace.gatech.edu:/storage/home/hcoda1/5/rsridhar37/p-ts133-0/ASL/fingerspelling/ContinuousBigram/data/$dataset/dim20/thr0/
+#### Sync everything under the all/train/val/test dir
+rsync -rHR --progress ./ContinuousBigram/data/$dataset/dim20/thr0/./all ./ContinuousBigram/data/$dataset/dim20/thr0/./train ./ContinuousBigram/data/$dataset/dim20/thr0/./val ./ContinuousBigram/data/$dataset/dim20/thr0/./test rsridhar37@login-phoenix.pace.gatech.edu:/storage/home/hcoda1/5/rsridhar37/p-ts133-0/ASL/fingerspelling/ContinuousBigram/data/$dataset/dim20/thr0/
 
-rsync -rHR --progress ./ContinuousBigram/label/$dataset/dim20/thr0/./train ./ContinuousBigram/label/$dataset/dim20/thr0/./val rsridhar37@login-phoenix.pace.gatech.edu:/storage/home/hcoda1/5/rsridhar37/p-ts133-0/ASL/fingerspelling/ContinuousBigram/label/$dataset/dim20/thr0/
+rsync -rHR --progress ./ContinuousBigram/label/$dataset/dim20/thr0/./all ./ContinuousBigram/label/$dataset/dim20/thr0/./train ./ContinuousBigram/label/$dataset/dim20/thr0/./val ./ContinuousBigram/label/$dataset/dim20/thr0/./test rsridhar37@login-phoenix.pace.gatech.edu:/storage/home/hcoda1/5/rsridhar37/p-ts133-0/ASL/fingerspelling/ContinuousBigram/label/$dataset/dim20/thr0/
