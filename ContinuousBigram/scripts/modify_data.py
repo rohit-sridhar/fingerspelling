@@ -401,6 +401,8 @@ def match_triletters(datafile, label_file, commands_triletters):
 ############### IMPORT DATA FUNCTIONS ###############
 def get_landmarks(df, seq_id):
     landmarks = np.array(df.loc[seq_id].all_landmarks) * 100
+    
+    # Gets the deltas
     landmarks = landmarks[1:,:] - landmarks[:-1,:]
     landmarks = landmarks.tolist()
     
