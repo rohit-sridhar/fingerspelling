@@ -165,42 +165,36 @@ def _rm_trailing_slash(path):
 def get_data_label_paths(subdirs):
     return os.path.join('data', subdirs, 'data')
 
+def check_data_loc(data_loc):
+    return data_loc is None or \
+             not(data_loc.endswith('/data')) or \
+             (
+               not(data_loc.startswith('./data')) and \
+               not(data_loc.startswith('/data')) \
+             )
 # Checks args and makes modifications.
 def _check_args():
     data_loc, label_loc, new_data_loc, new_label_loc = None, None, None, None
 
     if args.method in DATA_LOC_REQUIRED_METHODS:
         data_loc = _rm_trailing_slash(args.data_loc)
-        if data_loc is None or not(data_loc.endswith('/data')):
-            raise ValueError("Must pass a data path that ends with /data.")
+        if check_data_loc(data_loc):
+            raise ValueError("Must pass a data path that starts/ends with .?/data.")
         
         subdirs = get_subdirectories(data_loc)
+        data_loc = os.path.join('data', subdirs, 'data')
         label_loc = os.path.join('label', subdirs, 'label')
 
-    # if args.method in LABEL_LOC_REQUIRED_METHODS:
-    #     label_loc = _rm_trailing_slash(args.label_loc)
-    #     if label_loc is None or not(label_loc.endswith('/label')):
-    #         raise ValueError("Must pass a label path ends with /label.")
-    #     
-    #     subdirs = get_subdirectories(label_loc)
-    #     data_loc = os.path.join('data', subdirs, 'data')
-        
     if args.method in NEW_DATA_LOC_REQUIRED_METHODS:
         new_data_loc = _rm_trailing_slash(args.new_data_loc)
-        if new_data_loc is None or not(new_data_loc.endswith('/data')):
-            raise ValueError("Must pass a new data path that ends with /data.")
+        print(new_data_loc)
+        if check_data_loc(new_data_loc):
+            raise ValueError("Must pass a new data path that starts/ends with ./data.")
         
         new_subdirs = get_subdirectories(new_data_loc)
+        new_data_loc = os.path.join('data', new_subdirs, 'data')
         new_label_loc = os.path.join('label', new_subdirs, 'label')
 
-    # if args.method in NEW_LABEL_LOC_REQUIRED_METHODS:
-    #     new_label_loc = _rm_trailing_slash(args.new_label_loc)
-    #     if new_label_loc is None or not(new_label_loc.endswith('/label')):
-    #         raise ValueError("Must pass new label location for [neg]_fpl_threshold/match_triletters/import/sample methods. It must end with /label.")
-    #     
-    #     new_subdirs = get_subdirectories(new_label_loc)
-    #     new_data_loc = os.path.join('data', new_subdirs, 'data')
-    
     make_dir(new_label_loc, rmdir=True)
     make_dir(new_data_loc, rmdir=True)
     
@@ -433,21 +427,25 @@ def import_data(new_data_loc, new_label_loc):
     df = pd.read_pickle(args.import_data_loc)
     dl_seq_ids = df.index.to_list()
     
-    if "/supplemental/" in new_data_loc:
-        data_path = SUPP_DATA_FILES
-        label_path = SUPP_LABEL_FILES
-        supplemental = True
-    elif "/supplemental_gen/" in new_data_loc:
-        data_path = SUPP_GEN_DATA_FILES
-        label_path = SUPP_GEN_LABEL_FILES
-        supplemental = True
-    else:
-        data_path = ALL_DATA_PATH
-        label_path = ALL_LABEL_PATH
-        supplemental = False
+    dataset = new_data_loc.split(os.path.sep)[1]
+    data_path = DATA_FILE_DICT[dataset]["data_path"]
+    label_path = DATA_FILE_DICT[dataset]["label_path"]
+    supplemental = DATA_FILE_DICT[dataset]["supplemental"]
+    
+    # if "/supplemental/" in new_data_loc:
+    #     data_path = SUPP_DATA_FILES
+    #     label_path = SUPP_LABEL_FILES
+    #     supplemental = True
+    # elif "/supplemental_gen/" in new_data_loc:
+    #     data_path = SUPP_GEN_DATA_FILES
+    #     label_path = SUPP_GEN_LABEL_FILES
+    #     supplemental = True
+    # else:
+    #     data_path = ALL_DATA_PATH
+    #     label_path = ALL_LABEL_PATH
+    #     supplemental = False
     
     idx_char_map = get_idx_char_map(args.char_map_file)
-
     for seq_id in tqdm(dl_seq_ids):
         new_datafile = os.path.join(new_data_loc, str(seq_id))
         new_label_file = os.path.join(new_label_loc, str(seq_id) + ".lab")

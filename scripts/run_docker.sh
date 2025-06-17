@@ -12,6 +12,7 @@ elif [ "$1" == "launch" ]; then
     fingerspelling_video_path="/data/sign_language_videos/fingerspelling_videos"
     islr_mputils_out_path="/data/deep_learning/ISLR-ML/mputils"
     vimrc_file="$HOME/.vimrc"
+    bashrc_file="$HOME/.bashrc"
     
     if [ "$2" == "" ]; then
         echo "Specify a container name when calling launch"
@@ -25,9 +26,12 @@ elif [ "$1" == "launch" ]; then
         -v "$continuous_bigram_path":"$continuous_bigram_path" \
         -v "$islr_mputils_out_path":"$islr_mputils_out_path":ro \
         -v "$vimrc_file":"/root/.vimrc":ro \
+        -v "$bashrc_file":"/root/.bashrc":ro \
         -e HOSTNAME_SERVER="$HOSTNAME" \
         --name $2 $local_image
+elif [ "$1" == "enter" ]; then
+    sudo docker exec -it $2 /bin/bash
 else
-    echo "Specify either launch (spin up a container) or build (build image)"
+    echo "Specify either launch (spin up a container) or build (build image) or enter (step into running container)"
 fi
 

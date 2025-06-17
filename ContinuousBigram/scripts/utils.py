@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 import shutil
 import subprocess
@@ -17,12 +18,34 @@ EXT_ROOT = "ext/"
 SCRIPTS_ROOT = "/data/hmm_modeling/fingerspelling/ContinuousBigram/scripts/"
 
 #### These are here for import data (to create hard links)
-SUPP_DATA_FILES = "./data/supplemental/dl_cmp/dim20/thr0/all/data/"
-SUPP_LABEL_FILES = "./label/supplemental/dl_cmp/dim20/thr0/all/label/"
-SUPP_GEN_DATA_FILES = "./data/supplemental_gen/dim20/thr0/all/data/"
-SUPP_GEN_LABEL_FILES = "./label/supplemental_gen/dim20/thr0/all/label/"
-MAIN_DATA_FILES = "./data/main/dim20/thr0/all/data/"
-MAIN_LABEL_FILES = "./label/main/dim20/thr0/all/label/"
+# SUPP_DATA_FILES = "./data/supplemental/dl_cmp/dim20/thr0/all/data/"
+# SUPP_LABEL_FILES = "./label/supplemental/dl_cmp/dim20/thr0/all/label/"
+DATA_FILE_DICT = {
+    "supplemental_gen": {
+        "data_path": "./data/supplemental_gen/dim20/thr0/all/data/",
+        "label_path": "./label/supplemental_gen/dim20/thr0/all/label/",
+        "supplemental": True,
+    },
+    "supplemental_gen_na-thr0.3": {
+        "data_path": "./data/supplemental_gen/dim20/thr0/all/data/",
+        "label_path": "./label/supplemental_gen/dim20/thr0/all/label/",
+        "supplemental": True,
+    },
+    "supplemental_gen_drop-na": {
+        "data_path": "./data/supplemental_gen/dim20/thr0/all/data/",
+        "label_path": "./label/supplemental_gen/dim20/thr0/all/label/",
+        "supplemental": True,
+    },
+    "supplemental_gen_na-thr0.3_drop-na": {
+        "data_path": "./data/supplemental_gen/dim20/thr0/all/data/",
+        "label_path": "./label/supplemental_gen/dim20/thr0/all/label/",
+        "supplemental": True,
+    },
+}
+# SUPP_GEN_DATA_FILES = 
+# SUPP_GEN_LABEL_FILES = 
+# MAIN_DATA_FILES = "./data/main/dim20/thr0/all/data/"
+# MAIN_LABEL_FILES = "./label/main/dim20/thr0/all/label/"
 
 MODEL_MACROS_FILE = "newMacros"
 OPTIONS_FILENAME = "options.sh"
@@ -212,12 +235,15 @@ NEW_DATA_LOC_REQUIRED_METHODS = {
 # }
 
 ########## Utils functions for python scripts ##########
-def run_subprocess(cmd):
-    result = subprocess.run(cmd, capture_output=True, text=True)
-    if result.returncode == 0:
-        print(result.stdout)
+def run_subprocess(cmd, live_print=True):
+    if live_print:
+        subprocess.run(cmd, stdout=sys.stdout)
     else:
-        print(result.stderr)
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode == 0:
+            print(result.stdout)
+        else:
+            print(result.stderr)
 
 ##### SUBDIRECTORY UTILS #####
 
@@ -235,6 +261,9 @@ def make_dir(dir_loc, rmdir=False):
         print(f"Did not create {dir_loc} since rmdir is {rmdir}")
 
 # The functions below get the subdirectories for 
+### TODO _get_subdirs and get_subdirectories make a lot of 
+### assumptions about the path passed in. Fix this in check_args
+## for now. Later, move to PathLib
 def _get_subdirs(filepath):
     if filepath.startswith('.'):
         # return os.path.join(*(data_file.split('/')[2:-1]))

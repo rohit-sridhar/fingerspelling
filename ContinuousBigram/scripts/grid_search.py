@@ -701,43 +701,42 @@ if __name__ == "__main__":
 
         if args.prepare_data or args.prepare_data_only:
             prepare_data(data_file, label_file, subdirs)
-        # sys.exit(0)
+
+            print("##### Run gen_grammar.py #####")
+            gen_grammar(
+                subdirs,
+                label_file,
+                grammar_type_arg="word"
+            )
+            
+            gen_grammar(
+                subdirs,
+                label_file,
+                grammar_type_arg="word_sksp"
+            )
+            
+            gen_grammar(
+                subdirs,
+                label_file,
+                grammar_type_arg="word_whole_word"
+            )
+            
+            gen_grammar(
+                subdirs,
+                label_file,
+                grammar_type_arg="letter"
+            )
+            
+            gen_grammar(
+                subdirs,
+                label_file,
+                grammar_type_arg="letter_whole_word"
+            )
+            print("#####\n")
         
-        print("##### Run gen_grammar.py #####")
-        gen_grammar(
-            subdirs,
-            label_file,
-            grammar_type_arg="word"
-        )
-        
-        gen_grammar(
-            subdirs,
-            label_file,
-            grammar_type_arg="word_sksp"
-        )
-        
-        gen_grammar(
-            subdirs,
-            label_file,
-            grammar_type_arg="word_whole_word"
-        )
-        
-        gen_grammar(
-            subdirs,
-            label_file,
-            grammar_type_arg="letter"
-        )
-        
-        gen_grammar(
-            subdirs,
-            label_file,
-            grammar_type_arg="letter_whole_word"
-        )
-        print("#####\n")
-        
-        # Exit here after prepare_files and gen_grammar finish
-        if args.prepare_data_only:
-            exit(0)
+            # Exit here after prepare_files and gen_grammar finish
+            if args.prepare_data_only:
+                exit(0)
 
         for arg_tup in arg_iter:
             ip = arg_tup[0]
