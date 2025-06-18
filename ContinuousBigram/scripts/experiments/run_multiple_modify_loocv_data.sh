@@ -17,7 +17,7 @@
 # typeset -a interpolations=(1 2)
 
 ##### For pilot 
-typeset -a all_participants=(ab12)
+typeset -a all_participants=(ab12 3d12 f066 d3ab 1f86)
 typeset -a seeds=(1248)
 typeset -a data_splits=(train)
 typeset -a thresholds=(1 4)
