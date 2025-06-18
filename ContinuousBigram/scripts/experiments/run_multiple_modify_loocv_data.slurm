@@ -16,7 +16,10 @@
 # typeset -a thresholds=(1 2 4 6 8)
 # typeset -a interpolations=(1 2)
 
+base_dataset=supplemental_gen
+
 ##### For pilot 
+typeset -a datasets=(${base_dataset} ${base_dataset}_na-thr0.3 ${base_dataset}_drop-na ${base_dataset}_na-thr0.3_drop-na)
 typeset -a all_participants=(ab12 3d12 f066 d3ab 1f86)
 typeset -a seeds=(1248)
 typeset -a data_splits=(train)
@@ -30,7 +33,12 @@ typeset -a interpolations=(1)
 # typeset -a thresholds=(1 4) 
 # typeset -a interpolations=(1)
 
-dataset=supplemental_gen
+# Two lines below are for slurm jobs
+# Swap sd_idx and pt_idx as needed
+root="/data/hmm_modeling/fingerspelling/ContinuousBigram"
+pt_idx=$(( SLURM_ARRAY_TASK_ID ))
+cd $root
+echo "Current directory: `pwd`"
 
 ############################## THRESHOLD MULTIPLE ##############################
 
@@ -38,19 +46,18 @@ echo ""
 echo "STARTING FRAME PER LETTER THRESHOLD"
 echo ""
 
+for dataset in ${datasets[@]}; do
 for data_split in ${data_splits[@]}; do
 for seed in "${seeds[@]}"; do
 for threshold in "${thresholds[@]}"; do
-pid=()
-for participant in "${all_participants[@]}"; do
+for participant in "${all_participants[$pt_idx]}"; do
     python scripts/modify_data.py \
         --data_loc ./data/${dataset}/dim20/thr0/${data_split}/loocv/${participant}/sd${seed}/data \
         --new_data_loc ./data/${dataset}/dim20/thr${threshold}/${data_split}/loocv/${participant}/sd${seed}/data \
         --method fpl_threshold \
-        --fpl_threshold ${threshold} &
-    pid+=("$!")
+        --fpl_threshold ${threshold}
 done
-wait "${pid[@]}"
+done
 done
 done
 done
@@ -61,21 +68,20 @@ echo ""
 echo "STARTING INTERPOLATION"
 echo ""
 
+for dataset in ${datasets[@]}; do
 for data_split in ${data_splits[@]}; do
 for seed in "${seeds[@]}"; do
 for threshold in "${thresholds[@]}"; do
 for interpolation in "${interpolations[@]}"; do
-pid=()
-for participant in "${all_participants[@]}"; do
+for participant in "${all_participants[$pt_idx]}"; do
     python scripts/modify_data.py \
         --data_loc ./data/${dataset}/dim20/thr${threshold}/${data_split}/loocv/${participant}/sd${seed}/data \
         --new_data_loc ./data/${dataset}/dim20/thr${threshold}/${data_split}/interpall${interpolation}/loocv/${participant}/sd${seed}/data \
         --method interpolation \
         --num_interpolations ${interpolation} \
-        --interp_all &
-    pid+=("$!")
+        --interp_all
 done
-wait "${pid[@]}"
+done
 done
 done
 done
