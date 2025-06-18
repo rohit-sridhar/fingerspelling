@@ -18,7 +18,9 @@ typeset -a datasets=(${base_dataset} ${base_dataset}_na-thr0.3 ${base_dataset}_d
 
 #### Sync everything under the all/train/val/test dir
 for dataset in ${datasets[@]}; do
+    ssh rsridhar37@login-phoenix.pace.gatech.edu "mkdir -p /storage/home/hcoda1/5/rsridhar37/p-ts133-0/ASL/fingerspelling/ContinuousBigram/data/${dataset}/dim20/thr0/"
     rsync -rHR --progress ./ContinuousBigram/data/${dataset}/dim20/thr0/./all ./ContinuousBigram/data/${dataset}/dim20/thr0/./train ./ContinuousBigram/data/${dataset}/dim20/thr0/./val ./ContinuousBigram/data/${dataset}/dim20/thr0/./test rsridhar37@login-phoenix.pace.gatech.edu:/storage/home/hcoda1/5/rsridhar37/p-ts133-0/ASL/fingerspelling/ContinuousBigram/data/${dataset}/dim20/thr0/
+    ssh rsridhar37@login-phoenix.pace.gatech.edu "mkdir -p /storage/home/hcoda1/5/rsridhar37/p-ts133-0/ASL/fingerspelling/ContinuousBigram/label/${dataset}/dim20/thr0/"
     rsync -rHR --progress ./ContinuousBigram/label/${dataset}/dim20/thr0/./all ./ContinuousBigram/label/${dataset}/dim20/thr0/./train ./ContinuousBigram/label/${dataset}/dim20/thr0/./val ./ContinuousBigram/label/${dataset}/dim20/thr0/./test rsridhar37@login-phoenix.pace.gatech.edu:/storage/home/hcoda1/5/rsridhar37/p-ts133-0/ASL/fingerspelling/ContinuousBigram/label/${dataset}/dim20/thr0/
 done
 
