@@ -15,6 +15,17 @@
 base_dataset=supplemental_gen
 output_dir="loocv_results/tot/${base_dataset}"
 
+# Two lines below are for slurm jobs
+root="/data/hmm_modeling/fingerspelling/ContinuousBigram"
+cd $root
+echo "Current directory: `pwd`"
+
+if [ ! -d "$root/results/${output_dir}" ]; then
+    mkdir -p "$root/results/${output_dir}"
+fi
+
+pt_idx=$(( SLURM_ARRAY_TASK_ID ))
+
 ##### For pilot
 # typeset -a datasets=(${base_dataset} ${base_dataset}_na-thr0.3 ${base_dataset}_drop-na ${base_dataset}_na-thr0.3_drop-na)
 typeset -a datasets=(${base_dataset})
@@ -29,10 +40,10 @@ typeset -a thresholds=(0)
 # typeset -a thresholds=(1 4)
 # typeset -a interpolations=(1) 
 
-# Assumes we're in ContinuousBigram dir
-if [ ! -d "results/${output_dir}" ]; then
-    mkdir -p "results/${output_dir}"
-fi
+echo ""
+echo "PT IDX: ${pt_idx}"
+echo "NCORES: `nproc --all`"
+echo ""
 
 ############################## TRAIN MULTIPLE NO INTERPOLATION ##############################
 # pid=()
@@ -44,8 +55,7 @@ for threshold in "${thresholds[@]}"; do
         --data_files ./data/${dataset}/dim20/thr${threshold}/train/loocv/${participant}/sd${seed}/data/ \
         --hmmdefs 6state-pca20-gmm2 4state-pca20-gmm2 3state-pca20-gmm2 \
         --results_csv ./results/$output_dir/results_loocv-${dataset}_tuning.csv \
-        --clear_hresults
-        --prepare_data_only --clear_hresults
+        --prepare_data --clear_hresults
 #     pid+=("$!")
 done
 done
