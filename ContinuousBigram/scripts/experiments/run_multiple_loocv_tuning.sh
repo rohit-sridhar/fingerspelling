@@ -17,7 +17,7 @@ output_dir="loocv_results/tot/${base_dataset}"
 
 ##### For pilot
 # typeset -a datasets=(${base_dataset} ${base_dataset}_na-thr0.3 ${base_dataset}_drop-na ${base_dataset}_na-thr0.3_drop-na)
-typeset -a datasets=(${base_dataset})
+typeset -a datasets=(${base_dataset}_na-thr0.3)
 typeset -a all_participants=(ab12)
 typeset -a seeds=(1248)
 typeset -a thresholds=(0)
@@ -43,9 +43,9 @@ for threshold in "${thresholds[@]}"; do
     python scripts/grid_search.py \
         --data_files ./data/${dataset}/dim20/thr${threshold}/train/loocv/${participant}/sd${seed}/data/ \
         --hmmdefs 6state-pca20-gmm2 4state-pca20-gmm2 3state-pca20-gmm2 \
-        --results_csv ./results/$output_dir/results_loocv-${dataset}_tuning.csv \
-        --clear_hresults
-        --prepare_data_only --clear_hresults
+        --results_csv ./results/${output_dir}/results_loocv-${dataset}_tuning.csv \
+        --num_its 20 30 50 100 --num_tri_its 5 10 20 50 100 \
+        --clear_hresults --prepare_data
 #     pid+=("$!")
 done
 done
@@ -62,7 +62,7 @@ done
 #     python scripts/grid_search.py \
 #         --data_files ./data/${dataset}/dim20/thr${threshold}/train/interpall${interpolation}/loocv/${participant}/sd${seed}/data/ \
 #         --hmmdefs 6state-pca20-gmm2 4state-pca20-gmm2 3state-pca20-gmm2 \
-#         --results_csv ./results/$output_dir/results_loocv-${participant}_sd${seed}_tuning_2.csv \
+#         --results_csv ./results/${output_dir}/results_loocv-${participant}_sd${seed}_tuning_2.csv \
 #         --prepare_data --clear_hresults
 # #     pid+=("$!")
 # done

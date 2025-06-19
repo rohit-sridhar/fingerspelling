@@ -702,37 +702,44 @@ if __name__ == "__main__":
         if args.prepare_data or args.prepare_data_only:
             prepare_data(data_file, label_file, subdirs)
 
-            print("##### Run gen_grammar.py #####")
-            gen_grammar(
-                subdirs,
-                label_file,
-                grammar_type_arg="word"
-            )
-            
-            gen_grammar(
-                subdirs,
-                label_file,
-                grammar_type_arg="word_sksp"
-            )
-            
-            gen_grammar(
-                subdirs,
-                label_file,
-                grammar_type_arg="word_whole_word"
-            )
-            
-            gen_grammar(
-                subdirs,
-                label_file,
-                grammar_type_arg="letter"
-            )
-            
-            gen_grammar(
-                subdirs,
-                label_file,
-                grammar_type_arg="letter_whole_word"
-            )
-            print("#####\n")
+            done_file = os.path.join(ROOT, GRAMMAR_ROOT, subdirs, "done")
+            if not(os.path.exists(done_file)):
+                print("##### Run gen_grammar.py #####")
+                gen_grammar(
+                    subdirs,
+                    label_file,
+                    grammar_type_arg="word"
+                )
+                
+                gen_grammar(
+                    subdirs,
+                    label_file,
+                    grammar_type_arg="word_sksp"
+                )
+                
+                gen_grammar(
+                    subdirs,
+                    label_file,
+                    grammar_type_arg="word_whole_word"
+                )
+                
+                gen_grammar(
+                    subdirs,
+                    label_file,
+                    grammar_type_arg="letter"
+                )
+                
+                gen_grammar(
+                    subdirs,
+                    label_file,
+                    grammar_type_arg="letter_whole_word"
+                )
+                with open(done_file, "w") as f:
+                    f.write("1\n")
+                print("#####\n")
+            else:
+                print("##### Grammar files exist. Skipping generation #####")
+                print("#####\n")
         
             # Exit here after prepare_files and gen_grammar finish
             if args.prepare_data_only:

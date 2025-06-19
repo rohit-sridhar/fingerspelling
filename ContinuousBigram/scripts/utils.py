@@ -6,6 +6,11 @@ import subprocess
 
 from glob import glob
 
+ROOT = "/data/hmm_modeling/fingerspelling/ContinuousBigram/"
+
+# These are concatenated with ${PRJ} in options so
+# leave them relative here. Use ROOT above to make an
+# absolute path as needed.
 LOG_ROOT = "logs/"
 OUTPUT_ROOT = "output/"
 RESULTS_ROOT = "results/"
@@ -15,7 +20,9 @@ MLF_ROOT = "mlf/"
 DICT_ROOT = "dict/"
 TOKENS_ROOT = "commands/"
 EXT_ROOT = "ext/"
-SCRIPTS_ROOT = "/data/hmm_modeling/fingerspelling/ContinuousBigram/scripts/"
+
+# Scripts root is used to make the options file so use abs path.
+SCRIPTS_ROOT = os.path.join(ROOT, "scripts")
 
 #### These are here for import data (to create hard links)
 # SUPP_DATA_FILES = "./data/supplemental/dl_cmp/dim20/thr0/all/data/"
