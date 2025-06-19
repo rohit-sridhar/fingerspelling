@@ -201,8 +201,7 @@ ContinuousBigram/visualization/frameview
 
 # Only ignore the old bigram files
 ContinuousBigram/scripts/make_bigram.old*
-ContinuousBigram/scripts/supplemental
-ContinuousBigram/scripts/supplemental_gen
+ContinuousBigram/scripts/supplemental*
 
 # Ignore custom tmp instr files
 ContinuousBigram/instr/mkcmd_letter.*
