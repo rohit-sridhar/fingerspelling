@@ -93,12 +93,12 @@ for participant in ${all_participants[$pt_idx]}; do
 for seed in ${seeds[@]}; do
 for threshold in ${thresholds[@]}; do
 for interpolation in ${interpolations[@]}; do
-    echo python scripts/grid_search.py \
-    echo     --data_files ./data/${dataset}/dim20/thr${threshold}/train/interpall${interpolation}/loocv/${participant}/sd${seed}/data/ \
-    echo     --hmmdefs 6state-pca20-gmm2 4state-pca20-gmm2 \
-    echo     --results_csv ./results/$output_dir/results_loocv-${dataset}_${participant}_interpall1_fixed_tuning.csv \
-    echo     --num_its 3000 --num_tri_its 3000 \
-    echo     --prepare_data --clear_hresults
+    python scripts/grid_search.py \
+        --data_files ./data/${dataset}/dim20/thr${threshold}/train/interpall${interpolation}/loocv/${participant}/sd${seed}/data/ \
+        --hmmdefs 6state-pca20-gmm2 4state-pca20-gmm2 \
+        --results_csv ./results/$output_dir/results_loocv-${dataset}_${participant}_interpall1_fixed_tuning.csv \
+        --num_its 3000 --num_tri_its 3000 \
+        --prepare_data --clear_hresults
 done
 done
 done
