@@ -25,10 +25,8 @@ mkdir ContinuousBigram/ext
 mkdir ContinuousBigram/models
 mkdir ContinuousBigram/output
 mkdir ContinuousBigram/logs
-mkdir -p ContinuousBigram/data/supplemental_gen/dim20/thr0/train
-mkdir -p ContinuousBigram/data/supplemental_gen/dim20/thr0/val
-mkdir -p ContinuousBigram/label/supplemental_gen/dim20/thr0/train
-mkdir -p ContinuousBigram/label/supplemental_gen/dim20/thr0/val
+mkdir ContinuousBigram/data
+mkdir ContinuousBigram/label
 mkdir ContinuousBigram/results
 mkdir ContinuousBigram/commands
 mkdir ContinuousBigram/dict
