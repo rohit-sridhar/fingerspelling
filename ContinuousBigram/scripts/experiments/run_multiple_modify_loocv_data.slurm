@@ -19,11 +19,11 @@
 base_dataset=supplemental_gen
 
 ##### For pilot 
-typeset -a datasets=(${base_dataset} ${base_dataset}_na-thr0.3 ${base_dataset}_drop-na ${base_dataset}_na-thr0.3_drop-na)
+typeset -a datasets=(${base_dataset}_na-thr0.3 ${base_dataset}_na-thr0.3_drop-na)
 typeset -a all_participants=(ab12 3d12 f066 d3ab 1f86)
 typeset -a seeds=(1248)
-typeset -a data_splits=(train)
-typeset -a thresholds=(1 4)
+typeset -a data_splits=(train val test)
+typeset -a thresholds=(1)
 typeset -a interpolations=(1)
 
 ##### For debug 
