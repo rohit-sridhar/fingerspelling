@@ -8,6 +8,7 @@ import shutil
 
 from itertools import product
 from utils import *
+from glob import glob
 
 ###### TO ADD A NEW HYPERPARAM #######
 ### Below, we describe the workflow for adding new hyperparams
@@ -541,7 +542,9 @@ def train_model(ip, tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
     print("Train Command: " + ' '.join(train_args))
     print(f"Output file: {log_file}")
     
-    if not(args.print_mode):
+    if args.print_mode:
+        run_subprocess(train_args)
+    else:
         with open(log_file, "w") as f:
             subprocess.run(train_args, stdout=f, stderr=subprocess.STDOUT)
 
@@ -618,11 +621,13 @@ def save_model(ip, tc, num_its, num_tri_its, hmmdef, subdirs):
     print(f"Current Model Dir: {curr_model_path}")
     print(f"New Model Dir: {new_model_path}")
 
-    if not(args.print_mode):
-        if os.path.exists(curr_model_path):
-            shutil.copy(curr_model_path, new_model_path)
-        else:
-            print("Model wasn't created or is missing. Check the log file")
+    if os.path.exists(curr_model_path):
+        shutil.copy(curr_model_path, new_model_path)
+    else:
+        print("Model wasn't created or is missing. Check the log file")
+
+    for hmmdir in glob(os.path.join(MODELS_ROOT, subdirs, "hmm0.*")):
+        shutil.rmtree(hmmdir)
 
 # Prepare data using scripts/prepare_files.sh. Not in use currently.
 def prepare_data(data_file, label_file, subdirs):

@@ -16,10 +16,14 @@
 # typeset -a thresholds=(1 2 4 6 8)
 # typeset -a interpolations=(1 2)
 
+base_dataset=supplemental_gen
+
 ##### For pilot 
+# typeset -a datasets=(${base_dataset} ${base_dataset}_na-thr0.3 ${base_dataset}_drop-na ${base_dataset}_na-thr0.3_drop-na)
+typeset -a datasets=(${base_dataset}_na-thr0.3)
 typeset -a all_participants=(ab12 3d12 f066 d3ab 1f86)
 typeset -a seeds=(1248)
-typeset -a data_splits=(train)
+typeset -a data_splits=(train val test)
 typeset -a thresholds=(1 4)
 typeset -a interpolations=(1)
 
@@ -30,18 +34,17 @@ typeset -a interpolations=(1)
 # typeset -a thresholds=(1 4) 
 # typeset -a interpolations=(1)
 
-dataset=supplemental_gen
-
 ############################## THRESHOLD MULTIPLE ##############################
 
 echo ""
 echo "STARTING FRAME PER LETTER THRESHOLD"
 echo ""
 
+pid=()
+for dataset in ${datasets[@]}; do
 for data_split in ${data_splits[@]}; do
 for seed in "${seeds[@]}"; do
 for threshold in "${thresholds[@]}"; do
-pid=()
 for participant in "${all_participants[@]}"; do
     python scripts/modify_data.py \
         --data_loc ./data/${dataset}/dim20/thr0/${data_split}/loocv/${participant}/sd${seed}/data \
@@ -50,10 +53,11 @@ for participant in "${all_participants[@]}"; do
         --fpl_threshold ${threshold} &
     pid+=("$!")
 done
+done
+done
+done
+done
 wait "${pid[@]}"
-done
-done
-done
 
 ############################## INTERPOLATE MULTIPLE ##############################
 
@@ -61,11 +65,12 @@ echo ""
 echo "STARTING INTERPOLATION"
 echo ""
 
+pid=()
+for dataset in ${datasets[@]}; do
 for data_split in ${data_splits[@]}; do
 for seed in "${seeds[@]}"; do
 for threshold in "${thresholds[@]}"; do
 for interpolation in "${interpolations[@]}"; do
-pid=()
 for participant in "${all_participants[@]}"; do
     python scripts/modify_data.py \
         --data_loc ./data/${dataset}/dim20/thr${threshold}/${data_split}/loocv/${participant}/sd${seed}/data \
@@ -75,9 +80,10 @@ for participant in "${all_participants[@]}"; do
         --interp_all &
     pid+=("$!")
 done
+done
+done
+done
+done
+done
 wait "${pid[@]}"
-done
-done
-done
-done
 
