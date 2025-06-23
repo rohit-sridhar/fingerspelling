@@ -13,7 +13,7 @@
 # typeset -a interpolations=(1)
 
 base_dataset=supplemental_gen
-output_dir="loocv_results/tot/${base_dataset}"
+output_dir="loocv_results/tot/${base_dataset}/hmmdef_tuning"
 
 ##### For pilot
 # typeset -a datasets=(${base_dataset} ${base_dataset}_na-thr0.3 ${base_dataset}_drop-na ${base_dataset}_na-thr0.3_drop-na)
@@ -36,16 +36,16 @@ if [ ! -d "results/${output_dir}" ]; then
 fi
 
 ############################## TRAIN MULTIPLE NUM ITS TUNING NO INTERPOLATION ##############################
+for participant in "${all_participants[@]}"; do
 for dataset in ${datasets[@]}; do
 for seed in "${seeds[@]}"; do
-for threshold in "${thresholds[@]}"; do
 # pid=()
-for participant in "${all_participants[@]}"; do
+for threshold in "${thresholds[@]}"; do
     python scripts/grid_search.py \
         --data_files ./data/${dataset}/dim20/thr${threshold}/train/loocv/${participant}/sd${seed}/data/ \
-        --hmmdefs 6state-pca20-gmm2-skip 3state-pca20-gmm2 \
-        --results_csv ./results/${output_dir}/results_loocv-${dataset}_${participant}_higher_num_its_tuning.csv \
-        --num_its 3000 5000 10000 --num_tri_its 3000 \
+        --hmmdefs 5state-pca20-gmm4 5state-pca20-gmm4-skip 6state-pca20-gmm4 6state-pca20-gmm4-skip \
+        --results_csv ./results/${output_dir}/results_loocv-${dataset}_${participant}.csv \
+        --num_its 1000 --num_tri_its 1000 \
         --clear_hresults --prepare_data
 #     pid+=("$!")
 done
@@ -55,16 +55,16 @@ done
 done
 
 ############################## TRAIN MULTIPLE NUM TRI ITS TUNING NO INTERPOLATION ##############################
+for participant in "${all_participants[@]}"; do
 for dataset in ${datasets[@]}; do
 for seed in "${seeds[@]}"; do
-for threshold in "${thresholds[@]}"; do
 # pid=()
-for participant in "${all_participants[@]}"; do
+for threshold in "${thresholds[@]}"; do
     python scripts/grid_search.py \
         --data_files ./data/${dataset}/dim20/thr${threshold}/train/loocv/${participant}/sd${seed}/data/ \
-        --hmmdefs 6state-pca20-gmm2-skip 3state-pca20-gmm2 \
-        --results_csv ./results/${output_dir}/results_loocv-${dataset}_${participant}_higher_num_its_tuning.csv \
-        --num_its 3000 --num_tri_its 3000 5000 10000 \
+        --hmmdefs 5state-pca20-gmm4 5state-pca20-gmm4-skip 6state-pca20-gmm4 6state-pca20-gmm4-skip \
+        --results_csv ./results/${output_dir}/results_loocv-${dataset}_${participant}.csv \
+        --num_its 1000 --num_tri_its 1000 \
         --clear_hresults --prepare_data
 #     pid+=("$!")
 done
@@ -74,23 +74,23 @@ done
 done
 
 ############################## TRAIN MULTIPLE WITH INTERPOLATION ##############################
-for dataset in ${datasets[@]}; do
-for seed in "${seeds[@]}"; do
-for threshold in "${thresholds[@]}"; do
-for interpolation in "${interpolations[@]}"; do
-# pid=()
-for participant in "${all_participants[@]}"; do
-    python scripts/grid_search.py \
-        --data_files ./data/${dataset}/dim20/thr${threshold}/train/interpall${interpolation}/loocv/${participant}/sd${seed}/data/ \
-        --hmmdefs 6state-pca20-gmm2-skip 3state-pca20-gmm2 \
-        --results_csv ./results/${output_dir}/results_loocv-${dataset}_${participant}_higher_num_its_tuning.csv \
-        --num_its 3000 --num_tri_its 3000 \
-        --prepare_data --clear_hresults
-#     pid+=("$!")
-done
-# wait "${pid[@]}"
-done
-done
-done
-done
+# for dataset in ${datasets[@]}; do
+# for seed in "${seeds[@]}"; do
+# for threshold in "${thresholds[@]}"; do
+# for interpolation in "${interpolations[@]}"; do
+# # pid=()
+# for participant in "${all_participants[@]}"; do
+#     python scripts/grid_search.py \
+#         --data_files ./data/${dataset}/dim20/thr${threshold}/train/interpall${interpolation}/loocv/${participant}/sd${seed}/data/ \
+#         --hmmdefs 6state-pca20-gmm2-skip 3state-pca20-gmm2 \
+#         --results_csv ./results/${output_dir}/results_loocv-${dataset}_${participant}_higher_num_its_tuning.csv \
+#         --num_its 3000 --num_tri_its 3000 \
+#         --prepare_data --clear_hresults
+# #     pid+=("$!")
+# done
+# # wait "${pid[@]}"
+# done
+# done
+# done
+# done
 

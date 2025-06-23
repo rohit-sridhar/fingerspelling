@@ -626,9 +626,6 @@ def save_model(ip, tc, num_its, num_tri_its, hmmdef, subdirs):
     else:
         print("Model wasn't created or is missing. Check the log file")
 
-    for hmmdir in glob(os.path.join(MODELS_ROOT, subdirs, "hmm0.*")):
-        shutil.rmtree(hmmdir)
-
 # Prepare data using scripts/prepare_files.sh. Not in use currently.
 def prepare_data(data_file, label_file, subdirs):
     options_file = get_options_file(subdirs)
