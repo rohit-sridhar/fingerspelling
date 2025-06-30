@@ -48,6 +48,21 @@ DATA_FILE_DICT = {
         "label_path": "./label/supplemental_gen/dim20/thr0/all/label/",
         "supplemental": True,
     },
+    "supplemental_gen_na-thr0.5": {
+        "data_path": "./data/supplemental_gen/dim20/thr0/all/data/",
+        "label_path": "./label/supplemental_gen/dim20/thr0/all/label/",
+        "supplemental": True,
+    },
+    "supplemental_gen_na-thr0.5_lininterp0": {
+        "data_path": "./data/supplemental_gen/dim20/thr0/all/data/",
+        "label_path": "./label/supplemental_gen/dim20/thr0/all/label/",
+        "supplemental": True,
+    },
+    "supplemental_gen_na-thr0.5_lininterp1": {
+        "data_path": "./data/supplemental_gen/dim20/thr0/all/data/",
+        "label_path": "./label/supplemental_gen/dim20/thr0/all/label/",
+        "supplemental": True,
+    },
 }
 # SUPP_GEN_DATA_FILES = 
 # SUPP_GEN_LABEL_FILES = 

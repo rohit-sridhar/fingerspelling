@@ -584,23 +584,32 @@ def add_results_to_csv(ip, tc, num_its, num_tri_its, hmmdef, subdirs):
     letter_results = get_results(letter_results_file, letter_results=True)
     word_results = get_results(word_results_file, letter_results=False)
     
-    if letter_results is not None and word_results is not None:
-        results = [letter_results_file] + letter_results + word_results
-        if os.path.exists(args.results_csv):
-            with open(args.results_csv, 'a', newline='') as f:
-                csvwriter = csv.writer(
-                    f, delimiter='|',
-                    quotechar='\\', quoting=csv.QUOTE_MINIMAL
-                )
-                csvwriter.writerow(results)
-        else:
-            with open(args.results_csv, 'w') as f:
-                csvwriter = csv.writer(
-                    f, delimiter='|',
-                    quotechar='\\', quoting=csv.QUOTE_MINIMAL
-                )
-                csvwriter.writerow(['letter_results_file','letter_corr', 'letter_acc', 'word_corr', 'word_acc', 'sent_corr'])
-                csvwriter.writerow(results)
+    results = [letter_results_file]
+    if letter_results is not None:
+        results += letter_results
+    else:
+        results += ["NA", "NA"]
+    
+    if word_results is not None:
+        results += word_results
+    else:
+        results += ["NA","NA","NA"]
+
+    if os.path.exists(args.results_csv):
+        with open(args.results_csv, 'a', newline='') as f:
+            csvwriter = csv.writer(
+                f, delimiter='|',
+                quotechar='\\', quoting=csv.QUOTE_MINIMAL
+            )
+            csvwriter.writerow(results)
+    else:
+        with open(args.results_csv, 'w') as f:
+            csvwriter = csv.writer(
+                f, delimiter='|',
+                quotechar='\\', quoting=csv.QUOTE_MINIMAL
+            )
+            csvwriter.writerow(['letter_results_file','letter_corr', 'letter_acc', 'word_corr', 'word_acc', 'sent_corr'])
+            csvwriter.writerow(results)
 
 def get_model_path(subdirs, ip, tc, num_its, num_tri_its, hmmdef):
     name_ext = get_name_ext(ip, tc, num_its, num_tri_its, hmmdef)  # Pass none for first arg because the model doesn't vary by grammar
@@ -679,6 +688,7 @@ def clear_results_files(ip, tc, num_its, num_tri_its, hmmdef, subdirs):
 if __name__ == "__main__":
     args = parse_args()
     check_args()
+    
     print("##### Args #####")
     print(args)
     print("#####\n")
