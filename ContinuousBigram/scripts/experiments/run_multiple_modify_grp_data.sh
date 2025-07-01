@@ -3,12 +3,12 @@
 base_dataset=supplemental_gen
 
 ##### For pilot 
-typeset -a datasets=(${base_dataset} ${base_dataset}_na-thr0.3 ${base_dataset}_drop-na ${base_dataset}_na-thr0.3_drop-na)
-typeset -a pt_grps=(grp1.6 grp2.6 grp3.6 grp4.6 grp5.6)
+typeset -a datasets=(${base_dataset}_na-thr0.5)
+typeset -a pt_grps=(grp.rnd*.2 grp.rnd*.3 grp.rnd*.6 grp.rnd*.12)
 typeset -a seeds=(1248)
 typeset -a data_splits=(train val)
-typeset -a thresholds=(1 4)
-typeset -a interpolations=(1)
+typeset -a thresholds=(1)
+typeset -a interpolations=(0 1)
 
 ##### For debug 
 # typeset -a all_participants=(03ad)
@@ -26,15 +26,21 @@ echo ""
 pid=()
 for dataset in ${datasets[@]}; do
 for data_split in ${data_splits[@]}; do
-for seed in "${seeds[@]}"; do
-for threshold in "${thresholds[@]}"; do
-for pt_grp in "${pt_grps[@]}"; do
-    python scripts/modify_data.py \
-        --data_loc ./data/${dataset}/dim20/thr0/${data_split}/grp/${pt_grp}/sd${seed}/data \
-        --new_data_loc ./data/${dataset}/dim20/thr${threshold}/${data_split}/grp/${pt_grp}/sd${seed}/data \
-        --method fpl_threshold \
-        --fpl_threshold ${threshold} &
-    pid+=("$!")
+for seed in ${seeds[@]}; do
+for interpolation in ${interpolations[@]}; do
+for threshold in ${thresholds[@]}; do
+for pt_grp in ${pt_grps[@]}; do
+    typeset -a data_files=(./data/${dataset}_lininterp${interpolation}/dim20/thr0/${data_split}/grp/${pt_grp}/sd${seed}/data/)
+    for data_file in ${data_files[@]}; do
+        new_data_file=${data_file/\/thr0\//\/thr${threshold}\/}
+        python scripts/modify_data.py \
+            --data_loc ${data_file} \
+            --new_data_loc ${new_data_file} \
+            --method fpl_threshold \
+            --fpl_threshold ${threshold} &
+            pid+=("$!")
+    done
+done
 done
 done
 done
@@ -43,30 +49,5 @@ done
 wait "${pid[@]}"
 
 ############################## INTERPOLATE MULTIPLE ##############################
-
-echo ""
-echo "STARTING INTERPOLATION"
-echo ""
-
-pid=()
-for dataset in ${datasets[@]}; do
-for data_split in ${data_splits[@]}; do
-for seed in "${seeds[@]}"; do
-for threshold in "${thresholds[@]}"; do
-for interpolation in "${interpolations[@]}"; do
-for pt_grp in "${pt_grps[@]}"; do
-    python scripts/modify_data.py \
-        --data_loc ./data/${dataset}/dim20/thr${threshold}/${data_split}/grp/${pt_grp}/sd${seed}/data \
-        --new_data_loc ./data/${dataset}/dim20/thr${threshold}/${data_split}/interpall${interpolation}/grp/${pt_grp}/sd${seed}/data \
-        --method interpolation \
-        --num_interpolations ${interpolation} \
-        --interp_all &
-    pid+=("$!")
-done
-done
-done
-done
-done
-done
-wait "${pid[@]}"
+##### Interpolation section has been removed since it has been worked into the deep learning repo
 

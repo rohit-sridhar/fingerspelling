@@ -17,7 +17,7 @@ typeset -a all_participants=(3f8b 13e3 494d b2d1 c0df d3ab 8e3b fe96 8c4d a3d4 3
 typeset -a seeds=(1248)
 typeset -a data_splits=(train val)
 typeset -a thresholds=(1)
-typeset -a interpolations=(1)
+typeset -a interpolations=(0 1)
 
 ##### For debug 
 # typeset -a all_participants=(03ad)
@@ -33,13 +33,14 @@ echo "STARTING FRAME PER LETTER THRESHOLD"
 echo ""
 
 for data_split in ${data_splits[@]}; do
-for seed in "${seeds[@]}"; do
-for threshold in "${thresholds[@]}"; do
+for seed in ${seeds[@]}; do
+for threshold in ${thresholds[@]}; do
+for interpolation in ${interpolations[@]}; do
 pid=()
-for participant in "${all_participants[@]}"; do
+for participant in ${all_participants[@]}; do
     python scripts/modify_data.py \
-        --data_loc ./data/${datasets[0]}/dim20/thr0/${data_split}/pt/${participant}/sd${seed}/data \
-        --new_data_loc ./data/${datasets[0]}/dim20/thr${threshold}/${data_split}/pt/${participant}/sd${seed}/data \
+        --data_loc ./data/${datasets[0]}_lininterp${interpolation}/dim20/thr0/${data_split}/pt/${participant}/sd${seed}/data \
+        --new_data_loc ./data/${datasets[0]}_lininterp${interpolation}/dim20/thr${threshold}/${data_split}/pt/${participant}/sd${seed}/data \
         --method fpl_threshold \
         --fpl_threshold ${threshold} &
     pid+=("$!")
@@ -48,30 +49,8 @@ wait "${pid[@]}"
 done
 done
 done
+done
 
 ############################## INTERPOLATE MULTIPLE ##############################
-
-# echo ""
-# echo "STARTING INTERPOLATION"
-# echo ""
-# 
-# for data_split in ${data_splits[@]}; do
-# for seed in "${seeds[@]}"; do
-# for threshold in "${thresholds[@]}"; do
-# for interpolation in "${interpolations[@]}"; do
-# pid=()
-# for participant in "${all_participants[@]}"; do
-#     python scripts/modify_data.py \
-#         --data_loc ./data/$dataset/dim20/thr${threshold}/${data_split}/pt/${participant}/sd${seed}/data \
-#         --new_data_loc ./data/$dataset/dim20/thr${threshold}/${data_split}/interpall${interpolation}/pt/${participant}/sd${seed}/data \
-#         --method interpolation \
-#         --num_interpolations ${interpolation} \
-#         --interp_all &
-#     pid+=("$!")
-# done
-# wait "${pid[@]}"
-# done
-# done
-# done
-# done
+##### Interpolation section has been removed since it has been worked into the deep learning repo
 

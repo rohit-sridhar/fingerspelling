@@ -187,7 +187,6 @@ def _check_args():
 
     if args.method in NEW_DATA_LOC_REQUIRED_METHODS:
         new_data_loc = _rm_trailing_slash(args.new_data_loc)
-        print(new_data_loc)
         if check_data_loc(new_data_loc):
             raise ValueError("Must pass a new data path that starts/ends with ./data.")
         
