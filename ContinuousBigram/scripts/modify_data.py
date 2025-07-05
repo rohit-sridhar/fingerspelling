@@ -451,7 +451,7 @@ def import_data(new_data_loc, new_label_loc):
         
         datafile = os.path.join(data_path, str(seq_id))
         label_file = os.path.join(label_path, str(seq_id) + ".lab")
-
+        
         if os.path.exists(datafile) and os.path.exists(label_file):
             os.link(datafile, new_datafile)
             os.link(label_file, new_label_file)

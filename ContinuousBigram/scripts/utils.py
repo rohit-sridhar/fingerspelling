@@ -34,33 +34,53 @@ DATA_FILE_DICT = {
         "supplemental": True,
     },
     "supplemental_gen_na-thr0.3": {
-        "data_path": "./data/supplemental_gen/dim20/thr0/all/data/",
-        "label_path": "./label/supplemental_gen/dim20/thr0/all/label/",
-        "supplemental": True,
-    },
-    "supplemental_gen_drop-na": {
-        "data_path": "./data/supplemental_gen/dim20/thr0/all/data/",
-        "label_path": "./label/supplemental_gen/dim20/thr0/all/label/",
-        "supplemental": True,
-    },
-    "supplemental_gen_na-thr0.3_drop-na": {
-        "data_path": "./data/supplemental_gen/dim20/thr0/all/data/",
-        "label_path": "./label/supplemental_gen/dim20/thr0/all/label/",
+        "data_path": "./data/supplemental_gen_na-thr0.3/dim20/thr0/all/data/",
+        "label_path": "./label/supplemental_gen_na-thr0.3/dim20/thr0/all/label/",
         "supplemental": True,
     },
     "supplemental_gen_na-thr0.5": {
-        "data_path": "./data/supplemental_gen/dim20/thr0/all/data/",
-        "label_path": "./label/supplemental_gen/dim20/thr0/all/label/",
+        "data_path": "./data/supplemental_gen_na-thr0.5/dim20/thr0/all/data/",
+        "label_path": "./label/supplemental_gen_na-thr0.5/dim20/thr0/all/label/",
         "supplemental": True,
     },
     "supplemental_gen_na-thr0.5_lininterp0": {
-        "data_path": "./data/supplemental_gen/dim20/thr0/all/data/",
-        "label_path": "./label/supplemental_gen/dim20/thr0/all/label/",
+        "data_path": "./data/supplemental_gen_na-thr0.5_lininterp0/dim20/thr0/all/data/",
+        "label_path": "./label/supplemental_gen_na-thr0.5_lininterp0/dim20/thr0/all/label/",
         "supplemental": True,
     },
     "supplemental_gen_na-thr0.5_lininterp1": {
-        "data_path": "./data/supplemental_gen/dim20/thr0/all/data/",
-        "label_path": "./label/supplemental_gen/dim20/thr0/all/label/",
+        "data_path": "./data/supplemental_gen_na-thr0.5_lininterp1/dim20/thr0/all/data/",
+        "label_path": "./label/supplemental_gen_na-thr0.5_lininterp1/dim20/thr0/all/label/",
+        "supplemental": True,
+    },
+    "supplemental_gen_drop-na": {
+        "data_path": "./data/supplemental_gen_drop-na/dim20/thr0/all/data/",
+        "label_path": "./label/supplemental_gen_drop-na/dim20/thr0/all/label/",
+        "supplemental": True,
+    },
+    "supplemental_gen_drop-na_lininterp1": {
+        "data_path": "./data/supplemental_gen_drop-na_lininterp1/dim20/thr0/all/data/",
+        "label_path": "./label/supplemental_gen_drop-na_lininterp1/dim20/thr0/all/label/",
+        "supplemental": True,
+    },
+    "supplemental_gen_na-thr0.3_drop-na": {
+        "data_path": "./data/supplemental_gen_na-thr0.3_drop-na/dim20/thr0/all/data/",
+        "label_path": "./label/supplemental_gen_na-thr0.3_drop-na/dim20/thr0/all/label/",
+        "supplemental": True,
+    },
+    "supplemental_gen_na-thr0.3_drop-na_lininterp1": {
+        "data_path": "./data/supplemental_gen_na-thr0.3_drop-na_lininterp1/dim20/thr0/all/data/",
+        "label_path": "./label/supplemental_gen_na-thr0.3_drop-na_lininterp1/dim20/thr0/all/label/",
+        "supplemental": True,
+    },
+    "supplemental_gen_na-thr0.5_drop-na": {
+        "data_path": "./data/supplemental_gen_na-thr0.5_drop-na/dim20/thr0/all/data/",
+        "label_path": "./label/supplemental_gen_na-thr0.5_drop-na/dim20/thr0/all/label/",
+        "supplemental": True,
+    },
+    "supplemental_gen_na-thr0.5_drop-na_lininterp1": {
+        "data_path": "./data/supplemental_gen_na-thr0.5_drop-na_lininterp1/dim20/thr0/all/data/",
+        "label_path": "./label/supplemental_gen_na-thr0.5_drop-na_lininterp1/dim20/thr0/all/label/",
         "supplemental": True,
     },
 }
