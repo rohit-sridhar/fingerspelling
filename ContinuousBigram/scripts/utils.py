@@ -58,6 +58,11 @@ DATA_FILE_DICT = {
         "label_path": "./label/supplemental_gen_drop-na/dim20/thr0/all/label/",
         "supplemental": True,
     },
+    "supplemental_gen_drop-na_lininterp0": {
+        "data_path": "./data/supplemental_gen_drop-na_lininterp0/dim20/thr0/all/data/",
+        "label_path": "./label/supplemental_gen_drop-na_lininterp0/dim20/thr0/all/label/",
+        "supplemental": True,
+    },
     "supplemental_gen_drop-na_lininterp1": {
         "data_path": "./data/supplemental_gen_drop-na_lininterp1/dim20/thr0/all/data/",
         "label_path": "./label/supplemental_gen_drop-na_lininterp1/dim20/thr0/all/label/",
@@ -68,6 +73,11 @@ DATA_FILE_DICT = {
         "label_path": "./label/supplemental_gen_na-thr0.3_drop-na/dim20/thr0/all/label/",
         "supplemental": True,
     },
+    "supplemental_gen_na-thr0.3_drop-na_lininterp0": {
+        "data_path": "./data/supplemental_gen_na-thr0.3_drop-na_lininterp0/dim20/thr0/all/data/",
+        "label_path": "./label/supplemental_gen_na-thr0.3_drop-na_lininterp0/dim20/thr0/all/label/",
+        "supplemental": True,
+    },
     "supplemental_gen_na-thr0.3_drop-na_lininterp1": {
         "data_path": "./data/supplemental_gen_na-thr0.3_drop-na_lininterp1/dim20/thr0/all/data/",
         "label_path": "./label/supplemental_gen_na-thr0.3_drop-na_lininterp1/dim20/thr0/all/label/",
@@ -76,6 +86,11 @@ DATA_FILE_DICT = {
     "supplemental_gen_na-thr0.5_drop-na": {
         "data_path": "./data/supplemental_gen_na-thr0.5_drop-na/dim20/thr0/all/data/",
         "label_path": "./label/supplemental_gen_na-thr0.5_drop-na/dim20/thr0/all/label/",
+        "supplemental": True,
+    },
+    "supplemental_gen_na-thr0.5_drop-na_lininterp0": {
+        "data_path": "./data/supplemental_gen_na-thr0.5_drop-na_lininterp0/dim20/thr0/all/data/",
+        "label_path": "./label/supplemental_gen_na-thr0.5_drop-na_lininterp0/dim20/thr0/all/label/",
         "supplemental": True,
     },
     "supplemental_gen_na-thr0.5_drop-na_lininterp1": {
@@ -91,10 +106,10 @@ DATA_FILE_DICT = {
 
 MODEL_MACROS_FILE = "newMacros"
 OPTIONS_FILENAME = "options.sh"
-GEN_GRAMMAR_FILE = os.path.join(SCRIPTS_ROOT, "gen_grammar.py")
-TRAIN_FILE = os.path.join(SCRIPTS_ROOT, "train.sh")
-TEST_FILE = os.path.join(SCRIPTS_ROOT, "test.sh")
-PREPARE_FILE = os.path.join(SCRIPTS_ROOT, "prepare_files.sh")
+GEN_GRAMMAR_SCRIPT = os.path.join(SCRIPTS_ROOT, "gen_grammar.py")
+TRAIN_SCRIPT = os.path.join(SCRIPTS_ROOT, "train.sh")
+TEST_SCRIPT = os.path.join(SCRIPTS_ROOT, "test.sh")
+PREPARE_SCRIPT = os.path.join(SCRIPTS_ROOT, "prepare_files.sh")
 
 GRAMMARFILE_ROOT_VARNAME = "GRAMMARFILE_ROOT"
 DICTFILE_ROOT_VARNAME = "DICTFILE_ROOT"
@@ -124,6 +139,7 @@ TRACE_LEVEL_VARNAME = "TRACE_LEVEL"
 TRILETTER_VARNAME = "TRILETTER"
 THREADS_VARNAME = "THREADS"
 WHOLE_WORD_VARNAME = "WHOLE_WORD"
+USE_PHRASE_VARNAME = "WORD_SKSP_PHRASE"
 
 # Next two params are LM utils
 BASE_PARAMETER = 1.5
@@ -142,59 +158,8 @@ EBISU_THREADS = "32"
 HOTEI_THREADS = "8"
 
 # the GRAMMAR_FILE_DICTS shoudl be deprecated since grammar_types are no longer in use.
-LETTER_GRAMMAR = "grammar_letter_isolated"
-# LETTER_GRAMMAR_FILE_DICT = {
-#     "grliwins": "${GRAMMARFILE_ROOT}/grammar_letter_isolated_ns",
-#     "grliwinw": "${GRAMMARFILE_ROOT}/grammar_letter_isolated_new",
-#     "grliwi": "${GRAMMARFILE_ROOT}/grammar_letter_isolated",
-#     "grliw2g": "${GRAMMARFILE_ROOT}/grammar_letter_isolated",
-#     "grliw3g": "${GRAMMARFILE_ROOT}/grammar_letter_isolated",
-#     "grliw4g": "${GRAMMARFILE_ROOT}/grammar_letter_isolated",
-#     "grliw5g": "${GRAMMARFILE_ROOT}/grammar_letter_isolated",
-#     "grliwph": "${GRAMMARFILE_ROOT}/grammar_letter_isolated",
-#     "grl2gwi": "${GRAMMARFILE_ROOT}/grammar_letter_2gram",
-#     "grl2gw2g": "${GRAMMARFILE_ROOT}/grammar_letter_2gram",
-#     "grl2gw3g": "${GRAMMARFILE_ROOT}/grammar_letter_2gram",
-#     "grl2gw4g": "${GRAMMARFILE_ROOT}/grammar_letter_2gram",
-#     "grl2gw5g": "${GRAMMARFILE_ROOT}/grammar_letter_2gram",
-#     "grl2gwph": "${GRAMMARFILE_ROOT}/grammar_letter_2gram",
-#     "grl3gwi": "${GRAMMARFILE_ROOT}/grammar_letter_3gram",
-#     "grl3gw2g": "${GRAMMARFILE_ROOT}/grammar_letter_3gram",
-#     "grl3gw3g": "${GRAMMARFILE_ROOT}/grammar_letter_3gram",
-#     "grl3gw5g": "${GRAMMARFILE_ROOT}/grammar_letter_3gram",
-#     "grl3gwph": "${GRAMMARFILE_ROOT}/grammar_letter_3gram",
-#     "grl4gw4g": "${GRAMMARFILE_ROOT}/grammar_letter_4gram",
-#     "grl5gw5g": "${GRAMMARFILE_ROOT}/grammar_letter_5gram",
-#     "grlwdwi": "${GRAMMARFILE_ROOT}/grammar_letter_word",
-#     "grlwdwph": "${GRAMMARFILE_ROOT}/grammar_letter_word",
-# }
-
-WORD_GRAMMAR = "grammar_word_isolated"
-# WORD_GRAMMAR_FILE_DICT = {
-#     "grliwins": "${GRAMMARFILE_ROOT}/grammar_word_isolated_ns",
-#     "grliwinw": "${GRAMMARFILE_ROOT}/grammar_word_isolated",
-#     "grliwi": "${GRAMMARFILE_ROOT}/grammar_word_isolated",
-#     "grliw2g": "${GRAMMARFILE_ROOT}/grammar_word_2gram",
-#     "grliw3g": "${GRAMMARFILE_ROOT}/grammar_word_3gram",
-#     "grliw4g": "${GRAMMARFILE_ROOT}/grammar_word_4gram",
-#     "grliw5g": "${GRAMMARFILE_ROOT}/grammar_word_5gram",
-#     "grliwph": "${GRAMMARFILE_ROOT}/grammar_word_phrase",
-#     "grl2gwi": "${GRAMMARFILE_ROOT}/grammar_word_isolated",
-#     "grl2gw2g": "${GRAMMARFILE_ROOT}/grammar_word_2gram",
-#     "grl2gw3g": "${GRAMMARFILE_ROOT}/grammar_word_3gram",
-#     "grl2gw4g": "${GRAMMARFILE_ROOT}/grammar_word_4gram",
-#     "grl2gw5g": "${GRAMMARFILE_ROOT}/grammar_word_5gram",
-#     "grl2gwph": "${GRAMMARFILE_ROOT}/grammar_word_phrase",
-#     "grl3gwi": "${GRAMMARFILE_ROOT}/grammar_word_isolated",
-#     "grl3gw2g": "${GRAMMARFILE_ROOT}/grammar_word_2gram",
-#     "grl3gw3g": "${GRAMMARFILE_ROOT}/grammar_word_3gram",
-#     "grl3gw5g": "${GRAMMARFILE_ROOT}/grammar_word_5gram",
-#     "grl3gwph": "${GRAMMARFILE_ROOT}/grammar_word_phrase",
-#     "grl4gw4g": "${GRAMMARFILE_ROOT}/grammar_word_4gram",
-#     "grl5gw5g": "${GRAMMARFILE_ROOT}/grammar_word_5gram",
-#     "grlwdwi": "${GRAMMARFILE_ROOT}/grammar_word_isolated",
-#     "grlwdwph": "${GRAMMARFILE_ROOT}/grammar_word_phrase",
-# }
+LETTER_GRAMMAR = "grammar_letter"
+WORD_GRAMMAR = "grammar_word"
 
 SPACE = '_'
 ENTER = 'sil0'
@@ -295,12 +260,12 @@ def make_dir(dir_loc, rmdir=False):
     if os.path.exists(dir_loc) and rmdir:
         shutil.rmtree(dir_loc)
         os.makedirs(dir_loc)
-        print(f"Deleted {dir_loc} and recreated it")
+        print(f"Deleted {dir_loc} and recreated it since it exists and rmdir is True.")
     elif not(os.path.exists(dir_loc)):
         os.makedirs(dir_loc)
         print(f"Created {dir_loc}")
     else:
-        print(f"Did not create {dir_loc} since rmdir is {rmdir}")
+        print(f"Did not create {dir_loc} since it exists and rmdir is False.")
 
 # The functions below get the subdirectories for 
 ### TODO _get_subdirs and get_subdirectories make a lot of 

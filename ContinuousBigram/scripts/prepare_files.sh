@@ -10,10 +10,6 @@
 OPTIONS_FILE=$1
 . ${OPTIONS_FILE}
 
-echo "CURRENT_DIR: `pwd`"
-echo "EXT_DIR: ${EXT_DIR}"
-echo "OPTIONS_FILE: ${OPTIONS_FILE}"
-
 echo "##### Housekeeping .... #####"
 find $2/ -type f | sort -V  > ${DATAFILES_LIST}
 echo "#####"

@@ -137,6 +137,12 @@ def parse_args():
         action='store_true',
         help="If true will model on the whole word level (words treated like letters, phrases like words)."
     )
+
+    parser.add_argument(
+        "--use_phrase",
+        action='store_true',
+        help="If true uses phrase level grammar in the word grammar."
+    )
     
     parser.add_argument(
         "--test_model_path",
@@ -175,19 +181,14 @@ def parse_args():
 # Makes the dir for the options file
 def _make_options_file(subdirs):
     options_dir = os.path.join(SCRIPTS_ROOT, subdirs)
+    print("##### Setting Up Options File #####")
     make_dir(options_dir)
+    print("#####\n")
 
     new_options_file = os.path.join(options_dir, OPTIONS_FILENAME)
     original_options_file = os.path.join(SCRIPTS_ROOT, OPTIONS_FILENAME)
     copy_options_file = shutil.copy2(original_options_file, new_options_file)
     
-    print("#####")
-    print(f"Context options file: {os.getcwd()}")
-    print(f"New options file: {new_options_file}")
-    print(f"Orig options file: {original_options_file}")
-    print(f"Copy options file: {copy_options_file}")
-    print("#####")
-
 # Check args
 def check_args():
     for i in range(len(args.data_files)):
@@ -220,6 +221,9 @@ def get_name_ext(ip, tc, num_its, num_tri_its, hmmdef, trace_value=None):
     ip_ext = get_ip_ext(ip)
     name_ext += "_".join([f"{ip_ext}", f"{hmmdef}", f"{num_its}its", f"{num_tri_its}tri-its", f"tc{tc}"])
 
+    if args.use_phrase:
+        name_ext += "_grliwph"
+
     if args.no_custom_silsp:
         name_ext += "_no-silsp"
     
@@ -240,6 +244,7 @@ def get_name_ext(ip, tc, num_its, num_tri_its, hmmdef, trace_value=None):
 # Get the results filepath
 def get_hresults_filepaths(name_ext, subdirs, ip):
     results_dir = os.path.join(RESULTS_ROOT, subdirs)
+    print("##### Creating Results Dirs #####")
     make_dir(results_dir)
     
     if args.test_model_path is None:
@@ -262,6 +267,7 @@ def get_hresults_filepaths(name_ext, subdirs, ip):
         
     letter_results = os.path.join("${PRJ}", results_dir, letter_results_file)
     word_results = os.path.join("${PRJ}", results_dir, word_results_file)
+    print("#####\n")
 
     return (letter_results, word_results)
 
@@ -278,8 +284,9 @@ def get_bool_arg_info():
     hedfile1 = "${PRJ}/instr/mktri1_silsp.hed" if not(args.no_custom_silsp) else "${PRJ}/instr/mktri1_orig.hed"
     cross_word = "yes" if args.cross_word else "no"
     whole_word = "yes" if args.whole_word else "no"
+    use_phrase = "yes" if args.use_phrase else "no"
 
-    return custom_silsp, multi_process, hedfile1, cross_word, whole_word
+    return custom_silsp, multi_process, hedfile1, cross_word, whole_word, use_phrase
 
 def get_machine_info():
     return os.cpu_count()
@@ -339,7 +346,7 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     name_ext = get_name_ext(ip, tc, num_its, num_tri_its, hmmdef) # We leave trace_value out in this call.
     letter_results, word_results = get_hresults_filepaths(name_ext, subdirs, ip)
 
-    custom_silsp, multi_process, hedfile1, cross_word, whole_word = get_bool_arg_info()
+    custom_silsp, multi_process, hedfile1, cross_word, whole_word, use_phrase = get_bool_arg_info()
     hedfile2 = f"${{PRJ}}/instr/mktri2_tc.{hmmdef}.hed"
     num_threads = get_machine_info()
 
@@ -379,6 +386,9 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     whole_word_search = WHOLE_WORD_VARNAME + "\s*=\s*(yes|no)"
     whole_word_repl = WHOLE_WORD_VARNAME + f"={whole_word}"
 
+    use_phrase_search = USE_PHRASE_VARNAME + "\s*=\s*(yes|no)"
+    use_phrase_repl = USE_PHRASE_VARNAME + f"={use_phrase}"
+
     cross_word_hedfile1_search = "^CL commands\/commands_tri_(internal|cross)$"
     cross_word_hedfile1_repl = "CL commands/commands_tri_cross" if args.cross_word else "CL commands/commands_tri_internal"
     hedfile1_local_file = hedfile1.replace("${PRJ}", ".")
@@ -414,8 +424,9 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     edit_file(trace_level_search, trace_level_repl, options_file)
     edit_file(threads_search, threads_repl, options_file)
     edit_file(whole_word_search, whole_word_repl, options_file)
+    edit_file(use_phrase_search, use_phrase_repl, options_file)
     
-    print("##### Training Hyperparameters #####")
+    print("##### Hyperparameters #####")
     run_subprocess(["grep", "^" + IP_VARNAME + "\s*=\s*", options_file])
     run_subprocess(["grep", "^" + NUM_ITS_VARNAME + "\s*=\s*", options_file])
     run_subprocess(["grep", "^" + NUM_TRI_ITS_VARNAME + "\s*=\s*", options_file])
@@ -431,6 +442,7 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     run_subprocess(["grep", "^" + TRACE_LEVEL_VARNAME + "\s*=\s*", options_file])
     run_subprocess(["grep", "^" + THREADS_VARNAME + "\s*=\s*", options_file])
     run_subprocess(["grep", "^" + WHOLE_WORD_VARNAME + "\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + USE_PHRASE_VARNAME + "\s*=\s*", options_file])
     run_subprocess(["head", "-n", "1", f"{hedfile1_local_file}"])
     print("#####\n")
 
@@ -493,6 +505,7 @@ def edit_htk_root_file_options(subdirs):
     ext_dir = os.path.join(EXT_ROOT, subdirs)
     models_dir = os.path.join(MODELS_ROOT, subdirs)
     
+    print("##### Create HTK File Directories #####")
     make_dir(grammar_dir)
     make_dir(dict_dir)
     make_dir(tokens_dir)
@@ -500,12 +513,15 @@ def edit_htk_root_file_options(subdirs):
     make_dir(outputfile_dir)
     make_dir(ext_dir)
     make_dir(models_dir)
+    print("#####\n")
 
 def test_model(ip, tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
     name_ext = get_name_ext(ip, tc, num_its, num_tri_its, hmmdef, trace_value=trace_value)
     
     log_dir = os.path.join(LOG_ROOT, subdirs)
+    print("##### Creating Testing Log Dir #####")
     make_dir(log_dir)
+    print("#####\n")
 
     log_file = os.path.join(log_dir, "output.log_" + name_ext + ".test_model")
     
@@ -517,14 +533,14 @@ def test_model(ip, tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
 
     options_file = get_options_file(subdirs)
     test_data_file = get_test_data_file(subdirs)
-    test_args = [TEST_FILE, options_file, test_data_file, new_model_path]
+    test_args = [TEST_SCRIPT, options_file, test_data_file, new_model_path]  # Last arg is for phrase grammar
     print("Test Command: " + ' '.join(test_args))
-    print(f"Log file: {log_file}")
+    print(f"Log file: {log_file}\n")
 
     if args.print_mode:
         run_subprocess(test_args)
     else:
-        with open(log_file, "a") as f:
+        with open(log_file, "w") as f:
             subprocess.run(test_args, stdout=f, stderr=subprocess.STDOUT)
 
 # Runs the train model script
@@ -532,15 +548,17 @@ def train_model(ip, tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
     name_ext = get_name_ext(ip, tc, num_its, num_tri_its, hmmdef, trace_value=trace_value)
     
     log_dir = os.path.join(LOG_ROOT, subdirs)
+    print("##### Creating Training Log Dir #####")
     make_dir(log_dir)
+    print("#####\n")
     
     log_file = os.path.join(log_dir, "output.log_" + name_ext)
     
     options_file = get_options_file(subdirs)
-    train_args = [TRAIN_FILE, options_file]
+    train_args = [TRAIN_SCRIPT, options_file]
     
     print("Train Command: " + ' '.join(train_args))
-    print(f"Output file: {log_file}")
+    print(f"Output file: {log_file}\n")
     
     if args.print_mode:
         run_subprocess(train_args)
@@ -638,7 +656,7 @@ def save_model(ip, tc, num_its, num_tri_its, hmmdef, subdirs):
 # Prepare data using scripts/prepare_files.sh. Not in use currently.
 def prepare_data(data_file, label_file, subdirs):
     options_file = get_options_file(subdirs)
-    prepare_command = [PREPARE_FILE, options_file, data_file, label_file]
+    prepare_command = [PREPARE_SCRIPT, options_file, data_file, label_file]
     
     print("##### Run prepare data #####")
     print(f"Prepare Data: {' '.join(prepare_command)}")
@@ -652,19 +670,23 @@ def prepare_data(data_file, label_file, subdirs):
 # hardcoded everywhere
 def gen_grammar(subdirs, label_file, grammar_type_arg='word'):
     if grammar_type_arg.startswith("letter"):
-        grammar_file = LETTER_GRAMMAR
-        if grammar_type_arg == "letter_whole_word":
-            grammar_file += "_whole"
+        grammar_file = "_".join([LETTER_GRAMMAR, "isolated"])
+        if grammar_type_arg.endswith("_whole_word"):
+            grammar_file = "_".join([grammar_file, "whole"])
     else:
         grammar_file = WORD_GRAMMAR
-        if grammar_type_arg == "word_sksp":
-            grammar_file += "_sksp"
-        elif grammar_type_arg == "word_whole_word":
-            grammar_file += "_whole"
+        if grammar_type_arg.endswith("_phrase_sksp"):
+            grammar_file = "_".join([grammar_file, "phrase", "sksp"])
+        elif grammar_type_arg.endswith("_sksp"):
+            grammar_file = "_".join([grammar_file, "isolated", "sksp"])
+        elif grammar_type_arg.endswith("_whole_word"):
+            grammar_file = "_".join([grammar_file, "isolated", "whole"])
+        else:
+            grammar_file = "_".join([grammar_file, "isolated"])
 
     grammar_filepath = os.path.join(GRAMMAR_ROOT, subdirs, grammar_file)
 
-    gen_grammar_args = ['python', GEN_GRAMMAR_FILE]
+    gen_grammar_args = ['python', GEN_GRAMMAR_SCRIPT]
     gen_grammar_args += ["--label_loc", label_file]
     gen_grammar_args += ["--grammar_file", grammar_filepath]
 
@@ -679,11 +701,13 @@ def clear_results_files(ip, tc, num_its, num_tri_its, hmmdef, subdirs):
     letter_results_file = os.path.join(*letter_results_file.split(os.path.sep)[1:])
     word_results_file = os.path.join(*word_results_file.split(os.path.sep)[1:])
 
+    print("##### Clearing Results Files #####")
     with open(letter_results_file, 'w') as f:
         print(f"Cleared letter results")
 
     with open(word_results_file, 'w') as f:
         print(f"Cleared word results")
+    print("#####\n")
 
 if __name__ == "__main__":
     args = parse_args()
@@ -727,6 +751,12 @@ if __name__ == "__main__":
                     subdirs,
                     label_file,
                     grammar_type_arg="word_sksp"
+                )
+
+                gen_grammar(
+                    subdirs,
+                    label_file,
+                    grammar_type_arg="word_phrase_sksp"
                 )
                 
                 gen_grammar(

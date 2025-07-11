@@ -12,6 +12,7 @@
 # Arg 1: options shell script
 # Arg 2: List of test files
 # Arg 3: Saved model (newMacros file)
+# Arg 4: Use phrase level grammar
 # 
 ##################################################
 
@@ -38,11 +39,15 @@ WORD_RESULTS_FILE=$LOG_RESULTS_WORD
 
 if [[ $WORD_SKSP == "yes" ]]; then
     DICTFILE_WORD=$DICTFILE_WORD_SKSP
-    GRAMMARFILE_WORD=$GRAMMARFILE_WORD_SKSP
     TOKENS_WORD=$TOKENS_WORD_SKSP
+    GRAMMARFILE_WORD=$GRAMMARFILE_WORD_SKSP
     MLF_LOCATION=$MLF_LOCATION_SKSP
     MLF_LOCATION_WORD=$MLF_LOCATION_WORD_SKSP
     MLF_LOCATION_ORIGINAL=$MLF_LOCATION_ORIGINAL_SKSP
+fi
+
+if [[ $WORD_SKSP_PHRASE == "yes" ]]; then
+    GRAMMARFILE_WORD=$GRAMMARFILE_WORD_PHRASE_SKSP
 fi
 
 echo
@@ -57,10 +62,6 @@ ${HTKBIN}HParse -l ${GRAMMARFILE} ${WORD_LATTICE}
 fi
 
 if [[ $WORD_LEVEL = "yes" ]] || [[ $WORD_LEVEL = "1" ]]; then
-#     if [[ $BIGRAM_WORD = "yes" ]]; then
-#         ${HTKBIN}HLStats -b $BIGRAM_WORD_FILE -s $ENTER $EXIT -o $TOKENS_WORD $MLF_LOCATION_WORD
-#         ${HTKBIN}HBuild -n $BIGRAM_WORD_FILE -s $ENTER $EXIT $TOKENS_WORD ${WORD_LATTICE}_word
-#     else
     ${HTKBIN}HParse -l ${GRAMMARFILE_WORD} ${WORD_LATTICE}_word
 fi
 

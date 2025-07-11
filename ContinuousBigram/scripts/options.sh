@@ -120,6 +120,7 @@ GRAMMARFILE_WHOLE=${GRAMMARFILE_ROOT}/grammar_letter_isolated_whole
 GRAMMARFILE_WORD=${GRAMMARFILE_ROOT}/grammar_word_isolated
 GRAMMARFILE_WORD_SKSP=${GRAMMARFILE_ROOT}/grammar_word_isolated_sksp
 GRAMMARFILE_WORD_WHOLE=${GRAMMARFILE_ROOT}/grammar_word_isolated_whole
+GRAMMARFILE_WORD_PHRASE_SKSP=${GRAMMARFILE_ROOT}/grammar_word_phrase_sksp
 
 ###### USE FOR CROSS WORD TRILETTER ######
 GRAMMARFILE_WORD_CROSS=${GRAMMARFILE_ROOT}/grammar_word_cross
@@ -222,6 +223,7 @@ WORD_LATTICE=${OUTPUTFILE_ROOT}/word.lattice
 # BIGRAM_LETTER_FILE=${OUTPUTFILE_ROOT}bigram.letter
 
 WORD_SKSP=yes
+WORD_SKSP_PHRASE=yes
 LM_DIR=${PRJ}/lang_models
 
 HEDFILE1=${PRJ}/instr/mktri1_silsp.hed
