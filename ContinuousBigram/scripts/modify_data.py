@@ -1,3 +1,5 @@
+#!/opt/conda/envs/fingerspelling/bin/python
+
 import argparse
 import os
 import sys
@@ -61,12 +63,12 @@ def parse_args():
         help="File with triletter labels (only for match_triletters method)."
     )
 
-    parser.add_argument(
-        "--char_map_file",
-        type=str,
-        required=required_by_set("--method", {"import"}),
-        help="Maps characters to indices and vice versa (only for import method)."
-    )
+    # parser.add_argument(
+    #     "--char_map_file",
+    #     type=str,
+    #     required=required_by_set("--method", {"import"}),
+    #     help="Maps characters to indices and vice versa (only for import method)."
+    # )
 
     parser.add_argument(
         "--data_aug_map",
@@ -415,8 +417,6 @@ def get_labels(df, seq_id, idx_char_map, supplemental=True):
             phrase.append(EXIT + "\n")
         elif idx == 0:
             phrase.append(SPACE + "\n")
-        elif (idx == 30 and supplemental) or (idx == 61):
-            print("OH NO!")
         else:
             phrase.append(idx_char_map[idx] + "\n")
     
@@ -444,7 +444,7 @@ def import_data(new_data_loc, new_label_loc):
     #     label_path = ALL_LABEL_PATH
     #     supplemental = False
     
-    idx_char_map = get_idx_char_map(args.char_map_file)
+    idx_char_map = get_idx_char_map(supplemental)
     for seq_id in tqdm(dl_seq_ids):
         new_datafile = os.path.join(new_data_loc, str(seq_id))
         new_label_file = os.path.join(new_label_loc, str(seq_id) + ".lab")

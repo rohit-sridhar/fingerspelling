@@ -65,6 +65,7 @@ for m in `cat $DATA_LIST_FILE`; do	# for each data file listed
 			continue
 		fi
 		# if [[ ( 1 -lt $ind && $ind -lt $((num_labels-2)) ) && $k = "sil0" ]]; then
+                # TODO IF REUSING, USE SP INSTEAD
 		#   k="_"
 		# fi	
 		if [[ $k = $ENTER  || $k = $EXIT ]]; then

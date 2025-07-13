@@ -110,7 +110,7 @@ def add_letter_to_dict(word):
 
 #################### TRILETTER WHOLE LEVEL FUNCTIONS ####################
 def add_whole_letter_to_dict(phrase):
-    tokens = phrase.split("_")
+    tokens = phrase.split(SPACE)
     tokens = [f"{{{token}}}" for token in tokens]
     
     if len(tokens) == 1:
@@ -119,7 +119,7 @@ def add_whole_letter_to_dict(phrase):
         write_full_letter_entry(tokens)
 
 def add_whole_word_to_dict(phrase):
-    tokens = phrase.split("_")
+    tokens = phrase.split(SPACE)
     tokens = [f"{{{token}}}" for token in tokens]
     
     if len(tokens) == 1:
@@ -182,7 +182,7 @@ def add_uniletter_word_to_dict(word):
 # Ingests the whole label file into the dict
 def ingest_label_file(label_filepath):
     tokens = collect_tokens(label_filepath)
-    phrase = '_'.join(tokens)
+    phrase = SPACE.join(tokens)
     if args.dict_type == "cross_letter":
         add_letter_to_dict(phrase)
     elif args.dict_type == "tri_letter_whole":

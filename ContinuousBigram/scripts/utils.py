@@ -33,25 +33,35 @@ DATA_FILE_DICT = {
         "label_path": "./label/supplemental_gen/dim20/thr0/all/label/",
         "supplemental": True,
     },
-    "supplemental_gen_na-thr0.3": {
-        "data_path": "./data/supplemental_gen_na-thr0.3/dim20/thr0/all/data/",
-        "label_path": "./label/supplemental_gen_na-thr0.3/dim20/thr0/all/label/",
-        "supplemental": True,
+    "main_train_drop-na": {
+        "data_path": "./data/main_train_drop-na/dim20/thr0/all/data/",
+        "label_path": "./label/main_train_drop-na/dim20/thr0/all/label/",
+        "supplemental": False,
     },
-    "supplemental_gen_na-thr0.5": {
-        "data_path": "./data/supplemental_gen_na-thr0.5/dim20/thr0/all/data/",
-        "label_path": "./label/supplemental_gen_na-thr0.5/dim20/thr0/all/label/",
-        "supplemental": True,
+    "main_train_drop-na_lininterp0": {
+        "data_path": "./data/main_train_drop-na_lininterp0/dim20/thr0/all/data/",
+        "label_path": "./label/main_train_drop-na_lininterp0/dim20/thr0/all/label/",
+        "supplemental": False,
     },
-    "supplemental_gen_na-thr0.5_lininterp0": {
-        "data_path": "./data/supplemental_gen_na-thr0.5_lininterp0/dim20/thr0/all/data/",
-        "label_path": "./label/supplemental_gen_na-thr0.5_lininterp0/dim20/thr0/all/label/",
-        "supplemental": True,
+    "main_train_drop-na_lininterp1": {
+        "data_path": "./data/main_train_drop-na_lininterp1/dim20/thr0/all/data/",
+        "label_path": "./label/main_train_drop-na_lininterp1/dim20/thr0/all/label/",
+        "supplemental": False,
     },
-    "supplemental_gen_na-thr0.5_lininterp1": {
-        "data_path": "./data/supplemental_gen_na-thr0.5_lininterp1/dim20/thr0/all/data/",
-        "label_path": "./label/supplemental_gen_na-thr0.5_lininterp1/dim20/thr0/all/label/",
-        "supplemental": True,
+    "main_train_na-thr0.3_drop-na": {
+        "data_path": "./data/main_train_na-thr0.3_drop-na/dim20/thr0/all/data/",
+        "label_path": "./label/main_train_na-thr0.3_drop-na/dim20/thr0/all/label/",
+        "supplemental": False,
+    },
+    "main_train_na-thr0.3_drop-na_lininterp0": {
+        "data_path": "./data/main_train_na-thr0.3_drop-na_lininterp0/dim20/thr0/all/data/",
+        "label_path": "./label/main_train_na-thr0.3_drop-na_lininterp0/dim20/thr0/all/label/",
+        "supplemental": False,
+    },
+    "main_train_na-thr0.3_drop-na_lininterp1": {
+        "data_path": "./data/main_train_na-thr0.3_drop-na_lininterp1/dim20/thr0/all/data/",
+        "label_path": "./label/main_train_na-thr0.3_drop-na_lininterp1/dim20/thr0/all/label/",
+        "supplemental": False,
     },
     "supplemental_gen_drop-na": {
         "data_path": "./data/supplemental_gen_drop-na/dim20/thr0/all/data/",
@@ -83,26 +93,10 @@ DATA_FILE_DICT = {
         "label_path": "./label/supplemental_gen_na-thr0.3_drop-na_lininterp1/dim20/thr0/all/label/",
         "supplemental": True,
     },
-    "supplemental_gen_na-thr0.5_drop-na": {
-        "data_path": "./data/supplemental_gen_na-thr0.5_drop-na/dim20/thr0/all/data/",
-        "label_path": "./label/supplemental_gen_na-thr0.5_drop-na/dim20/thr0/all/label/",
-        "supplemental": True,
-    },
-    "supplemental_gen_na-thr0.5_drop-na_lininterp0": {
-        "data_path": "./data/supplemental_gen_na-thr0.5_drop-na_lininterp0/dim20/thr0/all/data/",
-        "label_path": "./label/supplemental_gen_na-thr0.5_drop-na_lininterp0/dim20/thr0/all/label/",
-        "supplemental": True,
-    },
-    "supplemental_gen_na-thr0.5_drop-na_lininterp1": {
-        "data_path": "./data/supplemental_gen_na-thr0.5_drop-na_lininterp1/dim20/thr0/all/data/",
-        "label_path": "./label/supplemental_gen_na-thr0.5_drop-na_lininterp1/dim20/thr0/all/label/",
-        "supplemental": True,
-    },
 }
-# SUPP_GEN_DATA_FILES = 
-# SUPP_GEN_LABEL_FILES = 
-# MAIN_DATA_FILES = "./data/main/dim20/thr0/all/data/"
-# MAIN_LABEL_FILES = "./label/main/dim20/thr0/all/label/"
+
+SUPP_CHAR_MAP_FILE="/data/hmm_modeling/fingerspelling/ContinuousBigram/instr/supplemental_character_to_prediction_index.json"
+MAIN_CHAR_MAP_FILE="/data/hmm_modeling/fingerspelling/ContinuousBigram/instr/main_character_to_prediction_index.json"
 
 MODEL_MACROS_FILE = "newMacros"
 OPTIONS_FILENAME = "options.sh"
@@ -328,14 +322,15 @@ def get_triletters(tokens):
     return triletters
 
 ##### Load JSON Char Maps #####
-def get_char_idx_map(map_file):
+def get_char_idx_map(supplemental=True):
+    map_file = SUPP_CHAR_MAP_FILE if supplemental else MAIN_CHAR_MAP_FILE
     with open(map_file, "r") as f:
         char_idx_map = json.load(f)
 
     return char_idx_map
 
-def get_idx_char_map(map_file):
-    char_idx_map = get_char_idx_map(map_file)
+def get_idx_char_map(supplemental=True):
+    char_idx_map = get_char_idx_map(supplemental)
     idx_char_map = {char_idx_map[key]:key for key in char_idx_map}
     return idx_char_map
 
