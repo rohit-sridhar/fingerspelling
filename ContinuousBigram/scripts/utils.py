@@ -27,76 +27,9 @@ SCRIPTS_ROOT = os.path.join(ROOT, "scripts")
 #### These are here for import data (to create hard links)
 # SUPP_DATA_FILES = "./data/supplemental/dl_cmp/dim20/thr0/all/data/"
 # SUPP_LABEL_FILES = "./label/supplemental/dl_cmp/dim20/thr0/all/label/"
-DATA_FILE_DICT = {
-    "supplemental_gen": {
-        "data_path": "./data/supplemental_gen/dim20/thr0/all/data/",
-        "label_path": "./label/supplemental_gen/dim20/thr0/all/label/",
-        "supplemental": True,
-    },
-    "main_train_drop-na": {
-        "data_path": "./data/main_train_drop-na/dim20/thr0/all/data/",
-        "label_path": "./label/main_train_drop-na/dim20/thr0/all/label/",
-        "supplemental": False,
-    },
-    "main_train_drop-na_lininterp0": {
-        "data_path": "./data/main_train_drop-na_lininterp0/dim20/thr0/all/data/",
-        "label_path": "./label/main_train_drop-na_lininterp0/dim20/thr0/all/label/",
-        "supplemental": False,
-    },
-    "main_train_drop-na_lininterp1": {
-        "data_path": "./data/main_train_drop-na_lininterp1/dim20/thr0/all/data/",
-        "label_path": "./label/main_train_drop-na_lininterp1/dim20/thr0/all/label/",
-        "supplemental": False,
-    },
-    "main_train_na-thr0.3_drop-na": {
-        "data_path": "./data/main_train_na-thr0.3_drop-na/dim20/thr0/all/data/",
-        "label_path": "./label/main_train_na-thr0.3_drop-na/dim20/thr0/all/label/",
-        "supplemental": False,
-    },
-    "main_train_na-thr0.3_drop-na_lininterp0": {
-        "data_path": "./data/main_train_na-thr0.3_drop-na_lininterp0/dim20/thr0/all/data/",
-        "label_path": "./label/main_train_na-thr0.3_drop-na_lininterp0/dim20/thr0/all/label/",
-        "supplemental": False,
-    },
-    "main_train_na-thr0.3_drop-na_lininterp1": {
-        "data_path": "./data/main_train_na-thr0.3_drop-na_lininterp1/dim20/thr0/all/data/",
-        "label_path": "./label/main_train_na-thr0.3_drop-na_lininterp1/dim20/thr0/all/label/",
-        "supplemental": False,
-    },
-    "supplemental_gen_drop-na": {
-        "data_path": "./data/supplemental_gen_drop-na/dim20/thr0/all/data/",
-        "label_path": "./label/supplemental_gen_drop-na/dim20/thr0/all/label/",
-        "supplemental": True,
-    },
-    "supplemental_gen_drop-na_lininterp0": {
-        "data_path": "./data/supplemental_gen_drop-na_lininterp0/dim20/thr0/all/data/",
-        "label_path": "./label/supplemental_gen_drop-na_lininterp0/dim20/thr0/all/label/",
-        "supplemental": True,
-    },
-    "supplemental_gen_drop-na_lininterp1": {
-        "data_path": "./data/supplemental_gen_drop-na_lininterp1/dim20/thr0/all/data/",
-        "label_path": "./label/supplemental_gen_drop-na_lininterp1/dim20/thr0/all/label/",
-        "supplemental": True,
-    },
-    "supplemental_gen_na-thr0.3_drop-na": {
-        "data_path": "./data/supplemental_gen_na-thr0.3_drop-na/dim20/thr0/all/data/",
-        "label_path": "./label/supplemental_gen_na-thr0.3_drop-na/dim20/thr0/all/label/",
-        "supplemental": True,
-    },
-    "supplemental_gen_na-thr0.3_drop-na_lininterp0": {
-        "data_path": "./data/supplemental_gen_na-thr0.3_drop-na_lininterp0/dim20/thr0/all/data/",
-        "label_path": "./label/supplemental_gen_na-thr0.3_drop-na_lininterp0/dim20/thr0/all/label/",
-        "supplemental": True,
-    },
-    "supplemental_gen_na-thr0.3_drop-na_lininterp1": {
-        "data_path": "./data/supplemental_gen_na-thr0.3_drop-na_lininterp1/dim20/thr0/all/data/",
-        "label_path": "./label/supplemental_gen_na-thr0.3_drop-na_lininterp1/dim20/thr0/all/label/",
-        "supplemental": True,
-    },
-}
-
-SUPP_CHAR_MAP_FILE="/data/hmm_modeling/fingerspelling/ContinuousBigram/instr/supplemental_character_to_prediction_index.json"
-MAIN_CHAR_MAP_FILE="/data/hmm_modeling/fingerspelling/ContinuousBigram/instr/main_character_to_prediction_index.json"
+DATA_FILE_DICT_FILE = os.path.join(ROOT, "scripts/util/data_file_dict.json")
+SUPP_CHAR_MAP_FILE = os.path.join(ROOT, "scripts/util/supplemental_character_to_prediction_index.json")
+MAIN_CHAR_MAP_FILE = os.path.join(ROOT, "scripts/util/main_character_to_prediction_index.json")
 
 MODEL_MACROS_FILE = "newMacros"
 OPTIONS_FILENAME = "options.sh"
@@ -322,15 +255,21 @@ def get_triletters(tokens):
     return triletters
 
 ##### Load JSON Char Maps #####
-def get_char_idx_map(supplemental=True):
-    map_file = SUPP_CHAR_MAP_FILE if supplemental else MAIN_CHAR_MAP_FILE
-    with open(map_file, "r") as f:
-        char_idx_map = json.load(f)
+def load_json_file(filename):
+    with open(filename, "r") as f:
+        json_data = json.load(f)
+    return json_data
 
-    return char_idx_map
+# TODO replace function below and use above.
+# def get_char_idx_map(supplemental=True):
+#     with open(map_file, "r") as f:
+#         char_idx_map = json.load(f)
+# 
+#     return char_idx_map
 
 def get_idx_char_map(supplemental=True):
-    char_idx_map = get_char_idx_map(supplemental)
+    map_file = SUPP_CHAR_MAP_FILE if supplemental else MAIN_CHAR_MAP_FILE
+    char_idx_map = load_json_file(map_file)
     idx_char_map = {char_idx_map[key]:key for key in char_idx_map}
     return idx_char_map
 

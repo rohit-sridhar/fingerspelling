@@ -427,22 +427,11 @@ def import_data(new_data_loc, new_label_loc):
     dl_seq_ids = df.index.to_list()
     
     dataset = new_data_loc.split(os.path.sep)[1]
-    data_path = DATA_FILE_DICT[dataset]["data_path"]
-    label_path = DATA_FILE_DICT[dataset]["label_path"]
-    supplemental = DATA_FILE_DICT[dataset]["supplemental"]
     
-    # if "/supplemental/" in new_data_loc:
-    #     data_path = SUPP_DATA_FILES
-    #     label_path = SUPP_LABEL_FILES
-    #     supplemental = True
-    # elif "/supplemental_gen/" in new_data_loc:
-    #     data_path = SUPP_GEN_DATA_FILES
-    #     label_path = SUPP_GEN_LABEL_FILES
-    #     supplemental = True
-    # else:
-    #     data_path = ALL_DATA_PATH
-    #     label_path = ALL_LABEL_PATH
-    #     supplemental = False
+    data_file_dict = load_json_file(DATA_FILE_DICT_FILE)
+    data_path = data_file_dict[dataset]["data_path"]
+    label_path = data_file_dict[dataset]["label_path"]
+    supplemental = data_file_dict[dataset]["supplemental"]
     
     idx_char_map = get_idx_char_map(supplemental)
     for seq_id in tqdm(dl_seq_ids):
