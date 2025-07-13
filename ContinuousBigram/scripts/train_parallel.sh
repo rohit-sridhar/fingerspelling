@@ -204,7 +204,7 @@ if [[ $TRAIN_TEST_VALIDATION = "LEAVE_ONE_OUT" ]] || [[ $TRAIN_TEST_VALIDATION =
 	echo "OVERALL RESULTS" >> ${LOG_RESULTS}
 	echo "==========================================================" >> ${LOG_RESULTS}
 
-	${HTKBIN}HResults -A -e "???" sil -T $TRACE_LEVEL -t -I $MLF_LOCATION_ORIGINAL \
+	${HTKBIN}HResults -A -e "???" $ENTER "???" $EXIT -T $TRACE_LEVEL -t -I $MLF_LOCATION_ORIGINAL \
 		-p $TOKENS_ORIGINAL ${BASE_OUTPUT_MLF}-all >> $LOG_RESULTS
 
 	if [[ $WORD_LEVEL = "yes" ]] || [[ $WORD_LEVEL = "1" ]]; then
@@ -216,7 +216,7 @@ if [[ $TRAIN_TEST_VALIDATION = "LEAVE_ONE_OUT" ]] || [[ $TRAIN_TEST_VALIDATION =
 		echo "==========================================================" >> ${LOG_RESULTS_WORD}
 		echo "OVERALL RESULTS" >> ${LOG_RESULTS_WORD}
 		echo "==========================================================" >> ${LOG_RESULTS_WORD}
-		${HTKBIN}HResults -A -e "???" sil -e "???" _ -T $TRACE_LEVEL -t -I $MLF_LOCATION_WORD \
+		${HTKBIN}HResults -A -e "???" $ENTER "???" $EXIT -e "???" $SP -T $TRACE_LEVEL -t -I $MLF_LOCATION_WORD \
 			$TOKENS_WORD ${BASE_OUTPUT_MLF_WORD}-all >> ${LOG_RESULTS_WORD}
 	fi
 fi

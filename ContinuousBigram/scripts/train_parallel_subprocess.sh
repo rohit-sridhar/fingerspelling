@@ -304,11 +304,11 @@ echo "*****************************************************"
 # parameters= MLF file to load
 ############################################################################## 
 
-${HTKBIN}HResults -A -e "???" sil -T $TRACE_LEVEL -t -I $MLF_LOCATION_ORIGINAL \
+${HTKBIN}HResults -A -e "???" $ENTER "???" $EXIT -e "???" $SP -T $TRACE_LEVEL -t -I $MLF_LOCATION_ORIGINAL \
  	-p $TOKENS_ORIGINAL $OUTPUT_MLF >> $LOG_RESULTS
 
 if [[ $WORD_LEVEL = "yes" ]] || [[ $WORD_LEVEL = "1" ]]; then
-	${HTKBIN}HResults -A -e "???" sil -e "???" _ -T $TRACE_LEVEL -t -I $MLF_LOCATION_WORD \
+	${HTKBIN}HResults -A -e "???" $ENTER "???" $EXIT -e "???" $SP -T $TRACE_LEVEL -t -I $MLF_LOCATION_WORD \
 		$TOKENS_WORD $OUTPUT_MLF_WORD >> $LOG_RESULTS_WORD
 fi
 	

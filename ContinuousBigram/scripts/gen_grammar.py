@@ -110,7 +110,7 @@ def write_word_grammar(tokens):
     line_1 = f"$word = {token_options};\n"
     
     if args.grammar_file.endswith("grammar_word_isolated"):
-        line_2 = f"({ENTER} {{ $word _ }} $word {EXIT})\n"
+        line_2 = f"({ENTER} {{ $word {SPACE} }} $word {EXIT})\n"
     elif args.grammar_file.endswith("grammar_word_isolated_sksp"):
         line_2 = f"({ENTER} {{ $word }} $word {EXIT})\n"
     elif args.grammar_file.endswith("grammar_word_isolated_whole"):

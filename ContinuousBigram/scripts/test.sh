@@ -165,9 +165,9 @@ if [[ $MULTI_PROCESS = "yes" ]]; then
     
     if [[ $WORD_LEVEL = "yes" ]] || [[ $WORD_LEVEL = "1" ]]; then
         output_mlfs_word=`find ${EXT_DIR} -type f -wholename "$OUTPUT_MLF_WORD.*"`
-    	# ${HTKBIN}HResults -A -e "???" $ENTER -e "???" $EXIT -e "???" _ -T $TRACE_LEVEL -t -I $MLF_LOCATION_WORD \
+    	# ${HTKBIN}HResults -A -e "???" $ENTER -e "???" $EXIT -e "???" $SP -T $TRACE_LEVEL -t -I $MLF_LOCATION_WORD \
     	# 	$TOKENS_WORD $output_mlfs_word >> $WORD_RESULTS_FILE
-    	${HTKBIN}HResults -A -e "???" $ENTER -e "???" $EXIT -e "???" _ -T $TRACE_LEVEL -t -I $MLF_LOCATION_WORD \
+    	${HTKBIN}HResults -A -e "???" $ENTER -e "???" $EXIT -e "???" $SP -T $TRACE_LEVEL -t -I $MLF_LOCATION_WORD \
      	    $TOKENS_WORD $output_mlfs_word >> $WORD_RESULTS_FILE
     fi
 else
@@ -175,7 +175,7 @@ else
      	-p $TOKENS_ORIGINAL $OUTPUT_MLF >> $LETTER_RESULTS_FILE
     
     if [[ $WORD_LEVEL = "yes" ]] || [[ $WORD_LEVEL = "1" ]]; then
-    	${HTKBIN}HResults -A -e "???" $ENTER -e "???" $EXIT -e "???" _ -T $TRACE_LEVEL -t -I $MLF_LOCATION_WORD \
+    	${HTKBIN}HResults -A -e "???" $ENTER -e "???" $EXIT -e "???" $SP -T $TRACE_LEVEL -t -I $MLF_LOCATION_WORD \
     		$TOKENS_WORD $OUTPUT_MLF_WORD >> $WORD_RESULTS_FILE
     fi
 fi
