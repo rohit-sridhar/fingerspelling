@@ -10,8 +10,7 @@ if [[ $1 != "supplemental_gen" && $1 != "main_train" ]]; then
 fi
 
 base_dataset=$1
-# typeset -a datasets=(${base_dataset}_drop-na_lininterp0 ${base_dataset}_na-thr0.3_drop-na_lininterp0)
-typeset -a datasets=(${base_dataset}_drop-na_lininterp1 ${base_dataset}_na-thr0.3_drop-na_lininterp1)
+typeset -a datasets=(${base_dataset}_drop-na_lininterp0 ${base_dataset}_na-thr0.3_drop-na_lininterp0 ${base_dataset}_drop-na_lininterp1 ${base_dataset}_na-thr0.3_drop-na_lininterp1)
 
 echo ""
 echo "STARTING IMPORT"

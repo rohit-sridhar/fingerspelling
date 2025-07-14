@@ -2,7 +2,10 @@
 
 import argparse
 import json
+import sys
 import pandas as pd
+
+sys.path.append("/data/hmm_modeling/fingerspelling/ContinuousBigram/scripts")
 
 from pathlib import Path
 from utils import *
