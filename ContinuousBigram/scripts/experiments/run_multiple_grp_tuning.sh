@@ -1,17 +1,23 @@
 #!/bin/bash
 
-. ./scripts/experiments/utils.sh
+ROOT=/data/hmm_modeling/fingerspelling/ContinuousBigram
+. ${ROOT}/scripts/experiments/utils.sh
 
-base_dataset=supplemental_gen
-output_dir="grp_rnd_results/tot/${base_dataset}"
+if [[ $1 != "supplemental_gen" && $1 != "main_train" ]]; then
+    echo "you can only pass supplemental_gen or main_train as the first arg for now. tbd add more datasets"
+    exit 1
+fi
 
 ##### For Grp Rnd
-typeset -a datasets=(${base_dataset}_drop-na ${base_dataset}_drop-na_lininterp1 ${base_dataset}_na-thr0.3_drop-na ${base_dataset}_na-thr0.3_drop-na_lininterp1 ${base_dataset}_na-thr0.5_drop-na ${base_dataset}_na-thr0.5_drop-na_lininterp1)
+base_dataset=$1
+typeset -a datasets=(${base_dataset}_drop-na_lininterp0 ${base_dataset}_na-thr0.3_drop-na_lininterp0 ${base_dataset}_drop-na_lininterp1 ${base_dataset}_na-thr0.3_drop-na_lininterp1)
 typeset -a pt_grps=(grp.rnd*.2 grp.rnd*.3 grp.rnd*.6 grp.rnd*.12)
 typeset -a seeds=(1248)
-typeset -a thresholds=(0)
+typeset -a thresholds=(0 1)
 
 ############################## TRAIN MULTIPLE GRP RND ##############################
+
+output_dir="grp_rnd_results/tot/${base_dataset}"
 
 # Assumes we're in ContinuousBigram dir
 if [ ! -d "results/${output_dir}" ]; then

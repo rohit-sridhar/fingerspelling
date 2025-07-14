@@ -1,7 +1,6 @@
 #!/bin/bash
 
 ROOT=/data/hmm_modeling/fingerspelling/ContinuousBigram
-
 . ${ROOT}/scripts/experiments/utils.sh
 
 if [[ $1 != "supplemental_gen" && $1 != "main_train" ]]; then
