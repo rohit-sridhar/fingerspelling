@@ -28,8 +28,8 @@ SCRIPTS_ROOT = os.path.join(ROOT, "scripts")
 # SUPP_DATA_FILES = "./data/supplemental/dl_cmp/dim20/thr0/all/data/"
 # SUPP_LABEL_FILES = "./label/supplemental/dl_cmp/dim20/thr0/all/label/"
 DATA_FILE_DICT_FILE = os.path.join(ROOT, "scripts/util/data_file_dict.json")
-SUPP_CHAR_MAP_FILE = os.path.join(ROOT, "scripts/util/supplemental_character_to_prediction_index.json")
-MAIN_CHAR_MAP_FILE = os.path.join(ROOT, "scripts/util/main_character_to_prediction_index.json")
+SUPP_IDX_MAP_FILE = os.path.join(ROOT, "scripts/util/supplemental_prediction_index_to_character.json")
+MAIN_IDX_MAP_FILE = os.path.join(ROOT, "scripts/util/main_prediction_index_to_character.json")
 
 MODEL_MACROS_FILE = "newMacros"
 OPTIONS_FILENAME = "options.sh"
@@ -268,9 +268,8 @@ def load_json_file(filename):
 #     return char_idx_map
 
 def get_idx_char_map(supplemental=True):
-    map_file = SUPP_CHAR_MAP_FILE if supplemental else MAIN_CHAR_MAP_FILE
-    char_idx_map = load_json_file(map_file)
-    idx_char_map = {char_idx_map[key]:key for key in char_idx_map}
+    map_file = SUPP_IDX_MAP_FILE if supplemental else MAIN_IDX_MAP_FILE
+    idx_char_map = load_json_file(map_file)
     return idx_char_map
 
 ##### DATA AUGMENTATION UTILS #####

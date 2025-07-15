@@ -411,14 +411,15 @@ def get_labels(df, seq_id, idx_char_map, supplemental=True):
     phrase = []
 
     for idx in idx_labels:
-        if (idx == 27 and supplemental) or (idx == 59):
-            phrase.append(ENTER + "\n")
-        elif (idx == 28 and supplemental) or (idx == 60):
-            phrase.append(EXIT + "\n")
-        elif idx == 0:
-            phrase.append(SPACE + "\n")
-        else:
-            phrase.append(idx_char_map[idx] + "\n")
+        # if (idx == 27 and supplemental) or (idx == 59):
+        #     phrase.append(ENTER + "\n")
+        # elif (idx == 28 and supplemental) or (idx == 60):
+        #     phrase.append(EXIT + "\n")
+        # elif idx == 0:
+        #     phrase.append(SPACE + "\n")
+        # else:
+        #     phrase.append(idx_char_map[idx] + "\n")
+        phrase.append(idx_char_map[str(idx)] + "\n")
     
     return phrase
 

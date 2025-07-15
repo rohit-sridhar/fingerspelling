@@ -42,10 +42,6 @@ class TestJSONUtils(unittest.TestCase):
         self.assertEqual(is_supplemental, False)
         self.assertEqual(supp_gen_path.startswith(self.supp_gen_path), True)
 
-        supp_char_idx = load_json_file(SUPP_CHAR_MAP_FILE)
-        self.assertEqual(supp_char_idx['c'], 3)
-        self.assertEqual(supp_char_idx['y'], 25)
-
 if __name__ == "__main__":
     unittest.main()
 
