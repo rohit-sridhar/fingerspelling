@@ -406,22 +406,6 @@ def get_landmarks(df, seq_id):
     
     return landmarks
 
-# def get_labels(df, seq_id, idx_char_map, supplemental=True):
-#     idx_labels = np.array(df.loc[seq_id].phrase).tolist()
-#     phrase = []
-# 
-#     for idx in idx_labels:
-#         if (idx == 27 and supplemental) or (idx == 59):
-#             phrase.append(ENTER + "\n")
-#         elif (idx == 28 and supplemental) or (idx == 60):
-#             phrase.append(EXIT + "\n")
-#         elif idx == 0:
-#             phrase.append(SPACE + "\n")
-#         else:
-#             phrase.append(idx_char_map[idx] + "\n")
-#     
-#     return phrase
-
 def import_data(new_data_loc, new_label_loc):
     df = pd.read_parquet(args.import_data_loc)
     dl_seq_ids = df.index.to_list()
