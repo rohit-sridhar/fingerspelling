@@ -1,4 +1,4 @@
-#!/opt/conda/envs/fingerspelling/bin/python
+#!/usr/bin/env python
 
 import argparse
 import os
@@ -69,7 +69,7 @@ def parse_args():
     #     required=required_by_set("--method", {"import"}),
     #     help="Maps characters to indices and vice versa (only for import method)."
     # )
-
+    # 
     parser.add_argument(
         "--data_aug_map",
         type=str,
@@ -395,7 +395,7 @@ def match_triletters(datafile, label_file, commands_triletters):
 
 ############### IMPORT DATA FUNCTIONS ###############
 def get_landmarks(df, seq_id):
-    landmarks = np.array(df.loc[seq_id].all_landmarks) * 100
+    landmarks = np.vstack(df.loc[seq_id].all_landmarks) * 100
     
     # Gets the deltas
     landmarks = landmarks[1:,:] - landmarks[:-1,:]
@@ -406,34 +406,34 @@ def get_landmarks(df, seq_id):
     
     return landmarks
 
-def get_labels(df, seq_id, idx_char_map, supplemental=True):
-    idx_labels = np.array(df.loc[seq_id].phrase).tolist()
-    phrase = []
-
-    for idx in idx_labels:
-        if (idx == 27 and supplemental) or (idx == 59):
-            phrase.append(ENTER + "\n")
-        elif (idx == 28 and supplemental) or (idx == 60):
-            phrase.append(EXIT + "\n")
-        elif idx == 0:
-            phrase.append(SPACE + "\n")
-        else:
-            phrase.append(idx_char_map[idx] + "\n")
-    
-    return phrase
+# def get_labels(df, seq_id, idx_char_map, supplemental=True):
+#     idx_labels = np.array(df.loc[seq_id].phrase).tolist()
+#     phrase = []
+# 
+#     for idx in idx_labels:
+#         if (idx == 27 and supplemental) or (idx == 59):
+#             phrase.append(ENTER + "\n")
+#         elif (idx == 28 and supplemental) or (idx == 60):
+#             phrase.append(EXIT + "\n")
+#         elif idx == 0:
+#             phrase.append(SPACE + "\n")
+#         else:
+#             phrase.append(idx_char_map[idx] + "\n")
+#     
+#     return phrase
 
 def import_data(new_data_loc, new_label_loc):
-    df = pd.read_pickle(args.import_data_loc)
+    df = pd.read_parquet(args.import_data_loc)
     dl_seq_ids = df.index.to_list()
     
-    dataset = new_data_loc.split(os.path.sep)[1]
-    
+    dataset = "_".join(new_data_loc.split(os.path.sep)[1:3])
+
     data_file_dict = load_json_file(DATA_FILE_DICT_FILE)
     data_path = data_file_dict[dataset]["data_path"]
     label_path = data_file_dict[dataset]["label_path"]
-    supplemental = data_file_dict[dataset]["supplemental"]
+    supplemental = is_supplemental(new_data_loc)
     
-    idx_char_map = get_idx_char_map(supplemental)
+    # idx_char_map = get_idx_char_map(supplemental)
     for seq_id in tqdm(dl_seq_ids):
         new_datafile = os.path.join(new_data_loc, str(seq_id))
         new_label_file = os.path.join(new_label_loc, str(seq_id) + ".lab")
@@ -446,7 +446,8 @@ def import_data(new_data_loc, new_label_loc):
             os.link(label_file, new_label_file)
         else:
             landmarks = get_landmarks(df, seq_id)
-            phrase = get_labels(df, seq_id, idx_char_map, supplemental)
+            phrase = [ENTER] + [c for c in df.loc[seq_id].phrase] + [EXIT]
+            # phrase = get_labels(df, seq_id, idx_char_map, supplemental)
             
             with open(new_datafile, 'w') as f:
                 f.writelines(landmarks)

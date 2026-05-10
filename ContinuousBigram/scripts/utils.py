@@ -50,6 +50,9 @@ IP_VARNAME = "INSERT_PENALTY"
 NUM_ITS_VARNAME = "NUM_HMM_DIR"
 NUM_TRI_ITS_VARNAME = "TRI_ITERATIONS"
 HMMDEF_VARNAME = "HMM_LOCATION"
+HMMSIL_VARNAME = "HMM_SIL"
+HMMSP_VARNAME = "HMM_SP"
+VECTOR_LENGTH_VARNAME = "VECTOR_LENGTH"
 LOG_LETTER_VARNAME = "LOG_RESULTS"
 LOG_WORD_VARNAME = "LOG_RESULTS_WORD"
 NGRAM_WORD_VARNAME = "NGRAM"
@@ -180,6 +183,8 @@ def run_subprocess(cmd, live_print=True):
             print(result.stderr)
 
 ##### SUBDIRECTORY UTILS #####
+def is_supplemental(path):
+    return "supplemental_gen" in path
 
 # Makes a dir if it doesn't exist. If it does exist, makes dir based
 # on arg rmdir
@@ -266,12 +271,12 @@ def load_json_file(filename):
 #         char_idx_map = json.load(f)
 # 
 #     return char_idx_map
-
-def get_idx_char_map(supplemental=True):
-    map_file = SUPP_CHAR_MAP_FILE if supplemental else MAIN_CHAR_MAP_FILE
-    char_idx_map = load_json_file(map_file)
-    idx_char_map = {char_idx_map[key]:key for key in char_idx_map}
-    return idx_char_map
+# 
+# def get_idx_char_map(supplemental=True):
+#     map_file = SUPP_CHAR_MAP_FILE if supplemental else MAIN_CHAR_MAP_FILE
+#     char_idx_map = load_json_file(map_file)
+#     idx_char_map = {char_idx_map[key]:key for key in char_idx_map}
+#     return idx_char_map
 
 ##### DATA AUGMENTATION UTILS #####
 def get_data_aug_entry(start_seq, augmentation, end_seq):

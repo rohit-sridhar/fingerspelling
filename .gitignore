@@ -195,9 +195,8 @@ ContinuousBigram/dict
 ContinuousBigram/grammar
 ContinuousBigram/commands
 ContinuousBigram/output
-ContinuousBigram/visualization/videos
-ContinuousBigram/visualization/overlay_videos
-ContinuousBigram/visualization/frameview
+ContinuousBigram/scripts/segmentation/videos
+ContinuousBigram/scripts/segmentation/dataset
 
 # Only ignore the old bigram files
 ContinuousBigram/scripts/make_bigram.old*

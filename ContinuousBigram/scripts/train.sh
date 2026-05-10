@@ -62,25 +62,25 @@ fi
 
 # Overwrites the choice made above because whole_word contains
 # no spaces. 
-if [[ $WHOLE_WORD == "yes" ]]; then
-    # Grammar files
-    GRAMMARFILE=$GRAMMARFILE_WHOLE
-    GRAMMARFILE_WORD=$GRAMMARFILE_WORD_WHOLE
-
-    # Dict files
-    DICTFILE=$DICTFILE_WHOLE
-    DICTFILE_WORD=$DICTFILE_WORD_WHOLE
-
-    # Tokens files
-    TOKENS_ORIGINAL=$TOKENS_ORIGINAL_WHOLE
-    TOKENS=$TOKENS_WHOLE
-    TOKENS_WORD=$TOKENS_WORD_WHOLE
-
-    # MLF files
-    MLF_LOCATION=$MLF_LOCATION_WHOLE
-    MLF_LOCATION_WORD=$MLF_LOCATION_WORD_WHOLE
-    MLF_LOCATION_ORIGINAL=$MLF_LOCATION_ORIGINAL_WHOLE
-fi
+# if [[ $WHOLE_WORD == "yes" ]]; then
+#     # Grammar files
+#     GRAMMARFILE=$GRAMMARFILE_WHOLE
+#     GRAMMARFILE_WORD=$GRAMMARFILE_WORD_WHOLE
+# 
+#     # Dict files
+#     DICTFILE=$DICTFILE_WHOLE
+#     DICTFILE_WORD=$DICTFILE_WORD_WHOLE
+# 
+#     # Tokens files
+#     TOKENS_ORIGINAL=$TOKENS_ORIGINAL_WHOLE
+#     TOKENS=$TOKENS_WHOLE
+#     TOKENS_WORD=$TOKENS_WORD_WHOLE
+# 
+#     # MLF files
+#     MLF_LOCATION=$MLF_LOCATION_WHOLE
+#     MLF_LOCATION_WORD=$MLF_LOCATION_WORD_WHOLE
+#     MLF_LOCATION_ORIGINAL=$MLF_LOCATION_ORIGINAL_WHOLE
+# fi
 
 echo "GRAMMARFILE: $GRAMMARFILE"
 echo "GRAMMARFILE_WORD: $GRAMMARFILE_WORD"
@@ -532,7 +532,7 @@ if [[ $TRILETTER = "yes" ]] || [[ $TRILETTER = "1" ]]; then
     	        ${HTKBIN}HERest -v $MIN_VARIANCE \
 		            -A -T $TRACE_LEVEL -S $train_file -p $i	  \
 		            $HMM_LOAD_OPT $HMM_TRAINING.$hmm_count/$HMM_MACRO 	  \
-		            -M $HMM_TRAINING.$next_dir -I $MLF_LOCATION ${TOKENS_ALL} &
+		            -M $HMM_TRAINING.$next_dir -I $MLF_LOCATION ${TOKENS} &
                 pid+=("$!")
                 i=$((i+1))
             done
@@ -542,12 +542,12 @@ if [[ $TRILETTER = "yes" ]] || [[ $TRILETTER = "1" ]]; then
 		        -A -T $TRACE_LEVEL -p 0	  \
 		        $HMM_LOAD_OPT $HMM_TRAINING.$hmm_count/$HMM_MACRO 	  \
 		        -M $HMM_TRAINING.$next_dir -I $MLF_LOCATION  \
-                ${TOKENS_ALL} $HMM_TRAINING.$next_dir/HER*.acc
+                ${TOKENS} $HMM_TRAINING.$next_dir/HER*.acc
         else
     	    ${HTKBIN}HERest -v $MIN_VARIANCE \
 		        -A -T $TRACE_LEVEL -S $TRAINING		  \
 		        $HMM_LOAD_OPT $HMM_TRAINING.$hmm_count/$HMM_MACRO 	  \
-		        -M $HMM_TRAINING.$next_dir -I $MLF_LOCATION ${TOKENS_ALL}
+		        -M $HMM_TRAINING.$next_dir -I $MLF_LOCATION ${TOKENS}
         fi
     	hmm_count=$((hmm_count+1))
     done
@@ -562,7 +562,7 @@ if [[ $TRILETTER = "yes" ]] || [[ $TRILETTER = "1" ]]; then
             ${HTKBIN}HERest -v $MIN_VARIANCE -p $i \
 	        	    -A -T $TRACE_LEVEL -S $train_file -s $STATS	  \
 	        	    $HMM_LOAD_OPT $HMM_TRAINING.$hmm_count/$HMM_MACRO 	  \
-	        	    -M $HMM_TRAINING.$next_dir -I $MLF_LOCATION ${TOKENS_ALL} &
+	        	    -M $HMM_TRAINING.$next_dir -I $MLF_LOCATION ${TOKENS} &
             pid+=("$!")
             i=$((i+1))
         done
@@ -572,17 +572,17 @@ if [[ $TRILETTER = "yes" ]] || [[ $TRILETTER = "1" ]]; then
 	    	    -A -T $TRACE_LEVEL	-s $STATS	  \
 	    	    $HMM_LOAD_OPT $HMM_TRAINING.$hmm_count/$HMM_MACRO 	  \
 	    	    -M $HMM_TRAINING.$next_dir -I $MLF_LOCATION  \
-                ${TOKENS_ALL} $HMM_TRAINING.$next_dir/HER*.acc
+                ${TOKENS} $HMM_TRAINING.$next_dir/HER*.acc
 	else
         ${HTKBIN}HERest -v $MIN_VARIANCE \
 	    	    -A -T $TRACE_LEVEL -S $TRAINING	-s $STATS	  \
 	    	    $HMM_LOAD_OPT $HMM_TRAINING.$hmm_count/$HMM_MACRO 	  \
-	    	    -M $HMM_TRAINING.$next_dir -I $MLF_LOCATION ${TOKENS_ALL}
+	    	    -M $HMM_TRAINING.$next_dir -I $MLF_LOCATION ${TOKENS}
     fi
 	hmm_count=$((hmm_count+1))
 
 	# next_dir=$((hmm_count+1))
-	# HHEd -A -T $TRACE_LEVEL $HMM_LOAD_OPT $HMM_TRAINING.$hmm_count/$HMM_MACRO -M $HMM_TRAINING.$next_dir $HEDFILE2 ${TOKENS_ALL}
+	# HHEd -A -T $TRACE_LEVEL $HMM_LOAD_OPT $HMM_TRAINING.$hmm_count/$HMM_MACRO -M $HMM_TRAINING.$next_dir $HEDFILE2 ${TOKENS}
 	# hmm_count=$((hmm_count+1))
 
 	# Force-align MLFs
@@ -605,7 +605,7 @@ if [[ $TRILETTER = "yes" ]] || [[ $TRILETTER = "1" ]]; then
                 ${HTKBIN}HERest -v $MIN_VARIANCE -p $i \
 		            -A -T $TRACE_LEVEL -S $train_file		  \
 		            $HMM_LOAD_OPT $HMM_TRAINING.$hmm_count/$HMM_MACRO 	  \
-		            -M $HMM_TRAINING.$next_dir -I $MLF_LOCATION ${TOKENS_ALL} &
+		            -M $HMM_TRAINING.$next_dir -I $MLF_LOCATION ${TOKENS} &
                 pid+=("$!")
                 i=$((i+1))
             done
@@ -615,12 +615,12 @@ if [[ $TRILETTER = "yes" ]] || [[ $TRILETTER = "1" ]]; then
 		        -A -T $TRACE_LEVEL                  \
 		        $HMM_LOAD_OPT $HMM_TRAINING.$hmm_count/$HMM_MACRO 	  \
 		        -M $HMM_TRAINING.$next_dir -I $MLF_LOCATION  \
-                ${TOKENS_ALL} $HMM_TRAINING.$next_dir/HER*.acc
+                ${TOKENS} $HMM_TRAINING.$next_dir/HER*.acc
         else
     	    ${HTKBIN}HERest -v $MIN_VARIANCE \
 		        -A -T $TRACE_LEVEL -S $TRAINING		  \
 		        $HMM_LOAD_OPT $HMM_TRAINING.$hmm_count/$HMM_MACRO 	  \
-		        -M $HMM_TRAINING.$next_dir -I $MLF_LOCATION ${TOKENS_ALL}
+		        -M $HMM_TRAINING.$next_dir -I $MLF_LOCATION ${TOKENS}
         fi
 
     	hmm_count=$((hmm_count+1))
@@ -629,7 +629,7 @@ if [[ $TRILETTER = "yes" ]] || [[ $TRILETTER = "1" ]]; then
     if [[ $EXPORT_MLF = "yes" ]] || [[ $EXPORT_MLF = "1" ]]; then
 	    ${HTKBIN}HVite -p $INSERT_PENALTY -s $GRAMMAR_SCALE_FACTOR -m -o SWX -A -T $TRACE_LEVEL \
 			$HMM_LOAD_OPT $HMM_TRAINING.$next_dir/$HMM_MACRO \
-			-S $DATA_SAMPLES -I $MLF_LOCATION_ORIGINAL -i ${MLF_LOCATION_GEN}/labels.mlf_export $DICTFILE $TOKENS_ALL
+			-S $DATA_SAMPLES -I $MLF_LOCATION_ORIGINAL -i ${MLF_LOCATION_GEN}/labels.mlf_export $DICTFILE $TOKENS
 	fi
 fi
 
@@ -709,7 +709,7 @@ if [[ $MULTI_PROCESS = "yes" ]]; then
         ${HTKBIN}HVite -p $INSERT_PENALTY -t $PRUNING_THRESHOLD -s $GRAMMAR_SCALE_FACTOR -A -T $TRACE_LEVEL 					\
         	$HMM_LOAD_OPT $HMM_TRAINING.$next_dir/$HMM_MACRO 	\
         	-w $WORD_LATTICE -S $test_file -I $MLF_LOCATION 	\
-        	-i $OUTPUT_MLF_SUB $DICTFILE $TOKENS_ALL &
+        	-i $OUTPUT_MLF_SUB $DICTFILE $TOKENS &
         pid+=("$!")
 
         if [[ $WORD_LEVEL = "yes" ]] || [[ $WORD_LEVEL = "1" ]]; then
@@ -717,7 +717,7 @@ if [[ $MULTI_PROCESS = "yes" ]]; then
         	${HTKBIN}HVite -p $INSERT_PENALTY -s $GRAMMAR_SCALE_FACTOR -A -T $TRACE_LEVEL 					\
         		$HMM_LOAD_OPT $HMM_TRAINING.$next_dir/$HMM_MACRO 	\
         		-w ${WORD_LATTICE}_word -S $test_file -I $MLF_LOCATION 	\
-        		-i $OUTPUT_MLF_WORD_SUB -n 4 20 $DICTFILE_WORD $TOKENS_ALL &
+        		-i $OUTPUT_MLF_WORD_SUB -n 4 20 $DICTFILE_WORD $TOKENS &
             pid+=("$!")
         fi
     done
@@ -727,13 +727,13 @@ else
     ${HTKBIN}HVite -p $INSERT_PENALTY -t $PRUNING_THRESHOLD -s $GRAMMAR_SCALE_FACTOR -A -T $TRACE_LEVEL 					\
     	$HMM_LOAD_OPT $HMM_TRAINING.$next_dir/$HMM_MACRO 	\
     	-w $WORD_LATTICE -S $TESTING -I $MLF_LOCATION 	\
-    	-i $OUTPUT_MLF $DICTFILE $TOKENS_ALL
+    	-i $OUTPUT_MLF $DICTFILE $TOKENS
     
     if [[ $WORD_LEVEL = "yes" ]] || [[ $WORD_LEVEL = "1" ]]; then
     	${HTKBIN}HVite -p $INSERT_PENALTY -s $GRAMMAR_SCALE_FACTOR -A -T $TRACE_LEVEL 					\
     		$HMM_LOAD_OPT $HMM_TRAINING.$next_dir/$HMM_MACRO 	\
     		-w ${WORD_LATTICE}_word -S $TESTING -I $MLF_LOCATION 	\
-    		-i $OUTPUT_MLF_WORD -n 4 20 $DICTFILE_WORD $TOKENS_ALL
+    		-i $OUTPUT_MLF_WORD -n 4 20 $DICTFILE_WORD $TOKENS
     fi
 fi
 

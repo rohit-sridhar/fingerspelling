@@ -1,5 +1,9 @@
 #!/bin/bash
 
+ROOT=/data/hmm_modeling/fingerspelling/ContinuousBigram
+. ${ROOT}/scripts/experiments/utils.sh
+set_vars $1
+
 ##### For all participants
 # typeset -a all_participants=(93 161 227 254 2 242 112 31 9 107 188 13 181 26 195 136 241 109 53 216 89 239 22 111 0 95 38 157 196 15 251 253 219 47 73 121 246 166 141 54 223 213 20 99 40 122 27 245 240 221 33 155 128 250 158 117 6 148 135 143 207 175 81 137 63 184 113 56 51 150 217 203)
 # typeset -a seeds=(1248 2248 3248 4248 5248 6248 7248 8248 9248 10248)
@@ -13,16 +17,14 @@
 # typeset -a interpolations=(1)
 
 base_dataset=supplemental_gen
-output_dir="loocv_results/tot/${base_dataset}/hmmdef_tuning"
+output_dir="loocv_results/tot/${base_dataset}"
 
 ##### For pilot
-# typeset -a datasets=(${base_dataset} ${base_dataset}_na-thr0.3 ${base_dataset}_drop-na ${base_dataset}_na-thr0.3_drop-na)
-typeset -a datasets=(${base_dataset}_na-thr0.3)
-typeset -a all_participants=(ab12 1f86)
 # typeset -a all_participants=(ab12 1f86 3d12 d3ab f066)
+typeset -a all_participants=(ab12)
 typeset -a seeds=(1248)
-typeset -a thresholds=(0 1)
-typeset -a interpolations=(1)
+typeset -a thresholds=(0)
+# typeset -a interpolations=(0)
 
 ##### For debug
 # typeset -a all_participants=(03ad)
@@ -35,60 +37,140 @@ if [ ! -d "results/${output_dir}" ]; then
     mkdir -p "results/${output_dir}"
 fi
 
-############################## TRAIN MULTIPLE NUM ITS TUNING NO INTERPOLATION ##############################
+
+############################## TRAIN MULTIPLE PCA10 FULL COVARIANCE ##############################
 for participant in "${all_participants[@]}"; do
 for dataset in ${datasets[@]}; do
 for seed in "${seeds[@]}"; do
-# pid=()
 for threshold in "${thresholds[@]}"; do
     python scripts/grid_search.py \
-        --data_files ./data/${dataset}/dim20/thr${threshold}/train/loocv/${participant}/sd${seed}/data/ \
-        --hmmdefs 5state-pca20-gmm4 5state-pca20-gmm4-skip 6state-pca20-gmm4 6state-pca20-gmm4-skip \
+        --data_files ./data/${dataset}/pca10/thr${threshold}/train/loocv/${participant}/sd${seed}/data/ \
         --results_csv ./results/${output_dir}/results_loocv-${dataset}_${participant}.csv \
+        --hmmdefs 6state-pca10-gmm1-skip-fullcov 6state-pca10-gmm2-skip-fullcov 6state-pca10-gmm4-skip-fullcov \
         --num_its 1000 --num_tri_its 1000 \
-        --clear_hresults --prepare_data
-#     pid+=("$!")
+        --clear_hresults --prepare_data --full_cov
 done
-# wait "${pid[@]}"
 done
 done
 done
 
-############################## TRAIN MULTIPLE NUM TRI ITS TUNING NO INTERPOLATION ##############################
-for participant in "${all_participants[@]}"; do
-for dataset in ${datasets[@]}; do
-for seed in "${seeds[@]}"; do
-# pid=()
-for threshold in "${thresholds[@]}"; do
-    python scripts/grid_search.py \
-        --data_files ./data/${dataset}/dim20/thr${threshold}/train/loocv/${participant}/sd${seed}/data/ \
-        --hmmdefs 5state-pca20-gmm4 5state-pca20-gmm4-skip 6state-pca20-gmm4 6state-pca20-gmm4-skip \
-        --results_csv ./results/${output_dir}/results_loocv-${dataset}_${participant}.csv \
-        --num_its 1000 --num_tri_its 1000 \
-        --clear_hresults --prepare_data
-#     pid+=("$!")
-done
-# wait "${pid[@]}"
-done
-done
-done
-
-############################## TRAIN MULTIPLE WITH INTERPOLATION ##############################
+############################## TRAIN MULTIPLE DIM20;PCA10;POL20;PCAPOL10 ##############################
+# for participant in "${all_participants[@]}"; do
 # for dataset in ${datasets[@]}; do
 # for seed in "${seeds[@]}"; do
 # for threshold in "${thresholds[@]}"; do
-# for interpolation in "${interpolations[@]}"; do
-# # pid=()
-# for participant in "${all_participants[@]}"; do
 #     python scripts/grid_search.py \
-#         --data_files ./data/${dataset}/dim20/thr${threshold}/train/interpall${interpolation}/loocv/${participant}/sd${seed}/data/ \
-#         --hmmdefs 6state-pca20-gmm2-skip 3state-pca20-gmm2 \
-#         --results_csv ./results/${output_dir}/results_loocv-${dataset}_${participant}_higher_num_its_tuning.csv \
-#         --num_its 3000 --num_tri_its 3000 \
-#         --prepare_data --clear_hresults
-# #     pid+=("$!")
+#         --data_files ./data/${dataset}/dim20/thr${threshold}/train/loocv/${participant}/sd${seed}/data/ \
+#         --hmmdefs 6state-pca20-gmm4-skip \
+#         --results_csv ./results/${output_dir}/results_loocv-${dataset}_${participant}.csv \
+#         --num_its 1000 --num_tri_its 1000 \
+#         --clear_hresults --prepare_data
 # done
-# # wait "${pid[@]}"
+# done
+# done
+# done
+# 
+# for participant in "${all_participants[@]}"; do
+# for dataset in ${datasets[@]}; do
+# for seed in "${seeds[@]}"; do
+# for threshold in "${thresholds[@]}"; do
+#     python scripts/grid_search.py \
+#         --data_files ./data/${dataset}/pol20/thr${threshold}/train/loocv/${participant}/sd${seed}/data/ \
+#         --hmmdefs 6state-pca20-gmm4-skip \
+#         --results_csv ./results/${output_dir}/results_loocv-${dataset}_${participant}.csv \
+#         --num_its 1000 --num_tri_its 1000 \
+#         --clear_hresults --prepare_data
+# done
+# done
+# done
+# done
+# 
+# for participant in "${all_participants[@]}"; do
+# for dataset in ${datasets[@]}; do
+# for seed in "${seeds[@]}"; do
+# for threshold in "${thresholds[@]}"; do
+#     python scripts/grid_search.py \
+#         --data_files ./data/${dataset}/pca10/thr${threshold}/train/loocv/${participant}/sd${seed}/data/ \
+#         --hmmdefs 6state-pca10-gmm4-skip \
+#         --results_csv ./results/${output_dir}/results_loocv-${dataset}_${participant}.csv \
+#         --num_its 1000 --num_tri_its 1000 \
+#         --clear_hresults --prepare_data
+# done
+# done
+# done
+# done
+# 
+# for participant in "${all_participants[@]}"; do
+# for dataset in ${datasets[@]}; do
+# for seed in "${seeds[@]}"; do
+# for threshold in "${thresholds[@]}"; do
+#     python scripts/grid_search.py \
+#         --data_files ./data/${dataset}/pcapol10/thr${threshold}/train/loocv/${participant}/sd${seed}/data/ \
+#         --hmmdefs 6state-pca10-gmm4-skip \
+#         --results_csv ./results/${output_dir}/results_loocv-${dataset}_${participant}.csv \
+#         --num_its 1000 --num_tri_its 1000 \
+#         --clear_hresults --prepare_data
+# done
+# done
+# done
+# done
+
+############################## TRAIN MULTIPLE NUM ITS TUNING DEL20;PCADEL10;DELPOL20;PCADELPOL10 ##############################
+# for participant in "${all_participants[@]}"; do
+# for dataset in ${datasets[@]}; do
+# for seed in "${seeds[@]}"; do
+# for threshold in "${thresholds[@]}"; do
+#     python scripts/grid_search.py \
+#         --data_files ./data/${dataset}/del20/thr${threshold}/train/loocv/${participant}/sd${seed}/data/ \
+#         --hmmdefs 6state-pca20-gmm4-skip \
+#         --results_csv ./results/${output_dir}/results_loocv-${dataset}_${participant}.csv \
+#         --num_its 1000 --num_tri_its 1000 \
+#         --clear_hresults --prepare_data
+# done
+# done
+# done
+# done
+# 
+# for participant in "${all_participants[@]}"; do
+# for dataset in ${datasets[@]}; do
+# for seed in "${seeds[@]}"; do
+# for threshold in "${thresholds[@]}"; do
+#     python scripts/grid_search.py \
+#         --data_files ./data/${dataset}/delpol20/thr${threshold}/train/loocv/${participant}/sd${seed}/data/ \
+#         --hmmdefs 6state-pca20-gmm4-skip \
+#         --results_csv ./results/${output_dir}/results_loocv-${dataset}_${participant}.csv \
+#         --num_its 1000 --num_tri_its 1000 \
+#         --clear_hresults --prepare_data
+# done
+# done
+# done
+# done
+# 
+# for participant in "${all_participants[@]}"; do
+# for dataset in ${datasets[@]}; do
+# for seed in "${seeds[@]}"; do
+# for threshold in "${thresholds[@]}"; do
+#     python scripts/grid_search.py \
+#         --data_files ./data/${dataset}/pcadel10/thr${threshold}/train/loocv/${participant}/sd${seed}/data/ \
+#         --hmmdefs 6state-pca10-gmm4-skip \
+#         --results_csv ./results/${output_dir}/results_loocv-${dataset}_${participant}.csv \
+#         --num_its 1000 --num_tri_its 1000 \
+#         --clear_hresults --prepare_data
+# done
+# done
+# done
+# done
+# 
+# for participant in "${all_participants[@]}"; do
+# for dataset in ${datasets[@]}; do
+# for seed in "${seeds[@]}"; do
+# for threshold in "${thresholds[@]}"; do
+#     python scripts/grid_search.py \
+#         --data_files ./data/${dataset}/pcadelpol10/thr${threshold}/train/loocv/${participant}/sd${seed}/data/ \
+#         --hmmdefs 6state-pca10-gmm4-skip \
+#         --results_csv ./results/${output_dir}/results_loocv-${dataset}_${participant}.csv \
+#         --num_its 1000 --num_tri_its 1000 \
+#         --clear_hresults --prepare_data
 # done
 # done
 # done

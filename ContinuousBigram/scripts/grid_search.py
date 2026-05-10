@@ -101,6 +101,12 @@ def parse_args():
         action='store_true',
         help="If true, won't use custom sil/sp models. custom sil/sp is used by default."
     )
+
+    parser.add_argument(
+        "--full_cov",
+        action='store_true',
+        help="If true, uses hmmdefs with full covariance for sil/sp models."
+    )
     
     parser.add_argument(
         "--no_multi_process",
@@ -271,10 +277,16 @@ def get_hresults_filepaths(name_ext, subdirs, ip):
 
     return (letter_results, word_results)
 
+# get ledfile name (uniq for each hyperparam/data setting)
 def get_ledfile_info(subdirs):
     subdir_arr = subdirs.split(os.path.sep)
     new_subdirs = '_'.join(subdir_arr)
     return new_subdirs
+
+def get_vector_dim(subdirs):
+    vector_dim_str = subdirs.split(os.path.sep)[1]
+    vector_dim = int(re.search(r"[0-9]+", vector_dim_str).group())
+    return vector_dim
 
 # Returns appropriate values for all bool args. Does not
 # do this for triletter (handled separately)
@@ -365,6 +377,10 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     hmmdef_search = HMMDEF_VARNAME + "\s*=\s*\$HMM_TOPOLOGY_DIR\/.+"
     hmmdef_repl = HMMDEF_VARNAME + f"=$HMM_TOPOLOGY_DIR/{hmmdef}"
 
+    models_dir = os.path.join(MODELS_ROOT, subdirs, hmmdef)
+    models_root_search = MODELS_ROOT_VARNAME + "\s*=\s*\$\{PRJ\}\/models.*"
+    models_root_repl = MODELS_ROOT_VARNAME + os.path.join("=${PRJ}", models_dir)
+    
     hedfile1_search = HEDFILE1_VARNAME + "\s*=\s*\$\{PRJ\}\/instr\/mktri1_.*\.hed"
     hedfile1_repl = HEDFILE1_VARNAME + f"={hedfile1}"
     
@@ -413,6 +429,7 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     edit_file(num_its_search, num_its_repl, options_file)
     edit_file(num_tri_its_search, num_tri_its_repl, options_file)
     edit_file(hmmdef_search, hmmdef_repl, options_file)
+    edit_file(models_root_search, models_root_repl, options_file)
     edit_file(letter_results_search, letter_results_repl, options_file)
     edit_file(word_results_search, word_results_repl, options_file)
     edit_file(hedfile1_search, hedfile1_repl, options_file)
@@ -426,11 +443,15 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     edit_file(whole_word_search, whole_word_repl, options_file)
     edit_file(use_phrase_search, use_phrase_repl, options_file)
     
+    # make models dir here
+    make_dir(models_dir)
+    
     print("##### Hyperparameters #####")
     run_subprocess(["grep", "^" + IP_VARNAME + "\s*=\s*", options_file])
     run_subprocess(["grep", "^" + NUM_ITS_VARNAME + "\s*=\s*", options_file])
     run_subprocess(["grep", "^" + NUM_TRI_ITS_VARNAME + "\s*=\s*", options_file])
     run_subprocess(["grep", "^" + HMMDEF_VARNAME + "\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + MODELS_ROOT_VARNAME + "\s*=\s*", options_file])
     run_subprocess(["grep", "^" + LOG_LETTER_VARNAME + "\s*=\s*", options_file])
     run_subprocess(["grep", "^" + LOG_WORD_VARNAME + "\s*=\s*", options_file])
     run_subprocess(["grep", "^" + HEDFILE1_VARNAME + "\s*=\s*", options_file])
@@ -449,18 +470,19 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
 def edit_htk_root_file_options(subdirs):
     options_file = get_options_file(subdirs)
     led_file_info = get_ledfile_info(subdirs)
+    vector_dim = get_vector_dim(subdirs)
     
     # Handle triletter changes separately
     make_triletter_changes(subdirs)
 
-    grammarfile_root_search = GRAMMARFILE_ROOT_VARNAME + "\s*=\s*\$\{PRJ\}\/grammar.*"
-    grammarfile_root_repl = GRAMMARFILE_ROOT_VARNAME + os.path.join("=${PRJ}", GRAMMAR_ROOT, subdirs)
+    # grammarfile_root_search = GRAMMARFILE_ROOT_VARNAME + "\s*=\s*\$\{PRJ\}\/grammar.*"
+    # grammarfile_root_repl = GRAMMARFILE_ROOT_VARNAME + os.path.join("=${PRJ}", GRAMMAR_ROOT, subdirs)
 
-    dictfile_root_search = DICTFILE_ROOT_VARNAME + "\s*=\s*\$\{PRJ\}\/dict.*"
-    dictfile_root_repl = DICTFILE_ROOT_VARNAME + os.path.join("=${PRJ}", DICT_ROOT, subdirs)
-    
-    tokens_root_search = TOKENS_ROOT_VARNAME + "\s*=\s*\$\{PRJ\}\/commands.*"
-    tokens_root_repl = TOKENS_ROOT_VARNAME + os.path.join("=${PRJ}", TOKENS_ROOT, subdirs)
+    # dictfile_root_search = DICTFILE_ROOT_VARNAME + "\s*=\s*\$\{PRJ\}\/dict.*"
+    # dictfile_root_repl = DICTFILE_ROOT_VARNAME + os.path.join("=${PRJ}", DICT_ROOT, subdirs)
+    # 
+    # tokens_root_search = TOKENS_ROOT_VARNAME + "\s*=\s*\$\{PRJ\}\/commands.*"
+    # tokens_root_repl = TOKENS_ROOT_VARNAME + os.path.join("=${PRJ}", TOKENS_ROOT, subdirs)
     
     mlf_root_search = MLF_ROOT_VARNAME + "\s*=\s*\$\{PRJ\}\/mlf.*"
     mlf_root_repl = MLF_ROOT_VARNAME + os.path.join("=${PRJ}", MLF_ROOT, subdirs)
@@ -471,30 +493,42 @@ def edit_htk_root_file_options(subdirs):
     ext_dir_search = EXT_DIR_VARNAME + "\s*=\s*\$\{PRJ\}\/ext.*"
     ext_dir_repl = EXT_DIR_VARNAME + os.path.join("=${PRJ}", EXT_ROOT, subdirs)
     
-    models_root_search = MODELS_ROOT_VARNAME + "\s*=\s*\$\{PRJ\}\/models.*"
-    models_root_repl = MODELS_ROOT_VARNAME + os.path.join("=${PRJ}", MODELS_ROOT, subdirs)
-    
     ledfile_uniq_search = LEDFILE_UNIQ_VARNAME + "\s*=\s*.+"
     ledfile_uniq_repl = LEDFILE_UNIQ_VARNAME + f"={led_file_info}"
 
-    edit_file(grammarfile_root_search, grammarfile_root_repl, options_file)
-    edit_file(dictfile_root_search, dictfile_root_repl, options_file)
-    edit_file(tokens_root_search, tokens_root_repl, options_file)
+    hmmsil_search = HMMSIL_VARNAME + "\s*=\s*\$HMM_TOPOLOGY_DIR\/3state-pca.+"
+    hmmsil_repl = HMMSIL_VARNAME + f"=$HMM_TOPOLOGY_DIR/3state-pca{vector_dim}-sil-skip-loop"
+    hmmsil_repl = hmmsil_repl + "-fullcov" if args.full_cov else hmmsil_repl
+
+    hmmsp_search = HMMSP_VARNAME + "\s*=\s*\$HMM_TOPOLOGY_DIR\/1state-pca.+"
+    hmmsp_repl = HMMSP_VARNAME + f"=$HMM_TOPOLOGY_DIR/1state-pca{vector_dim}-sp"
+    hmmsp_repl = hmmsp_repl + "-fullcov" if args.full_cov else hmmsp_repl
+
+    vector_length_search = VECTOR_LENGTH_VARNAME + "\s*=\s*[0-9]+"
+    vector_length_repl = VECTOR_LENGTH_VARNAME + f"={vector_dim}"
+
+    # edit_file(grammarfile_root_search, grammarfile_root_repl, options_file)
+    # edit_file(dictfile_root_search, dictfile_root_repl, options_file)
+    # edit_file(tokens_root_search, tokens_root_repl, options_file)
     edit_file(mlf_root_search, mlf_root_repl, options_file)
     edit_file(outputfile_root_search, outputfile_root_repl, options_file)
     edit_file(ext_dir_search, ext_dir_repl, options_file)
-    edit_file(models_root_search, models_root_repl, options_file)
     edit_file(ledfile_uniq_search, ledfile_uniq_repl, options_file)
+    edit_file(hmmsil_search, hmmsil_repl, options_file)
+    edit_file(hmmsp_search, hmmsp_repl, options_file)
+    edit_file(vector_length_search, vector_length_repl, options_file)
 
     print("##### Set root files #####")
-    run_subprocess(["grep", GRAMMARFILE_ROOT_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", DICTFILE_ROOT_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", TOKENS_ROOT_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", MLF_ROOT_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", OUTPUTFILE_ROOT_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", EXT_DIR_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", MODELS_ROOT_VARNAME + "\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + GRAMMARFILE_ROOT_VARNAME + "\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + DICTFILE_ROOT_VARNAME + "\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + TOKENS_ROOT_VARNAME + "\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + MLF_ROOT_VARNAME + "\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + OUTPUTFILE_ROOT_VARNAME + "\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + EXT_DIR_VARNAME + "\s*=\s*", options_file])
     run_subprocess(["grep", "^" + LEDFILE_UNIQ_VARNAME + "\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + HMMSIL_VARNAME + "\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + HMMSP_VARNAME + "\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + VECTOR_LENGTH_VARNAME + "\s*=\s*", options_file])
     print("#####\n")
     
     grammar_dir = os.path.join(GRAMMAR_ROOT, subdirs)
@@ -503,7 +537,6 @@ def edit_htk_root_file_options(subdirs):
     mlf_dir = os.path.join(MLF_ROOT, subdirs)
     outputfile_dir = os.path.join(OUTPUT_ROOT, subdirs)
     ext_dir = os.path.join(EXT_ROOT, subdirs)
-    models_dir = os.path.join(MODELS_ROOT, subdirs)
     
     print("##### Create HTK File Directories #####")
     make_dir(grammar_dir)
@@ -512,7 +545,6 @@ def edit_htk_root_file_options(subdirs):
     make_dir(mlf_dir)
     make_dir(outputfile_dir)
     make_dir(ext_dir)
-    make_dir(models_dir)
     print("#####\n")
 
 def test_model(ip, tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
@@ -738,50 +770,50 @@ if __name__ == "__main__":
         if args.prepare_data or args.prepare_data_only:
             prepare_data(data_file, label_file, subdirs)
 
-            done_file = os.path.join(ROOT, GRAMMAR_ROOT, subdirs, "done")
-            if not(os.path.exists(done_file)):
-                print("##### Run gen_grammar.py #####")
-                gen_grammar(
-                    subdirs,
-                    label_file,
-                    grammar_type_arg="word"
-                )
-                
-                gen_grammar(
-                    subdirs,
-                    label_file,
-                    grammar_type_arg="word_sksp"
-                )
+            # done_file = os.path.join(ROOT, GRAMMAR_ROOT, subdirs, "done")
+            # if not(os.path.exists(done_file)):
+            #     print("##### Run gen_grammar.py #####")
+            #     gen_grammar(
+            #         subdirs,
+            #         label_file,
+            #         grammar_type_arg="word"
+            #     )
+            #     
+            #     gen_grammar(
+            #         subdirs,
+            #         label_file,
+            #         grammar_type_arg="word_sksp"
+            #     )
 
-                gen_grammar(
-                    subdirs,
-                    label_file,
-                    grammar_type_arg="word_phrase_sksp"
-                )
-                
-                gen_grammar(
-                    subdirs,
-                    label_file,
-                    grammar_type_arg="word_whole_word"
-                )
-                
-                gen_grammar(
-                    subdirs,
-                    label_file,
-                    grammar_type_arg="letter"
-                )
-                
-                gen_grammar(
-                    subdirs,
-                    label_file,
-                    grammar_type_arg="letter_whole_word"
-                )
-                with open(done_file, "w") as f:
-                    f.write("1\n")
-                print("#####\n")
-            else:
-                print("##### Grammar files exist. Skipping generation #####")
-                print("#####\n")
+            #     gen_grammar(
+            #         subdirs,
+            #         label_file,
+            #         grammar_type_arg="word_phrase_sksp"
+            #     )
+            #     
+            #     gen_grammar(
+            #         subdirs,
+            #         label_file,
+            #         grammar_type_arg="word_whole_word"
+            #     )
+            #     
+            #     gen_grammar(
+            #         subdirs,
+            #         label_file,
+            #         grammar_type_arg="letter"
+            #     )
+            #     
+            #     gen_grammar(
+            #         subdirs,
+            #         label_file,
+            #         grammar_type_arg="letter_whole_word"
+            #     )
+            #     with open(done_file, "w") as f:
+            #         f.write("1\n")
+            #     print("#####\n")
+            # else:
+            #     print("##### Grammar files exist. Skipping generation #####")
+            #     print("#####\n")
         
             # Exit here after prepare_files and gen_grammar finish
             if args.prepare_data_only:

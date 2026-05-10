@@ -23,8 +23,7 @@ SCRIPTS_DIR=${PRJ}/scripts			# location of scripts directory
 UTIL_DIR=/gt2k/utils
                         #
 						#
-# VECTOR_LENGTH=60				# number of elements in your
-VECTOR_LENGTH=20				# number of elements in your
+VECTOR_LENGTH=10				# number of elements in your
 						# feature vector. This is the
 						# number of observations per
 						# state for the HMMs.
@@ -51,10 +50,10 @@ PRUNING_THRESHOLD=0
 HMM_TOPOLOGY_DIR=${PRJ}/hmmdefs
 
 # general HMM_TOPOLOGIES
-HMM_LOCATION=$HMM_TOPOLOGY_DIR/6state-pca20-gmm2
+HMM_LOCATION=$HMM_TOPOLOGY_DIR/6state-pca10-gmm2
 HMM_ALL=$HMM_LOCATION
-HMM_SIL=$HMM_TOPOLOGY_DIR/3state-pca20-sil-skip-loop
-HMM_SP=$HMM_TOPOLOGY_DIR/1state-pca20-sp
+HMM_SIL=$HMM_TOPOLOGY_DIR/3state-pca10-sil-skip-loop
+HMM_SP=$HMM_TOPOLOGY_DIR/1state-pca10-sp
 
 ENTER="sil0"
 EXIT="sil1"
@@ -111,19 +110,19 @@ NUM_TEST_SAMPLES=100
 #################### GRAMMAR FILES ####################
 #######################################################
 
-GRAMMARFILE_ROOT=${PRJ}/grammar/supplemental/dl_cmp/dim20/thr0/train/pt93/sd2248
+GRAMMARFILE_ROOT=${PRJ}/grammar/supplemental_gen_drop-na_lininterp0/dim20/thr0/all
 
 ###### USE FOR TRAINING ######
 GRAMMARFILE=${GRAMMARFILE_ROOT}/grammar_letter_isolated
-GRAMMARFILE_WHOLE=${GRAMMARFILE_ROOT}/grammar_letter_isolated_whole
+# GRAMMARFILE_WHOLE=${GRAMMARFILE_ROOT}/grammar_letter_isolated_whole
 
 GRAMMARFILE_WORD=${GRAMMARFILE_ROOT}/grammar_word_isolated
 GRAMMARFILE_WORD_SKSP=${GRAMMARFILE_ROOT}/grammar_word_isolated_sksp
-GRAMMARFILE_WORD_WHOLE=${GRAMMARFILE_ROOT}/grammar_word_isolated_whole
-GRAMMARFILE_WORD_PHRASE_SKSP=${GRAMMARFILE_ROOT}/grammar_word_phrase_sksp
+# GRAMMARFILE_WORD_WHOLE=${GRAMMARFILE_ROOT}/grammar_word_isolated_whole
+# GRAMMARFILE_WORD_PHRASE_SKSP=${GRAMMARFILE_ROOT}/grammar_word_phrase_sksp
 
 ###### USE FOR CROSS WORD TRILETTER ######
-GRAMMARFILE_WORD_CROSS=${GRAMMARFILE_ROOT}/grammar_word_cross
+# GRAMMARFILE_WORD_CROSS=${GRAMMARFILE_ROOT}/grammar_word_cross
 
 SENTENCES_FILE=${PRJ}/grammar/sentences.txt
 
@@ -131,19 +130,19 @@ SENTENCES_FILE=${PRJ}/grammar/sentences.txt
 ##################### DICT FILES ######################
 #######################################################
 
-DICTFILE_ROOT=${PRJ}/dict/supplemental/dl_cmp/dim20/thr0/train/pt93/sd2248
+DICTFILE_ROOT=${PRJ}/dict/supplemental_gen_drop-na_lininterp0/dim20/thr0/all
 
 ###### USE FOR MAIN TRAINING ######
 DICTFILE=${DICTFILE_ROOT}/dict_tri2letter
-DICTFILE_WHOLE=${DICTFILE_ROOT}/dict_tri2letter_whole
+# DICTFILE_WHOLE=${DICTFILE_ROOT}/dict_tri2letter_whole
 
 DICTFILE_WORD=${DICTFILE_ROOT}/dict_tri2word
 DICTFILE_WORD_SKSP=${DICTFILE_ROOT}/dict_tri2word_sksp
-DICTFILE_WORD_WHOLE=${DICTFILE_ROOT}/dict_tri2word_whole
+# DICTFILE_WORD_WHOLE=${DICTFILE_ROOT}/dict_tri2word_whole
 
 ###### USE FOR CROSS WORD TRILETTER ######
-DICTFILE_CROSS=${DICTFILE_ROOT}/dict_tri2letter_cross
-DICTFILE_CROSS_WORD=${DICTFILE_ROOT}/dict_tri2word_cross
+# DICTFILE_CROSS=${DICTFILE_ROOT}/dict_tri2letter_cross
+# DICTFILE_CROSS_WORD=${DICTFILE_ROOT}/dict_tri2word_cross
 
 ###### USE FOR SINGLE LETTER ######
 # DICTFILE=${PRJ}/dict/dict_letter2letter
@@ -156,30 +155,30 @@ DICTFILE_ALIGN=${DICTFILE_ROOT}/dict_tri2tri # Dictionary used during forced ali
 ################### COMMANDS FILES ####################
 #######################################################
 
-TOKENS_ROOT=${PRJ}/commands/supplemental/dl_cmp/dim20/thr0/train/pt93/sd2248
+TOKENS_ROOT=${PRJ}/commands/supplemental_gen_drop-na_lininterp0/dim20/thr0/all
 
 ###### 
 # USAGE:
 # TOKENS_ORIGINAL is used to initialize letter models. Triletter modeling uses the 
 # TOKENS file during triletter iterations.
 ######
-TOKENS_ALL=${PRJ}/commands/commands_tri_internal.all
+# TOKENS_ALL=${PRJ}/commands/commands_tri_internal.all
 
 ###### USE FOR INITIAL TRAINING ######
 TOKENS_ORIGINAL=${TOKENS_ROOT}/commands_letter
-TOKENS_ORIGINAL_WHOLE=${TOKENS_ROOT}/commands_letter_whole
+# TOKENS_ORIGINAL_WHOLE=${TOKENS_ROOT}/commands_letter_whole
 # TOKENS_ORIGINAL_SKSP=${PRJ}/commands/commands_letter_isolated
 
 ###### USE FOR MAIN TRAINING ######
 TOKENS=${TOKENS_ROOT}/commands_tri_internal
-TOKENS_WHOLE=${TOKENS_ROOT}/commands_tri_internal_whole
+# TOKENS_WHOLE=${TOKENS_ROOT}/commands_tri_internal_whole
 
 TOKENS_WORD=${TOKENS_ROOT}/commands_word
 TOKENS_WORD_SKSP=${TOKENS_ROOT}/commands_word_sksp
-TOKENS_WORD_WHOLE=${TOKENS_ROOT}/commands_word_whole
+# TOKENS_WORD_WHOLE=${TOKENS_ROOT}/commands_word_whole
 
 ###### USE FOR CROSS WORD TRILETTER ######
-TOKENS_CROSS=${TOKENS_ROOT}/commands_tri_cross
+# TOKENS_CROSS=${TOKENS_ROOT}/commands_tri_cross
 
 #######################################################
 ##################### MLF FILES #######################
@@ -191,7 +190,7 @@ TOKENS_CROSS=${TOKENS_ROOT}/commands_tri_cross
 # Triletter modeling uses the MLF_LOCATION file for training.
 ######
 
-MLF_ROOT=${PRJ}/mlf/supplemental/dl_cmp/dim20/thr0/train/pt93/sd2248
+MLF_ROOT=${PRJ}/mlf/supplemental_gen_drop-na_lininterp0/dim20/thr0/all
 
 ###### USE FOR INITIAL TRAINING ######
 # The mlf letter files below BOTH contain spaces
@@ -199,19 +198,19 @@ MLF_ROOT=${PRJ}/mlf/supplemental/dl_cmp/dim20/thr0/train/pt93/sd2248
 
 MLF_LOCATION_ORIGINAL=${MLF_ROOT}/labels.mlf_letter # used for building model and results
 MLF_LOCATION_ORIGINAL_SKSP=${MLF_ROOT}/labels.mlf_letter_sksp # used for building model and results
-MLF_LOCATION_ORIGINAL_WHOLE=${MLF_ROOT}/labels.mlf_letter_whole # used for building model and results
+# MLF_LOCATION_ORIGINAL_WHOLE=${MLF_ROOT}/labels.mlf_letter_whole # used for building model and results
 
 ###### USE FOR MAIN TRAINING ######
 MLF_LOCATION=${MLF_ROOT}/labels.mlf_tri_internal
 MLF_LOCATION_SKSP=${MLF_ROOT}/labels.mlf_tri_internal_sksp
-MLF_LOCATION_WHOLE=${MLF_ROOT}/labels.mlf_tri_internal_whole
+# MLF_LOCATION_WHOLE=${MLF_ROOT}/labels.mlf_tri_internal_whole
 
 MLF_LOCATION_WORD=${MLF_ROOT}/labels.mlf_word
 MLF_LOCATION_WORD_SKSP=${MLF_ROOT}/labels.mlf_word_sksp
-MLF_LOCATION_WORD_WHOLE=${MLF_ROOT}/labels.mlf_word_whole
+# MLF_LOCATION_WORD_WHOLE=${MLF_ROOT}/labels.mlf_word_whole
 
 ###### USE FOR CROSS WORD TRILETTER ######
-MLF_LOCATION_CROSS=${MLF_ROOT}/labels.mlf_tri_cross
+# MLF_LOCATION_CROSS=${MLF_ROOT}/labels.mlf_tri_cross
 
 ###### USE FOR SINGLE LETTER ######
 # MLF_LOCATION=${PRJ}/mlf/labels.mlf_letter

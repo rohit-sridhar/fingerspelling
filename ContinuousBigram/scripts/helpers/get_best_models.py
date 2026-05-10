@@ -28,7 +28,7 @@ def parse_args():
         "-ds", "--dataset",
         type=str,
         default="supplemental_gen_drop-na",
-        choices=["supplemental_gen_drop-na", "supplemental_gen_drop-na_lininterp1", "supplemental_gen_na-thr0.3_drop-na", "supplemental_gen_na-thr0.3_drop-na_lininterp1", "supplemental_gen_na-thr0.5_drop-na", "supplemental_gen_na-thr0.5_drop-na_lininterp1", "supplemental_gen_drop-na_lininterp0", "supplemental_gen_na-thr0.3_drop-na_lininterp0", "supplemental_gen_na-thr0.5_drop-na_lininterp0"],
+        choices=["supplemental_gen_drop-na_lininterp0", "supplemental_gen_na-thr0.3_drop-na_lininterp0", "supplemental_gen_drop-na_lininterp1", "supplemental_gen_na-thr0.3_drop-na_lininterp1"],
         help="Prefix to determine participant grouping type"
     )
 

@@ -30,9 +30,9 @@ for pt_grp in ${pt_grps[@]}; do
         filename=$(eval basename "${import_file}")
         grp_name=$(get_name_from_filename "$filename" "grp.rnd")
 
-        python scripts/modify_data.py \
+        python ${ROOT}/scripts/modify_data.py \
             --import_data_loc ${import_file} \
-            --new_data_loc ./data/${dataset}/dim20/thr0/${data_split}/grp/${grp_name}/sd${seed}/data \
+            --new_data_loc ${ROOT}/data/${dataset}/dim20/thr0/${data_split}/grp/${grp_name}/sd${seed}/data \
             --method import &
     done
 pid+=("$!")
@@ -56,9 +56,9 @@ done
 # for pt_grp in ${pt_grps[@]}; do
 # for seed in ${seeds[@]}; do
 #     # Code below assumes threshold 0 for all the imported data (should only import thr 0 data)
-#     python scripts/modify_data.py \
+#     python ${ROOT}/scripts/modify_data.py \
 #         --import_data_loc ${TORCH_ROOT}/data/data_${dataset}_sd${seed}_${pt_grp}_rh.pkl.${data_split} \
-#         --new_data_loc ./data/${dataset}/dim20/thr0/${data_split}/grp/${pt_grp}/sd${seed}/data \
+#         --new_data_loc ${ROOT}/data/${dataset}/dim20/thr0/${data_split}/grp/${pt_grp}/sd${seed}/data \
 #         --method import &
 #     pid+=("$!")
 # done

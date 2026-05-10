@@ -4,6 +4,7 @@ WORKDIR /data/hmm_modeling/fingerspelling/ContinuousBigram
 
 RUN mkdir /root/.tmp
 RUN pip install dtw-python
+# RUN pip install numpy, pyarrow, fastparquet
 
 RUN wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB 
 RUN apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB

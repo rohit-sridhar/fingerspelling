@@ -1,67 +1,97 @@
 {
-    "supplemental_gen": {
+    "supplemental_gen_dim20": {
         "data_path": "./data/supplemental_gen/dim20/thr0/all/data/",
         "label_path": "./label/supplemental_gen/dim20/thr0/all/label/",
         "supplemental": true
     },
-    "main_train_drop-na": {
+    "main_train_drop-na_dim20": {
         "data_path": "./data/main_train_drop-na/dim20/thr0/all/data/",
         "label_path": "./label/main_train_drop-na/dim20/thr0/all/label/",
         "supplemental": false
     },
-    "main_train_drop-na_lininterp0": {
+    "main_train_drop-na_lininterp0_dim20": {
         "data_path": "./data/main_train_drop-na_lininterp0/dim20/thr0/all/data/",
         "label_path": "./label/main_train_drop-na_lininterp0/dim20/thr0/all/label/",
         "supplemental": false
     },
-    "main_train_drop-na_lininterp1": {
+    "main_train_drop-na_lininterp1_dim20": {
         "data_path": "./data/main_train_drop-na_lininterp1/dim20/thr0/all/data/",
         "label_path": "./label/main_train_drop-na_lininterp1/dim20/thr0/all/label/",
         "supplemental": false
     },
-    "main_train_na-thr0.3_drop-na": {
+    "main_train_na-thr0.3_drop-na_dim20": {
         "data_path": "./data/main_train_na-thr0.3_drop-na/dim20/thr0/all/data/",
         "label_path": "./label/main_train_na-thr0.3_drop-na/dim20/thr0/all/label/",
         "supplemental": false
     },
-    "main_train_na-thr0.3_drop-na_lininterp0": {
+    "main_train_na-thr0.3_drop-na_lininterp0_dim20": {
         "data_path": "./data/main_train_na-thr0.3_drop-na_lininterp0/dim20/thr0/all/data/",
         "label_path": "./label/main_train_na-thr0.3_drop-na_lininterp0/dim20/thr0/all/label/",
         "supplemental": false
     },
-    "main_train_na-thr0.3_drop-na_lininterp1": {
+    "main_train_na-thr0.3_drop-na_lininterp1_dim20": {
         "data_path": "./data/main_train_na-thr0.3_drop-na_lininterp1/dim20/thr0/all/data/",
         "label_path": "./label/main_train_na-thr0.3_drop-na_lininterp1/dim20/thr0/all/label/",
         "supplemental": false
     },
-    "supplemental_gen_drop-na": {
+    "supplemental_gen_drop-na_dim20": {
         "data_path": "./data/supplemental_gen_drop-na/dim20/thr0/all/data/",
         "label_path": "./label/supplemental_gen_drop-na/dim20/thr0/all/label/",
         "supplemental": true
     },
-    "supplemental_gen_drop-na_lininterp0": {
+    "supplemental_gen_drop-na_lininterp0_dim20": {
         "data_path": "./data/supplemental_gen_drop-na_lininterp0/dim20/thr0/all/data/",
         "label_path": "./label/supplemental_gen_drop-na_lininterp0/dim20/thr0/all/label/",
         "supplemental": true
     },
-    "supplemental_gen_drop-na_lininterp1": {
-        "data_path": "./data/supplemental_gen_drop-na_lininterp1/dim20/thr0/all/data/",
-        "label_path": "./label/supplemental_gen_drop-na_lininterp1/dim20/thr0/all/label/",
-        "supplemental": true
-    },
-    "supplemental_gen_na-thr0.3_drop-na": {
+    "supplemental_gen_na-thr0.3_drop-na_dim20": {
         "data_path": "./data/supplemental_gen_na-thr0.3_drop-na/dim20/thr0/all/data/",
         "label_path": "./label/supplemental_gen_na-thr0.3_drop-na/dim20/thr0/all/label/",
         "supplemental": true
     },
-    "supplemental_gen_na-thr0.3_drop-na_lininterp0": {
+    "supplemental_gen_na-thr0.3_drop-na_lininterp0_dim20": {
         "data_path": "./data/supplemental_gen_na-thr0.3_drop-na_lininterp0/dim20/thr0/all/data/",
         "label_path": "./label/supplemental_gen_na-thr0.3_drop-na_lininterp0/dim20/thr0/all/label/",
         "supplemental": true
     },
-    "supplemental_gen_na-thr0.3_drop-na_lininterp1": {
+    "supplemental_gen_na-thr0.3_drop-na_lininterp1_dim20": {
         "data_path": "./data/supplemental_gen_na-thr0.3_drop-na_lininterp1/dim20/thr0/all/data/",
         "label_path": "./label/supplemental_gen_na-thr0.3_drop-na_lininterp1/dim20/thr0/all/label/",
+        "supplemental": true
+    },
+    "supplemental_gen_drop-na_lininterp0_pol20": {
+        "data_path": "./data/supplemental_gen_drop-na_lininterp0/pol20/thr0/all/data/",
+        "label_path": "./label/supplemental_gen_drop-na_lininterp0/pol20/thr0/all/label/",
+        "supplemental": true
+    },
+    "supplemental_gen_drop-na_lininterp0_del20": {
+        "data_path": "./data/supplemental_gen_drop-na_lininterp0/del20/thr0/all/data/",
+        "label_path": "./label/supplemental_gen_drop-na_lininterp0/del20/thr0/all/label/",
+        "supplemental": true
+    },
+    "supplemental_gen_drop-na_lininterp0_delpol20": {
+        "data_path": "./data/supplemental_gen_drop-na_lininterp0/delpol20/thr0/all/data/",
+        "label_path": "./label/supplemental_gen_drop-na_lininterp0/delpol20/thr0/all/label/",
+        "supplemental": true
+    },
+    "supplemental_gen_drop-na_lininterp0_pca10": {
+        "data_path": "./data/supplemental_gen_drop-na_lininterp0/pca10/thr0/all/data/",
+        "label_path": "./label/supplemental_gen_drop-na_lininterp0/pca10/thr0/all/label/",
+        "supplemental": true
+    },
+    "supplemental_gen_drop-na_lininterp0_pcapol10": {
+        "data_path": "./data/supplemental_gen_drop-na_lininterp0/pcapol10/thr0/all/data/",
+        "label_path": "./label/supplemental_gen_drop-na_lininterp0/pcapol10/thr0/all/label/",
+        "supplemental": true
+    },
+    "supplemental_gen_drop-na_lininterp0_pcadel10": {
+        "data_path": "./data/supplemental_gen_drop-na_lininterp0/pcadel10/thr0/all/data/",
+        "label_path": "./label/supplemental_gen_drop-na_lininterp0/pcadel10/thr0/all/label/",
+        "supplemental": true
+    },
+    "supplemental_gen_drop-na_lininterp0_pcadelpol10": {
+        "data_path": "./data/supplemental_gen_drop-na_lininterp0/pcadelpol10/thr0/all/data/",
+        "label_path": "./label/supplemental_gen_drop-na_lininterp0/pcadelpol10/thr0/all/label/",
         "supplemental": true
     }
 }
