@@ -15,24 +15,25 @@ if [ ! -d "results/${output_dir}" ]; then
 fi
 
 ############################## TRAIN MULTIPLE DIM20;PCA10;POL20;PCAPOL10 ##############################
+#         --hmmdefs 6state-pca20-gmm4 6state-pca20-gmm4-skip \
 for dataset in ${datasets[@]}; do
 for seed in "${seeds[@]}"; do
     python scripts/grid_search.py \
         --data_files ./data/${dataset}/dim20/thr0/train/general/sd${seed}/data/ \
-        --hmmdefs 6state-pca20-gmm4 6state-pca20-gmm4-skip \
+        --hmmdefs 6state-pca20 \
         --results_csv ./results/${output_dir}/results_${dataset}.csv \
-        --num_its 1000 --num_tri_its 1000 \
+        --num_its 10 --num_tri_its 10 \
         --clear_hresults --prepare_data
 done
 done
-# 
+
 # for dataset in ${datasets[@]}; do
 # for seed in "${seeds[@]}"; do
 #     python scripts/grid_search.py \
 #         --data_files ./data/${dataset}/pca10/thr0/train/general/sd${seed}/data/ \
 #         --hmmdefs 6state-pca10-gmm4 6state-pca10-gmm4-skip \
 #         --results_csv ./results/${output_dir}/results_${dataset}.csv \
-#         --num_its 1000 --num_tri_its 1000 \
+#         --num_its 10 --num_tri_its 10 \
 #         --clear_hresults --prepare_data
 # done
 # done

@@ -101,7 +101,7 @@ if [[ $MULTI_PROCESS = "yes" ]]; then
     for test_file in $TEST_DATA.*; do
         OUTPUT_MLF_SUB="$OUTPUT_MLF.${test_file##*.}"
         ${HTKBIN}HVite -p $INSERT_PENALTY -t $PRUNING_THRESHOLD -s $GRAMMAR_SCALE_FACTOR -A -T $TRACE_LEVEL	\
-        	$HMM_LOAD_OPT $MODEL  -w $WORD_LATTICE -S $test_file -I $MLF_LOCATION	\
+        	$HMM_LOAD_OPT $MODEL -w $WORD_LATTICE -S $test_file -I $MLF_LOCATION	\
         	-i $OUTPUT_MLF_SUB $DICTFILE $TOKENS &
         pid+=("$!")
 
@@ -130,7 +130,7 @@ else
     if [[ $WORD_LEVEL = "yes" ]] || [[ $WORD_LEVEL = "1" ]]; then
     	${HTKBIN}HVite -p $INSERT_PENALTY -s $GRAMMAR_SCALE_FACTOR -A -T $TRACE_LEVEL \
     		$HMM_LOAD_OPT $MODEL \
-    		-w ${WORD_LATTICE}_word -S $TEST_DATA -I $MLF_LOCATION 	\
+    		-w ${WORD_LATTICE}_word -S $TEST_DATA -I $MLF_LOCATION \
     		-i $OUTPUT_MLF_WORD -n 4 20 $DICTFILE_WORD $TOKENS
     fi
 fi
