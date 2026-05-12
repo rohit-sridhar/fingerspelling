@@ -166,6 +166,9 @@ cython_debug/
 **/.*.swp
 **/.*.swo
 
+# Local files to ignore
+**/.DS_Store
+
 # Local project files
 backup/
 ContinuousBigram/scripts/run_multiple.sh
