@@ -1,26 +1,25 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-##### Copy HTK Files over
-rsync -H --progress ./ContinuousBigram/commands/commands_tri_internal.all rsridhar37@login-phoenix.pace.gatech.edu:/storage/home/hcoda1/5/rsridhar37/p-ts133-0/ASL/fingerspelling/ContinuousBigram/commands
+# pace.sh - sync ContinuousBigram artifacts to PACE cluster
+# Usage: pace.sh [REMOTE_USER_HOST] [REMOTE_BASE] [BASE_DATASET]
+# Environment variables override positional args: REMOTE_USER_HOST, REMOTE_BASE, BASE_DATASET
 
-#### Copy all train and val data
-base_dataset=supplemental_gen
-typeset -a datasets=(${base_dataset} ${base_dataset}_na-thr0.3 ${base_dataset}_drop-na ${base_dataset}_na-thr0.3_drop-na)
+REMOTE_USER_HOST="${1:-${REMOTE_USER_HOST:-rsridhar37@login-phoenix.pace.gatech.edu}}"
+REMOTE_BASE="${2:-${REMOTE_BASE:-/storage/home/hcoda1/5/rsridhar37/p-ts133-0/ASL/fingerspelling/ContinuousBigram}}"
+BASE_DATASET="${3:-${BASE_DATASET:-supplemental_gen}}"
 
-#### Sync everything under specific pt dirs
-# rsync -rHR --progress ./ContinuousBigram/data/${dataset}/dim20/thr0/./train/pt03ad ./ContinuousBigram/data/${dataset}/dim20/thr0/./val/pt03ad rsridhar37@login-phoenix.pace.gatech.edu:/storage/home/hcoda1/5/rsridhar37/p-ts133-0/ASL/fingerspelling/ContinuousBigram/data/${dataset}/dim20/thr0/
+typeset -a datasets=("${BASE_DATASET}" "${BASE_DATASET}_na-thr0.3" "${BASE_DATASET}_drop-na" "${BASE_DATASET}_na-thr0.3_drop-na")
 
-# rsync -rHR --progress ./ContinuousBigram/label/${dataset}/dim20/thr0/./train/pt03ad ./ContinuousBigram/label/${dataset}/dim20/thr0/./val/pt03ad rsridhar37@login-phoenix.pace.gatech.edu:/storage/home/hcoda1/5/rsridhar37/p-ts133-0/ASL/fingerspelling/ContinuousBigram/label/${dataset}/dim20/thr0/
+echo "Syncing commands file to ${REMOTE_USER_HOST}:${REMOTE_BASE}/commands"
+rsync -H --progress ./ContinuousBigram/commands/commands_tri_internal.all "${REMOTE_USER_HOST}:${REMOTE_BASE}/commands"
 
-# rsync -rHR --progress ./ContinuousBigram/data/${dataset}/dim20/thr0/./train/pt3f8b ./ContinuousBigram/data/${dataset}/dim20/thr0/./val/pt3f8b rsridhar37@login-phoenix.pace.gatech.edu:/storage/home/hcoda1/5/rsridhar37/p-ts133-0/ASL/fingerspelling/ContinuousBigram/data/${dataset}/dim20/thr0/
+for dataset in "${datasets[@]}"; do
+    echo "Creating remote dirs for dataset ${dataset}"
+    ssh "${REMOTE_USER_HOST}" "mkdir -p ${REMOTE_BASE}/data/${dataset}/dim20/thr0/"
+    rsync -rHR --progress ./ContinuousBigram/data/${dataset}/dim20/thr0/./all ./ContinuousBigram/data/${dataset}/dim20/thr0/./train ./ContinuousBigram/data/${dataset}/dim20/thr0/./val ./ContinuousBigram/data/${dataset}/dim20/thr0/./test "${REMOTE_USER_HOST}:${REMOTE_BASE}/data/${dataset}/dim20/thr0/"
 
-# rsync -rHR --progress ./ContinuousBigram/label/${dataset}/dim20/thr0/./train/pt3f8b ./ContinuousBigram/label/${dataset}/dim20/thr0/./val/pt3f8b rsridhar37@login-phoenix.pace.gatech.edu:/storage/home/hcoda1/5/rsridhar37/p-ts133-0/ASL/fingerspelling/ContinuousBigram/label/${dataset}/dim20/thr0/
-
-#### Sync everything under the all/train/val/test dir
-for dataset in ${datasets[@]}; do
-    ssh rsridhar37@login-phoenix.pace.gatech.edu "mkdir -p /storage/home/hcoda1/5/rsridhar37/p-ts133-0/ASL/fingerspelling/ContinuousBigram/data/${dataset}/dim20/thr0/"
-    rsync -rHR --progress ./ContinuousBigram/data/${dataset}/dim20/thr0/./all ./ContinuousBigram/data/${dataset}/dim20/thr0/./train ./ContinuousBigram/data/${dataset}/dim20/thr0/./val ./ContinuousBigram/data/${dataset}/dim20/thr0/./test rsridhar37@login-phoenix.pace.gatech.edu:/storage/home/hcoda1/5/rsridhar37/p-ts133-0/ASL/fingerspelling/ContinuousBigram/data/${dataset}/dim20/thr0/
-    ssh rsridhar37@login-phoenix.pace.gatech.edu "mkdir -p /storage/home/hcoda1/5/rsridhar37/p-ts133-0/ASL/fingerspelling/ContinuousBigram/label/${dataset}/dim20/thr0/"
-    rsync -rHR --progress ./ContinuousBigram/label/${dataset}/dim20/thr0/./all ./ContinuousBigram/label/${dataset}/dim20/thr0/./train ./ContinuousBigram/label/${dataset}/dim20/thr0/./val ./ContinuousBigram/label/${dataset}/dim20/thr0/./test rsridhar37@login-phoenix.pace.gatech.edu:/storage/home/hcoda1/5/rsridhar37/p-ts133-0/ASL/fingerspelling/ContinuousBigram/label/${dataset}/dim20/thr0/
+    ssh "${REMOTE_USER_HOST}" "mkdir -p ${REMOTE_BASE}/label/${dataset}/dim20/thr0/"
+    rsync -rHR --progress ./ContinuousBigram/label/${dataset}/dim20/thr0/./all ./ContinuousBigram/label/${dataset}/dim20/thr0/./train ./ContinuousBigram/label/${dataset}/dim20/thr0/./val ./ContinuousBigram/label/${dataset}/dim20/thr0/./test "${REMOTE_USER_HOST}:${REMOTE_BASE}/label/${dataset}/dim20/thr0/"
 done
 

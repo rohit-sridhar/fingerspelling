@@ -1,35 +1,24 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-#####
-## Arg 1: Absolate path to original fingerspelling directory (hard link metadata from)
-## Arg 2: Absolute path to new fingerspelling directory (hard link metadata to)
-##### IMPORTANT: The paths must end with ContinuousBigram/
+# prep_for_training.sh - create ContinuousBigram directory skeleton
+# Usage: prep_for_training.sh [ROOT_DIR]
+# ROOT_DIR defaults to current directory
 
-# mkdir $2/ext
-# mkdir $2/models
-# mkdir $2/output
-# 
-# cp -rl $1/logs $2/logs
-# cp -rl $1/data $2/data
-# cp -rl $1/label $2/label
-# cp -rl $1/results $2/results
-# cp -rl $1/commands $2/commands
-# cp -rl $1/dict $2/dict
-# cp -rl $1/grammar $2/grammar
-# cp -rl $1/mlf $2/mlf
-# cp -rl $1/models/supplemental $2/models/supplemental # This will be generalized later
+ROOT_DIR="${1:-.}"
+TARGET_DIR="${ROOT_DIR%/}/ContinuousBigram"
 
+mkdir -p "${TARGET_DIR}/ext" \
+         "${TARGET_DIR}/models" \
+         "${TARGET_DIR}/output" \
+         "${TARGET_DIR}/logs" \
+         "${TARGET_DIR}/data" \
+         "${TARGET_DIR}/label" \
+         "${TARGET_DIR}/results" \
+         "${TARGET_DIR}/commands" \
+         "${TARGET_DIR}/dict" \
+         "${TARGET_DIR}/grammar" \
+         "${TARGET_DIR}/mlf"
 
-# Use these commands when transferring to PACE (Commented out for now).
-mkdir ContinuousBigram/ext
-mkdir ContinuousBigram/models
-mkdir ContinuousBigram/output
-mkdir ContinuousBigram/logs
-mkdir ContinuousBigram/data
-mkdir ContinuousBigram/label
-mkdir ContinuousBigram/results
-mkdir ContinuousBigram/commands
-mkdir ContinuousBigram/dict
-mkdir ContinuousBigram/grammar
-mkdir ContinuousBigram/mlf
+echo "Created directory skeleton under ${TARGET_DIR}"
 
