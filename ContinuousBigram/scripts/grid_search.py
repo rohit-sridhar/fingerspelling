@@ -224,8 +224,8 @@ def get_ip_ext(ip):
 def get_name_ext(ip, tc, num_its, num_tri_its, hmmdef, trace_value=None):
     name_ext = ""
 
-    ip_ext = get_ip_ext(ip)
-    name_ext += "_".join([f"{ip_ext}", f"{hmmdef}", f"{num_its}its", f"{num_tri_its}tri-its", f"tc{tc}"])
+    # Do not include insertion-penalty (ip) in the name extension anymore
+    name_ext += "_".join([f"{hmmdef}", f"{num_its}its", f"{num_tri_its}tri-its", f"tc{tc}"])
 
     if args.use_phrase:
         name_ext += "_grliwph"
@@ -263,9 +263,23 @@ def get_hresults_filepaths(name_ext, subdirs, ip):
         results_dir = os.path.join(results_dir, model_results_dir)
         make_dir(results_dir)
         
-        #### TODO Need to rm insertion penalty from model names     ####
+        # Ensure model_name contains the correct insertion-penalty token if present; be robust to different name formats
         model_name_split = model_name.split("_")
-        model_name_split[1] = get_ip_ext(ip)
+        ip_token = get_ip_ext(ip)
+        ip_idx = None
+        for i, t in enumerate(model_name_split):
+            if re.match(r'^(pos|neg)?\d+ip$', t):
+                ip_idx = i
+                break
+
+        if ip_idx is not None:
+            model_name_split[ip_idx] = ip_token
+        else:
+            # insert after first component to preserve legacy structure where applicable
+            if len(model_name_split) >= 1:
+                model_name_split.insert(1, ip_token)
+            else:
+                model_name_split.append(ip_token)
         model_name = "_".join(model_name_split)
 
         letter_results_file = '.'.join(["hresults", "log_letter", model_name])
@@ -317,11 +331,11 @@ def edit_file(re_search, re_repl, file_to_edit):
 # The function below makes changes for triletter modeling. commands_word and
 # mlf location word stay the same (between single/tri) so those are not modified.
 def make_triletter_changes(subdirs):
-    triletter_search = TRILETTER_VARNAME + "\s*=\s*(yes|no)"
-    dictfile_search = "^DICTFILE\s*=\s*\$\{DICTFILE_ROOT\}\/dict_(tri|letter)2letter"
-    dictfile_word_search = "^DICTFILE_WORD\s*=\s*\$\{DICTFILE_ROOT\}\/dict_(tri|letter)2word"
-    tokens_search = "^TOKENS\s*=\s*\$\{TOKENS_ROOT\}\/commands_(tri_internal|letter)"
-    mlf_location_search = "^MLF_LOCATION\s*=\s*\$\{MLF_ROOT\}\/labels.mlf_(tri_internal|letter)"
+    triletter_search = TRILETTER_VARNAME + r"\s*=\s*(yes|no)"
+    dictfile_search = r"^DICTFILE\s*=\s*\$\{DICTFILE_ROOT\}\/dict_(tri|letter)2letter"
+    dictfile_word_search = r"^DICTFILE_WORD\s*=\s*\$\{DICTFILE_ROOT\}\/dict_(tri|letter)2word"
+    tokens_search = r"^TOKENS\s*=\s*\$\{TOKENS_ROOT\}\/commands_(tri_internal|letter)"
+    mlf_location_search = r"^MLF_LOCATION\s*=\s*\$\{MLF_ROOT\}\/labels.mlf_(tri_internal|letter)"
     
     if args.no_triletter:
         triletter_repl = TRILETTER_VARNAME + "=no"
@@ -345,11 +359,11 @@ def make_triletter_changes(subdirs):
     edit_file(mlf_location_search, mlf_location_repl, options_file)
  
     print("##### Setting Triletter HTK Files #####")
-    run_subprocess(["grep", "^"+TRILETTER_VARNAME+"\s*=\s*", options_file])
-    run_subprocess(["grep", "^DICTFILE\s*=\s*", options_file])
-    run_subprocess(["grep", "^DICTFILE_WORD\s*=\s*", options_file])
-    run_subprocess(["grep", "^TOKENS\s*=\s*", options_file])
-    run_subprocess(["grep", "^MLF_LOCATION\s*=\s*", options_file])
+    run_subprocess(["grep", "^"+TRILETTER_VARNAME+r"\s*=\s*", options_file])
+    run_subprocess(["grep", r"^DICTFILE\s*=\s*", options_file])
+    run_subprocess(["grep", r"^DICTFILE_WORD\s*=\s*", options_file])
+    run_subprocess(["grep", r"^TOKENS\s*=\s*", options_file])
+    run_subprocess(["grep", r"^MLF_LOCATION\s*=\s*", options_file])
     print("#####\n")
     
 
@@ -362,63 +376,63 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     hedfile2 = f"${{PRJ}}/instr/mktri2_tc.{hmmdef}.hed"
     num_threads = get_machine_info()
 
-    ip_search = IP_VARNAME + "\s*=\s*-?[0-9]+(\.[0-9]+)*"
+    ip_search = IP_VARNAME + r"\s*=\s*-?[0-9]+(\.[0-9]+)*"
     ip_repl = IP_VARNAME + f"={ip}"
 
     tc_search = "^TC [0-9]+"
     tc_repl = f"TC {tc}"
 
-    num_its_search = NUM_ITS_VARNAME + "\s*=\s*[0-9]+"
+    num_its_search = NUM_ITS_VARNAME + r"\s*=\s*[0-9]+"
     num_its_repl = NUM_ITS_VARNAME + f"={num_its}"
 
-    num_tri_its_search = NUM_TRI_ITS_VARNAME + "\s*=\s*[0-9]+"
+    num_tri_its_search = NUM_TRI_ITS_VARNAME + r"\s*=\s*[0-9]+"
     num_tri_its_repl = NUM_TRI_ITS_VARNAME + f"={num_tri_its}"
 
-    hmmdef_search = HMMDEF_VARNAME + "\s*=\s*\$HMM_TOPOLOGY_DIR\/.+"
+    hmmdef_search = HMMDEF_VARNAME + r"\s*=\s*\$HMM_TOPOLOGY_DIR\/.+"
     hmmdef_repl = HMMDEF_VARNAME + f"=$HMM_TOPOLOGY_DIR/{hmmdef}"
 
     models_dir = os.path.join(MODELS_ROOT, subdirs, hmmdef)
-    models_root_search = MODELS_ROOT_VARNAME + "\s*=\s*\$\{PRJ\}\/models.*"
+    models_root_search = MODELS_ROOT_VARNAME + r"\s*=\s*\$\{PRJ\}\/models.*"
     models_root_repl = MODELS_ROOT_VARNAME + os.path.join("=${PRJ}", models_dir)
     
-    hedfile1_search = HEDFILE1_VARNAME + "\s*=\s*\$\{PRJ\}\/instr\/mktri1_.*\.hed"
+    hedfile1_search = HEDFILE1_VARNAME + r"\s*=\s*\$\{PRJ\}\/instr\/mktri1_.*\.hed"
     hedfile1_repl = HEDFILE1_VARNAME + f"={hedfile1}"
     
-    hedfile2_search = HEDFILE2_VARNAME + "\s*=\s*\$\{PRJ\}\/instr\/mktri2_.*\.hed"
+    hedfile2_search = HEDFILE2_VARNAME + r"\s*=\s*\$\{PRJ\}\/instr\/mktri2_.*\.hed"
     hedfile2_repl = HEDFILE2_VARNAME + f"={hedfile2}"
     
-    custom_silsp_search = CUSTOM_SILSP_VARNAME + "\s*=\s*(yes|no)"
+    custom_silsp_search = CUSTOM_SILSP_VARNAME + r"\s*=\s*(yes|no)"
     custom_silsp_repl = CUSTOM_SILSP_VARNAME + f"={custom_silsp}"
     
-    multi_process_search = MULTI_PROCESS_VARNAME + "\s*=\s*(yes|no)"
+    multi_process_search = MULTI_PROCESS_VARNAME + r"\s*=\s*(yes|no)"
     multi_process_repl = MULTI_PROCESS_VARNAME + f"={multi_process}"
     
-    cross_word_search = CROSS_WORD_VARNAME + "\s*=\s*(yes|no)"
+    cross_word_search = CROSS_WORD_VARNAME + r"\s*=\s*(yes|no)"
     cross_word_repl = CROSS_WORD_VARNAME + f"={cross_word}"
     
-    ngram_word_search = NGRAM_WORD_VARNAME + "\s*=\s*[0-9]"
+    ngram_word_search = NGRAM_WORD_VARNAME + r"\s*=\s*[0-9]"
     ngram_word_repl = NGRAM_WORD_VARNAME + f"={ngram}"
     
-    whole_word_search = WHOLE_WORD_VARNAME + "\s*=\s*(yes|no)"
+    whole_word_search = WHOLE_WORD_VARNAME + r"\s*=\s*(yes|no)"
     whole_word_repl = WHOLE_WORD_VARNAME + f"={whole_word}"
 
-    use_phrase_search = USE_PHRASE_VARNAME + "\s*=\s*(yes|no)"
+    use_phrase_search = USE_PHRASE_VARNAME + r"\s*=\s*(yes|no)"
     use_phrase_repl = USE_PHRASE_VARNAME + f"={use_phrase}"
 
-    cross_word_hedfile1_search = "^CL commands\/commands_tri_(internal|cross)$"
+    cross_word_hedfile1_search = r"^CL commands\/commands_tri_(internal|cross)$"
     cross_word_hedfile1_repl = "CL commands/commands_tri_cross" if args.cross_word else "CL commands/commands_tri_internal"
     hedfile1_local_file = hedfile1.replace("${PRJ}", ".")
 
-    letter_results_search = LOG_LETTER_VARNAME + "\s*=\s*\$\{PRJ\}\/.*hresults\.log_letter.*"
+    letter_results_search = LOG_LETTER_VARNAME + r"\s*=\s*\$\{PRJ\}\/.*hresults\.log_letter.*"
     letter_results_repl = LOG_LETTER_VARNAME + f"={letter_results}"
     
-    word_results_search = LOG_WORD_VARNAME + "\s*=\s*\$\{PRJ\}\/.*hresults\.log_word.*"
+    word_results_search = LOG_WORD_VARNAME + r"\s*=\s*\$\{PRJ\}\/.*hresults\.log_word.*"
     word_results_repl = LOG_WORD_VARNAME + f"={word_results}"
 
-    trace_level_search = TRACE_LEVEL_VARNAME + "\s*=\s*[0-9]+"
+    trace_level_search = TRACE_LEVEL_VARNAME + r"\s*=\s*[0-9]+"
     trace_level_repl = TRACE_LEVEL_VARNAME + f"={trace_value}"
 
-    threads_search = THREADS_VARNAME + "\s*=\s*[0-9]+"
+    threads_search = THREADS_VARNAME + r"\s*=\s*[0-9]+"
     threads_repl = THREADS_VARNAME + f"={num_threads}"
     
     options_file = get_options_file(subdirs)
@@ -447,23 +461,23 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     make_dir(models_dir)
     
     print("##### Hyperparameters #####")
-    run_subprocess(["grep", "^" + IP_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + NUM_ITS_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + NUM_TRI_ITS_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + HMMDEF_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + MODELS_ROOT_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + LOG_LETTER_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + LOG_WORD_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + HEDFILE1_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + HEDFILE2_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + CUSTOM_SILSP_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + MULTI_PROCESS_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + CROSS_WORD_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + NGRAM_WORD_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + TRACE_LEVEL_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + THREADS_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + WHOLE_WORD_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + USE_PHRASE_VARNAME + "\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + IP_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + NUM_ITS_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + NUM_TRI_ITS_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + HMMDEF_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + MODELS_ROOT_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + LOG_LETTER_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + LOG_WORD_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + HEDFILE1_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + HEDFILE2_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + CUSTOM_SILSP_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + MULTI_PROCESS_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + CROSS_WORD_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + NGRAM_WORD_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + TRACE_LEVEL_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + THREADS_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + WHOLE_WORD_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + USE_PHRASE_VARNAME + r"\s*=\s*", options_file])
     run_subprocess(["head", "-n", "1", f"{hedfile1_local_file}"])
     print("#####\n")
 
@@ -475,36 +489,36 @@ def edit_htk_root_file_options(subdirs):
     # Handle triletter changes separately
     make_triletter_changes(subdirs)
 
-    # grammarfile_root_search = GRAMMARFILE_ROOT_VARNAME + "\s*=\s*\$\{PRJ\}\/grammar.*"
+    # grammarfile_root_search = GRAMMARFILE_ROOT_VARNAME + r"\s*=\s*\$\{PRJ\}\/grammar.*"
     # grammarfile_root_repl = GRAMMARFILE_ROOT_VARNAME + os.path.join("=${PRJ}", GRAMMAR_ROOT, subdirs)
 
-    # dictfile_root_search = DICTFILE_ROOT_VARNAME + "\s*=\s*\$\{PRJ\}\/dict.*"
+    # dictfile_root_search = DICTFILE_ROOT_VARNAME + r"\s*=\s*\$\{PRJ\}\/dict.*"
     # dictfile_root_repl = DICTFILE_ROOT_VARNAME + os.path.join("=${PRJ}", DICT_ROOT, subdirs)
     # 
-    # tokens_root_search = TOKENS_ROOT_VARNAME + "\s*=\s*\$\{PRJ\}\/commands.*"
+    # tokens_root_search = TOKENS_ROOT_VARNAME + r"\s*=\s*\$\{PRJ\}\/commands.*"
     # tokens_root_repl = TOKENS_ROOT_VARNAME + os.path.join("=${PRJ}", TOKENS_ROOT, subdirs)
     
-    mlf_root_search = MLF_ROOT_VARNAME + "\s*=\s*\$\{PRJ\}\/mlf.*"
+    mlf_root_search = MLF_ROOT_VARNAME + r"\s*=\s*\$\{PRJ\}\/mlf.*"
     mlf_root_repl = MLF_ROOT_VARNAME + os.path.join("=${PRJ}", MLF_ROOT, subdirs)
 
-    outputfile_root_search = OUTPUTFILE_ROOT_VARNAME + "\s*=\s*\$\{PRJ\}\/output.*"
+    outputfile_root_search = OUTPUTFILE_ROOT_VARNAME + r"\s*=\s*\$\{PRJ\}\/output.*"
     outputfile_root_repl = OUTPUTFILE_ROOT_VARNAME + os.path.join("=${PRJ}", OUTPUT_ROOT, subdirs)
 
-    ext_dir_search = EXT_DIR_VARNAME + "\s*=\s*\$\{PRJ\}\/ext.*"
+    ext_dir_search = EXT_DIR_VARNAME + r"\s*=\s*\$\{PRJ\}\/ext.*"
     ext_dir_repl = EXT_DIR_VARNAME + os.path.join("=${PRJ}", EXT_ROOT, subdirs)
     
-    ledfile_uniq_search = LEDFILE_UNIQ_VARNAME + "\s*=\s*.+"
+    ledfile_uniq_search = LEDFILE_UNIQ_VARNAME + r"\s*=\s*.+"
     ledfile_uniq_repl = LEDFILE_UNIQ_VARNAME + f"={led_file_info}"
 
-    hmmsil_search = HMMSIL_VARNAME + "\s*=\s*\$HMM_TOPOLOGY_DIR\/3state-pca.+"
+    hmmsil_search = HMMSIL_VARNAME + r"\s*=\s*\$HMM_TOPOLOGY_DIR\/3state-pca.+"
     hmmsil_repl = HMMSIL_VARNAME + f"=$HMM_TOPOLOGY_DIR/3state-pca{vector_dim}-sil-skip-loop"
     hmmsil_repl = hmmsil_repl + "-fullcov" if args.full_cov else hmmsil_repl
 
-    hmmsp_search = HMMSP_VARNAME + "\s*=\s*\$HMM_TOPOLOGY_DIR\/1state-pca.+"
+    hmmsp_search = HMMSP_VARNAME + r"\s*=\s*\$HMM_TOPOLOGY_DIR\/1state-pca.+"
     hmmsp_repl = HMMSP_VARNAME + f"=$HMM_TOPOLOGY_DIR/1state-pca{vector_dim}-sp"
     hmmsp_repl = hmmsp_repl + "-fullcov" if args.full_cov else hmmsp_repl
 
-    vector_length_search = VECTOR_LENGTH_VARNAME + "\s*=\s*[0-9]+"
+    vector_length_search = VECTOR_LENGTH_VARNAME + r"\s*=\s*[0-9]+"
     vector_length_repl = VECTOR_LENGTH_VARNAME + f"={vector_dim}"
 
     # edit_file(grammarfile_root_search, grammarfile_root_repl, options_file)
@@ -519,16 +533,16 @@ def edit_htk_root_file_options(subdirs):
     edit_file(vector_length_search, vector_length_repl, options_file)
 
     print("##### Set root files #####")
-    run_subprocess(["grep", "^" + GRAMMARFILE_ROOT_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + DICTFILE_ROOT_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + TOKENS_ROOT_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + MLF_ROOT_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + OUTPUTFILE_ROOT_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + EXT_DIR_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + LEDFILE_UNIQ_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + HMMSIL_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + HMMSP_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + VECTOR_LENGTH_VARNAME + "\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + GRAMMARFILE_ROOT_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + DICTFILE_ROOT_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + TOKENS_ROOT_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + MLF_ROOT_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + OUTPUTFILE_ROOT_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + EXT_DIR_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + LEDFILE_UNIQ_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + HMMSIL_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + HMMSP_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + VECTOR_LENGTH_VARNAME + r"\s*=\s*", options_file])
     print("#####\n")
     
     grammar_dir = os.path.join(GRAMMAR_ROOT, subdirs)
@@ -608,10 +622,10 @@ def get_results(results_file, letter_results=True):
     sent_match = None
     for line in results_lines:
         if line.startswith("WORD: "):
-            corr_match = re.search("Corr=-?[0-9]+\.[0-9]+", line).group(0)
-            acc_match = re.search("Acc=-?[0-9]+\.[0-9]+", line).group(0)
+            corr_match = re.search(r"Corr=-?[0-9]+\.[0-9]+", line).group(0)
+            acc_match = re.search(r"Acc=-?[0-9]+\.[0-9]+", line).group(0)
         if line.startswith("SENT: "):
-            sent_match = re.search("Correct=-?[0-9]+\.[0-9]+", line).group(0)
+            sent_match = re.search(r"Correct=-?[0-9]+\.[0-9]+", line).group(0)
     
     if corr_match is not None and acc_match is not None:
         if letter_results:
