@@ -221,7 +221,7 @@ def get_ip_ext(ip):
         return f"{ip_int}ip" 
 
 # Get the name extension for the results/output file
-def get_name_ext(ip, tc, num_its, num_tri_its, hmmdef, trace_value=None):
+def get_name_ext(tc, num_its, num_tri_its, hmmdef, trace_value=None):
     name_ext = ""
 
     # Do not include insertion-penalty (ip) in the name extension anymore
@@ -259,7 +259,7 @@ def get_hresults_filepaths(name_ext, subdirs, ip):
     else:
         model_dir, model_name = os.path.split(args.test_model_path)
         model_results_dir = '_'.join(model_dir.split(os.path.sep)[1:])
-
+        
         results_dir = os.path.join(results_dir, model_results_dir)
         make_dir(results_dir)
         
@@ -271,7 +271,7 @@ def get_hresults_filepaths(name_ext, subdirs, ip):
             if re.match(r'^(pos|neg)?\d+ip$', t):
                 ip_idx = i
                 break
-
+        
         if ip_idx is not None:
             model_name_split[ip_idx] = ip_token
         else:
@@ -369,7 +369,7 @@ def make_triletter_changes(subdirs):
 
 # Edit options file with all new hyperparams (calls helper above)
 def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_value=None):
-    name_ext = get_name_ext(ip, tc, num_its, num_tri_its, hmmdef) # We leave trace_value out in this call.
+    name_ext = get_name_ext(tc, num_its, num_tri_its, hmmdef) # We leave trace_value out in this call.
     letter_results, word_results = get_hresults_filepaths(name_ext, subdirs, ip)
 
     custom_silsp, multi_process, hedfile1, cross_word, whole_word, use_phrase = get_bool_arg_info()
@@ -562,7 +562,7 @@ def edit_htk_root_file_options(subdirs):
     print("#####\n")
 
 def test_model(ip, tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
-    name_ext = get_name_ext(ip, tc, num_its, num_tri_its, hmmdef, trace_value=trace_value)
+    name_ext = get_name_ext(tc, num_its, num_tri_its, hmmdef, trace_value=trace_value)
     
     log_dir = os.path.join(LOG_ROOT, subdirs)
     print("##### Creating Testing Log Dir #####")
@@ -591,7 +591,7 @@ def test_model(ip, tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
 
 # Runs the train model script
 def train_model(ip, tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
-    name_ext = get_name_ext(ip, tc, num_its, num_tri_its, hmmdef, trace_value=trace_value)
+    name_ext = get_name_ext(tc, num_its, num_tri_its, hmmdef, trace_value=trace_value)
     
     log_dir = os.path.join(LOG_ROOT, subdirs)
     print("##### Creating Training Log Dir #####")
@@ -639,7 +639,7 @@ def get_results(results_file, letter_results=True):
     return results
 
 def add_results_to_csv(ip, tc, num_its, num_tri_its, hmmdef, subdirs):
-    name_ext = get_name_ext(ip, tc, num_its, num_tri_its, hmmdef)
+    name_ext = get_name_ext(tc, num_its, num_tri_its, hmmdef)
     letter_results_file, word_results_file = get_hresults_filepaths(name_ext, subdirs, ip)
     
     letter_results_file = os.path.join('.', *letter_results_file.split("/")[1:])
@@ -676,7 +676,7 @@ def add_results_to_csv(ip, tc, num_its, num_tri_its, hmmdef, subdirs):
             csvwriter.writerow(results)
 
 def get_model_path(subdirs, ip, tc, num_its, num_tri_its, hmmdef):
-    name_ext = get_name_ext(ip, tc, num_its, num_tri_its, hmmdef)  # Pass none for first arg because the model doesn't vary by grammar
+    name_ext = get_name_ext(tc, num_its, num_tri_its, hmmdef)  # Pass none for first arg because the model doesn't vary by grammar
 
     new_model_dir = os.path.join(MODELS_ROOT, subdirs)
     new_model_file = '_'.join([MODEL_MACROS_FILE, name_ext])
@@ -687,7 +687,7 @@ def get_model_path(subdirs, ip, tc, num_its, num_tri_its, hmmdef):
 def save_model(ip, tc, num_its, num_tri_its, hmmdef, subdirs):
     curr_model_path = os.path.join(MODELS_ROOT, subdirs, f"hmm0.{num_its-1}", MODEL_MACROS_FILE)
 
-    name_ext = get_name_ext(ip, tc, num_its, num_tri_its, hmmdef)  # Pass none for first arg because the model doesn't vary by grammar
+    name_ext = get_name_ext(tc, num_its, num_tri_its, hmmdef)  # Pass none for first arg because the model doesn't vary by grammar
     new_model_dir, new_model_path = get_model_path(subdirs, ip, tc, num_its, num_tri_its, hmmdef)
     make_dir(new_model_dir)
     
@@ -741,7 +741,7 @@ def gen_grammar(subdirs, label_file, grammar_type_arg='word'):
 
 # def clear_results_files(ip, tc, num_its, num_tri_its, hmmdef, subdirs, grammar_type):
 def clear_results_files(ip, tc, num_its, num_tri_its, hmmdef, subdirs):
-    name_ext = get_name_ext(ip, tc, num_its, num_tri_its, hmmdef)
+    name_ext = get_name_ext(tc, num_its, num_tri_its, hmmdef)
     letter_results_file, word_results_file = get_hresults_filepaths(name_ext, subdirs, ip)
     
     letter_results_file = os.path.join(*letter_results_file.split(os.path.sep)[1:])

@@ -16,7 +16,13 @@ fi
 cmd="$1"
 container="${2:-}"
 local_image="rohit_hmm_fingerspelling"
-PROJECTS_ROOT="${3:-${PROJECTS_ROOT:-/data}}"
+# Support 'run' which takes a script argument as $3 and optional PROJECTS_ROOT as $4
+if [ "$cmd" = "run" ]; then
+    script="${3:-}"
+    PROJECTS_ROOT="${4:-${PROJECTS_ROOT:-/data}}"
+else
+    PROJECTS_ROOT="${3:-${PROJECTS_ROOT:-/data}}"
+fi
 LOCAL_HTK_IMAGE="${LOCAL_HTK_IMAGE:-rohit_hmm_fingerspelling}"
 
 case "$cmd" in
@@ -58,6 +64,32 @@ case "$cmd" in
           -v "${vimrc_file}":"/root/.vimrc:ro" \
           -e HOSTNAME_SERVER="$HOSTNAME" \
           --name "$container" "$LOCAL_HTK_IMAGE"
+        ;;
+
+    run)
+        if [ -z "$container" ]; then
+            echo "Specify container name when calling run"
+            usage
+        fi
+        if [ -z "${script:-}" ]; then
+            echo "Specify script path (relative to container WORKDIR) as the third argument"
+            usage
+        fi
+
+        fingerspelling_path="${FINGERSPELLING_PATH:-${PROJECTS_ROOT}/hmm_modeling/fingerspelling}"
+        fs_transformers_path="${FS_TRANSFORMERS_PATH:-${PROJECTS_ROOT}/deep_learning/fs_transformers}"
+        fingerspelling_video_path="${FINGERSPELLING_VIDEO_PATH:-${PROJECTS_ROOT}/sign_language_videos/fingerspelling_videos}"
+        islr_mputils_out_path="${ISLR_MPUTILS_OUT_PATH:-${PROJECTS_ROOT}/deep_learning/ISLR-ML/mputils/out}"
+        vimrc_file="${VIMRC_FILE:-${HOME}/.vimrc}"
+
+        docker run -d --rm \
+          -v "${fingerspelling_path}":"/data/hmm_modeling/fingerspelling" \
+          -v "${fs_transformers_path}":"/data/deep_learning/fs_transformers" \
+          -v "${fingerspelling_video_path}":"/data/sign_language_videos/fingerspelling_videos:ro" \
+          -v "${islr_mputils_out_path}":"/data/deep_learning/ISLR-ML/mputils:ro" \
+          -v "${vimrc_file}":"/root/.vimrc:ro" \
+          -e HOSTNAME_SERVER="$HOSTNAME" \
+          --name "$container" "$LOCAL_HTK_IMAGE" bash -lc "$script"
         ;;
     rm)
         if [ -z "$container" ]; then
