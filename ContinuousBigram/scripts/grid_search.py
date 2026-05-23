@@ -211,6 +211,7 @@ def check_args():
         if not(args.test_model_path.startswith(MODELS_ROOT)):
             raise ValueError("Please pass a path where the first dir is (./)?model")
 
+# get the ip ext (for results file naming)
 def get_ip_ext(ip):
     ip_int = abs(int(ip))
     if ip > 0:
@@ -227,6 +228,7 @@ def get_name_ext(tc, num_its, num_tri_its, hmmdef, trace_value=None):
     # Do not include insertion-penalty (ip) in the name extension anymore
     name_ext += "_".join([f"{hmmdef}", f"{num_its}its", f"{num_tri_its}tri-its", f"tc{tc}"])
 
+    print(args)
     if args.use_phrase:
         name_ext += "_grliwph"
 
@@ -686,14 +688,14 @@ def get_model_path(subdirs, ip, tc, num_its, num_tri_its, hmmdef):
 
 def save_model(ip, tc, num_its, num_tri_its, hmmdef, subdirs):
     curr_model_path = os.path.join(MODELS_ROOT, subdirs, f"hmm0.{num_its-1}", MODEL_MACROS_FILE)
-
+    
     name_ext = get_name_ext(tc, num_its, num_tri_its, hmmdef)  # Pass none for first arg because the model doesn't vary by grammar
     new_model_dir, new_model_path = get_model_path(subdirs, ip, tc, num_its, num_tri_its, hmmdef)
     make_dir(new_model_dir)
     
     print(f"Current Model Dir: {curr_model_path}")
     print(f"New Model Dir: {new_model_path}")
-
+    
     if os.path.exists(curr_model_path):
         shutil.copy(curr_model_path, new_model_path)
     else:
@@ -784,51 +786,6 @@ if __name__ == "__main__":
         if args.prepare_data or args.prepare_data_only:
             prepare_data(data_file, label_file, subdirs)
 
-            # done_file = os.path.join(ROOT, GRAMMAR_ROOT, subdirs, "done")
-            # if not(os.path.exists(done_file)):
-            #     print("##### Run gen_grammar.py #####")
-            #     gen_grammar(
-            #         subdirs,
-            #         label_file,
-            #         grammar_type_arg="word"
-            #     )
-            #     
-            #     gen_grammar(
-            #         subdirs,
-            #         label_file,
-            #         grammar_type_arg="word_sksp"
-            #     )
-
-            #     gen_grammar(
-            #         subdirs,
-            #         label_file,
-            #         grammar_type_arg="word_phrase_sksp"
-            #     )
-            #     
-            #     gen_grammar(
-            #         subdirs,
-            #         label_file,
-            #         grammar_type_arg="word_whole_word"
-            #     )
-            #     
-            #     gen_grammar(
-            #         subdirs,
-            #         label_file,
-            #         grammar_type_arg="letter"
-            #     )
-            #     
-            #     gen_grammar(
-            #         subdirs,
-            #         label_file,
-            #         grammar_type_arg="letter_whole_word"
-            #     )
-            #     with open(done_file, "w") as f:
-            #         f.write("1\n")
-            #     print("#####\n")
-            # else:
-            #     print("##### Grammar files exist. Skipping generation #####")
-            #     print("#####\n")
-        
             # Exit here after prepare_files and gen_grammar finish
             if args.prepare_data_only:
                 exit(0)

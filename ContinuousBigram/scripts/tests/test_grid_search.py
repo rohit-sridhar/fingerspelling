@@ -36,7 +36,7 @@ def test_get_name_ext_various_flags():
         custom_ext="myext"
     )
 
-    name = gs.get_name_ext(0, tc=5, num_its=10, num_tri_its=2, hmmdef="hmmX", trace_value=3)
+    name = gs.get_name_ext(tc=5, num_its=10, num_tri_its=2, hmmdef="hmmX", trace_value=3)
     # base (no ip): hmmX_10its_2tri-its_tc5
     assert name.startswith("hmmX_10its_2tri-its_tc5")
     assert "_grliwph" in name
@@ -73,3 +73,37 @@ def test_get_hresults_filepaths_with_modelname_insert():
     model_file = Path(word).name.split("hresults.log_word")[-1]
 
     assert "neg5ip" in model_file
+
+
+def test_save_model_copies(tmp_path, monkeypatch):
+    # Arrange: use a temporary models root and real make_dir
+    monkeypatch.setattr(gs, "MODELS_ROOT", str(tmp_path / "models"))
+    monkeypatch.setattr(gs, "MODEL_MACROS_FILE", "newMacros")
+    # Restore real make_dir for this test
+    monkeypatch.setattr(gs, "make_dir", original_make_dir)
+
+    gs.args = SimpleNamespace(
+        use_phrase=True,
+        no_custom_silsp=True,
+        cross_word=False,
+        no_triletter=True,
+        custom_ext="myext"
+    )
+
+    subdirs = "test_subdir"
+    num_its = 5
+    
+    # Create the current model file that save_model should copy
+    curr_dir = Path(gs.MODELS_ROOT) / subdirs / f"hmm0.{num_its-1}"
+    curr_dir.mkdir(parents=True)
+
+    src = curr_dir / gs.MODEL_MACROS_FILE
+    src.write_text("dummy-model-contents")
+
+    # Act
+    gs.save_model(ip=10, tc=5, num_its=num_its, num_tri_its=2, hmmdef="hmmX", subdirs=subdirs)
+
+    # Assert: new model path should exist and contain the same contents
+    new_model_dir, new_model_path = gs.get_model_path(subdirs, 10, 5, num_its, 2, "hmmX")
+    assert Path(new_model_path).exists()
+    assert Path(new_model_path).read_text() == "dummy-model-contents"

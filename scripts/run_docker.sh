@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Usage: run_docker.sh <ls|run|launch|rm> [CONTAINER_NAME] [PROJECTS_ROOT]
+# Usage: run_docker.sh <ls|run|launch|rm|build|enter> [CONTAINER_NAME] [SCRIPT(for run)] [PROJECTS_ROOT]
 # Environment variables (optional): LOCAL_HTK_IMAGE, PROJECTS_PROJECTS_ROOT, FINGERSPELLING_PATH, FS_TRANSFORMERS_PATH, FINGERSPELLING_VIDEO_PATH, ISLR_MPUTILS_OUT_PATH, VIMRC_FILE
 
 usage() {
-    echo "Usage: $0 <ls|run|launch|rm> [CONTAINER_NAME] [PROJECTS_ROOT]"
+    echo "Usage: $0 <ls|run|launch|rm|build|enter> [CONTAINER_NAME] [RUN_SCRIPT]?run [PROJECTS_ROOT]"
+    echo "  Note: when using 'run', provide RUN_SCRIPT as the second argument before PROJECTS_ROOT."
     exit 1
 }
 

@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Simple unit test: run the container detached and verify it prints ECHO_TEST_OK
-TEST_SCRIPT="./scripts/tests/echo_test.sh"
+TEST_SCRIPT="./ContinuousBigram/scripts/tests/echo_test.sh"
 CONTAINER_NAME="fs_hmm"
 EXPECTED="ECHO_TEST_OK"
 

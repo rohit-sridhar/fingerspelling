@@ -1,6 +1,6 @@
 FROM rohitsridhar91/asl_sign_recognizer:latest
 
-WORKDIR /data/hmm_modeling/fingerspelling/ContinuousBigram
+WORKDIR /data/hmm_modeling/fingerspelling
 
 RUN mkdir /root/.tmp
 
