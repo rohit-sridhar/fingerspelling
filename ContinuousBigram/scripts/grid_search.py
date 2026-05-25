@@ -5,6 +5,8 @@ import csv
 import sys
 import subprocess
 import shutil
+import logging
+from logging.handlers import MemoryHandler
 
 from itertools import product
 from utils import *
@@ -26,8 +28,8 @@ def parse_args():
         "--data_files",
         type=str,
         nargs='+',
-        default=['./data/supplemental/dl_cmp/dim20/thr1/train/interpall1/pt2/data/'],
-        help="All the different datasets to test. (must end with /data) " + \
+        required=True,
+        help="All the different datasets to test. (must end with /data and begin with DATA_ROOT) " + \
                 "The label path is created from this path."
     )
     
@@ -154,7 +156,7 @@ def parse_args():
         "--test_model_path",
         type=str,
         default=None,
-        help="Model path for testing."
+        help="Model path for testing. Must begin with MODELS_ROOT."
     )
     
     parser.add_argument(
@@ -196,20 +198,19 @@ def _make_options_file(subdirs):
     copy_options_file = shutil.copy2(original_options_file, new_options_file)
     
 # Check args
-def check_args():
+def _check_args():
     for i in range(len(args.data_files)):
-        if args.data_files[i].endswith('/'):
-            args.data_files[i] = args.data_files[i][:-1]
-        
-        if not(args.data_files[i].endswith('data')):
-            raise ValueError("Data files must end with /data (last subdir).")
+        args.data_files[i] = os.path.abspath(args.data_files[i])
+
+        if not valid_data_loc(args.data_files[i]):
+            raise ValueError("Data files must start with DATA_ROOT and end with /data (last subdir).")
 
     if args.test_model_path is not None:
         if args.test_model_path.startswith("."):
             args.test_model_path = os.path.join(*args.test_model_path.split(os.path.sep)[1:])
         
-        if not(args.test_model_path.startswith(MODELS_ROOT)):
-            raise ValueError("Please pass a path where the first dir is (./)?model")
+        if not args.test_model_path.startswith(MODELS_ROOT):
+            raise ValueError("Test model path")
 
 # get the ip ext (for results file naming)
 def get_ip_ext(ip):
@@ -228,7 +229,6 @@ def get_name_ext(tc, num_its, num_tri_its, hmmdef, trace_value=None):
     # Do not include insertion-penalty (ip) in the name extension anymore
     name_ext += "_".join([f"{hmmdef}", f"{num_its}its", f"{num_tri_its}tri-its", f"tc{tc}"])
 
-    print(args)
     if args.use_phrase:
         name_ext += "_grliwph"
 
@@ -393,7 +393,7 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     hmmdef_search = HMMDEF_VARNAME + r"\s*=\s*\$HMM_TOPOLOGY_DIR\/.+"
     hmmdef_repl = HMMDEF_VARNAME + f"=$HMM_TOPOLOGY_DIR/{hmmdef}"
 
-    models_dir = os.path.join(MODELS_ROOT, subdirs, hmmdef)
+    models_dir = os.path.join(os.path.basename(MODELS_ROOT), subdirs, hmmdef)
     models_root_search = MODELS_ROOT_VARNAME + r"\s*=\s*\$\{PRJ\}\/models.*"
     models_root_repl = MODELS_ROOT_VARNAME + os.path.join("=${PRJ}", models_dir)
     
@@ -563,7 +563,26 @@ def edit_htk_root_file_options(subdirs):
     make_dir(ext_dir)
     print("#####\n")
 
-def test_model(ip, tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
+def get_log_file(subdirs, name_ext, mode):
+    """Return a log file path. Ensures the log directory exists.
+
+    mode must be one of: "train", "test", "grid_search". Raises ValueError otherwise.
+    """
+    if mode not in ("train", "test", "grid_search"):
+        raise ValueError("mode must be one of 'train', 'test', or 'grid_search'")
+
+    log_dir = os.path.join(LOG_ROOT, subdirs)
+    make_dir(log_dir)
+
+    if mode == "train":
+        return os.path.join(log_dir, "output.log_" + name_ext)
+    elif mode == "test":
+        return os.path.join(log_dir, "output.log_" + name_ext + ".test_model")
+    elif mode == "grid_search":
+        return os.path.join(log_dir, "grid_search.log_" + name_ext)
+
+
+def test_model(tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
     name_ext = get_name_ext(tc, num_its, num_tri_its, hmmdef, trace_value=trace_value)
     
     log_dir = os.path.join(LOG_ROOT, subdirs)
@@ -571,10 +590,10 @@ def test_model(ip, tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
     make_dir(log_dir)
     print("#####\n")
 
-    log_file = os.path.join(log_dir, "output.log_" + name_ext + ".test_model")
+    log_file = get_log_file(subdirs, name_ext, mode="test")
     
     if args.test_model_path is None:
-        _, new_model_path = get_model_path(subdirs, ip, tc, num_its, num_tri_its, hmmdef)
+        _, new_model_path = get_model_path(subdirs, tc, num_its, num_tri_its, hmmdef)
     else:
         new_model_path = args.test_model_path
     print(f"Model Dir: {new_model_path}")
@@ -592,7 +611,7 @@ def test_model(ip, tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
             subprocess.run(test_args, stdout=f, stderr=subprocess.STDOUT)
 
 # Runs the train model script
-def train_model(ip, tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
+def train_model(tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
     name_ext = get_name_ext(tc, num_its, num_tri_its, hmmdef, trace_value=trace_value)
     
     log_dir = os.path.join(LOG_ROOT, subdirs)
@@ -600,7 +619,7 @@ def train_model(ip, tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
     make_dir(log_dir)
     print("#####\n")
     
-    log_file = os.path.join(log_dir, "output.log_" + name_ext)
+    log_file = get_log_file(subdirs, name_ext, mode="train")
     
     options_file = get_options_file(subdirs)
     train_args = [TRAIN_SCRIPT, options_file]
@@ -677,7 +696,7 @@ def add_results_to_csv(ip, tc, num_its, num_tri_its, hmmdef, subdirs):
             csvwriter.writerow(['letter_results_file','letter_corr', 'letter_acc', 'word_corr', 'word_acc', 'sent_corr'])
             csvwriter.writerow(results)
 
-def get_model_path(subdirs, ip, tc, num_its, num_tri_its, hmmdef):
+def get_model_path(subdirs, tc, num_its, num_tri_its, hmmdef):
     name_ext = get_name_ext(tc, num_its, num_tri_its, hmmdef)  # Pass none for first arg because the model doesn't vary by grammar
 
     new_model_dir = os.path.join(MODELS_ROOT, subdirs)
@@ -686,11 +705,10 @@ def get_model_path(subdirs, ip, tc, num_its, num_tri_its, hmmdef):
 
     return new_model_dir, new_model_path
 
-def save_model(ip, tc, num_its, num_tri_its, hmmdef, subdirs):
+def save_model(tc, num_its, num_tri_its, hmmdef, subdirs):
     curr_model_path = os.path.join(MODELS_ROOT, subdirs, f"hmm0.{num_its-1}", MODEL_MACROS_FILE)
     
-    name_ext = get_name_ext(tc, num_its, num_tri_its, hmmdef)  # Pass none for first arg because the model doesn't vary by grammar
-    new_model_dir, new_model_path = get_model_path(subdirs, ip, tc, num_its, num_tri_its, hmmdef)
+    new_model_dir, new_model_path = get_model_path(subdirs, tc, num_its, num_tri_its, hmmdef)
     make_dir(new_model_dir)
     
     print(f"Current Model Dir: {curr_model_path}")
@@ -759,7 +777,7 @@ def clear_results_files(ip, tc, num_its, num_tri_its, hmmdef, subdirs):
 
 if __name__ == "__main__":
     args = parse_args()
-    check_args()
+    _check_args()
     
     print("##### Args #####")
     print(args)
@@ -777,7 +795,7 @@ if __name__ == "__main__":
     
     for data_file in args.data_files:
         # TODO Write prepare files function
-        subdirs = get_subdirectories(data_file)
+        subdirs = get_subdirectories_joined(data_file)
         label_file = os.path.join('label', subdirs, 'label')
         
         _make_options_file(subdirs)
@@ -822,7 +840,6 @@ if __name__ == "__main__":
 
             if args.test_model:
                 test_model(
-                    ip,
                     tc,
                     num_its,
                     num_tri_its,
@@ -832,7 +849,6 @@ if __name__ == "__main__":
                 )
             else:
                 train_model(
-                    ip,
                     tc,
                     num_its,
                     num_tri_its,
@@ -842,7 +858,6 @@ if __name__ == "__main__":
                 )
             
                 save_model(
-                    ip,
                     tc,
                     num_its,
                     num_tri_its,

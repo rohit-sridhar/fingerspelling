@@ -1,12 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Usage: run_docker.sh <ls|run|launch|rm|build|enter> [CONTAINER_NAME] [SCRIPT(for run)] [PROJECTS_ROOT]
-# Environment variables (optional): LOCAL_HTK_IMAGE, PROJECTS_PROJECTS_ROOT, FINGERSPELLING_PATH, FS_TRANSFORMERS_PATH, FINGERSPELLING_VIDEO_PATH, ISLR_MPUTILS_OUT_PATH, VIMRC_FILE
+# Usage: run_docker.sh <ls|run|launch|rm|build|enter> [CONTAINER_NAME] [SCRIPT_FOR_run]
+# Environment variables (optional): LOCAL_HTK_IMAGE, PROJECTS_ROOT, FINGERSPELLING_PATH, FS_TRANSFORMERS_PATH, FINGERSPELLING_VIDEO_PATH, ISLR_MPUTILS_OUT_PATH, VIMRC_FILE
 
 usage() {
-    echo "Usage: $0 <ls|run|launch|rm|build|enter> [CONTAINER_NAME] [RUN_SCRIPT]?run [PROJECTS_ROOT]"
-    echo "  Note: when using 'run', provide RUN_SCRIPT as the second argument before PROJECTS_ROOT."
+    echo "Usage: $0 <ls|run|launch|rm|build|enter> [CONTAINER_NAME] [SCRIPT_FOR_run] [SCRIPT_ARGS...]"
+    echo ""
+    echo "Notes:"
+    echo "  - For 'run', provide CONTAINER_NAME and SCRIPT_FOR_run; any additional args after the script are forwarded to the script inside the container."
+    echo "  - PROJECTS_ROOT is hardcoded in this script (default: /data)."
     exit 1
 }
 
@@ -16,14 +19,15 @@ fi
 
 cmd="$1"
 container="${2:-}"
-local_image="rohit_hmm_fingerspelling"
-# Support 'run' which takes a script argument as $3 and optional PROJECTS_ROOT as $4
 if [ "$cmd" = "run" ]; then
     script="${3:-}"
-    PROJECTS_ROOT="${4:-${PROJECTS_ROOT:-/data}}"
-else
-    PROJECTS_ROOT="${3:-${PROJECTS_ROOT:-/data}}"
+    # capture additional args after the script and forward them to the command run inside container
+    extra_args=("${@:4}")
 fi
+
+local_image="rohit_hmm_fingerspelling"
+
+PROJECTS_ROOT="${PROJECTS_ROOT:-/data}"
 LOCAL_HTK_IMAGE="${LOCAL_HTK_IMAGE:-rohit_hmm_fingerspelling}"
 
 case "$cmd" in
@@ -83,14 +87,14 @@ case "$cmd" in
         islr_mputils_out_path="${ISLR_MPUTILS_OUT_PATH:-${PROJECTS_ROOT}/deep_learning/ISLR-ML/mputils/out}"
         vimrc_file="${VIMRC_FILE:-${HOME}/.vimrc}"
 
-        docker run -d --rm \
+        docker run --rm \
           -v "${fingerspelling_path}":"/data/hmm_modeling/fingerspelling" \
           -v "${fs_transformers_path}":"/data/deep_learning/fs_transformers" \
           -v "${fingerspelling_video_path}":"/data/sign_language_videos/fingerspelling_videos:ro" \
           -v "${islr_mputils_out_path}":"/data/deep_learning/ISLR-ML/mputils:ro" \
           -v "${vimrc_file}":"/root/.vimrc:ro" \
           -e HOSTNAME_SERVER="$HOSTNAME" \
-          --name "$container" "$LOCAL_HTK_IMAGE" bash -lc "$script"
+          --name "$container" "$LOCAL_HTK_IMAGE" bash -lc "${script} ${extra_args[@]}"
         ;;
     rm)
         if [ -z "$container" ]; then

@@ -14,7 +14,7 @@ ROOT = "/data/hmm_modeling/fingerspelling/ContinuousBigram/"
 LOG_ROOT = "logs/"
 OUTPUT_ROOT = "output/"
 RESULTS_ROOT = "results/"
-MODELS_ROOT = "models/"
+MODELS_ROOT = os.path.join(ROOT, "models")
 GRAMMAR_ROOT = "grammar/"
 MLF_ROOT = "mlf/"
 DICT_ROOT = "dict/"
@@ -23,6 +23,8 @@ EXT_ROOT = "ext/"
 
 # Scripts root is used to make the options file so use abs path.
 SCRIPTS_ROOT = os.path.join(ROOT, "scripts")
+DATA_ROOT = os.path.join(ROOT, "data")
+LABELS_ROOT = os.path.join(ROOT, "label")
 
 #### These are here for import data (to create hard links)
 # SUPP_DATA_FILES = "./data/supplemental/dl_cmp/dim20/thr0/all/data/"
@@ -183,8 +185,17 @@ def run_subprocess(cmd, live_print=True):
             print(result.stderr)
 
 ##### SUBDIRECTORY UTILS #####
+# checks if the path is a supplemental_gen dataset
+# path
 def is_supplemental(path):
     return "supplemental_gen" in path
+
+# checks that the data loc passed is valid (not None,
+# starts with DATA_ROOT, and ends with data/)
+def valid_data_loc(data_loc):
+    return data_loc is not None and \
+        data_loc.endswith("/data") and \
+        data_loc.startswith(f"{DATA_ROOT}")
 
 # Makes a dir if it doesn't exist. If it does exist, makes dir based
 # on arg rmdir
@@ -199,20 +210,19 @@ def make_dir(dir_loc, rmdir=False):
     else:
         print(f"Did not create {dir_loc} since it exists and rmdir is False.")
 
-# The functions below get the subdirectories for 
-### TODO _get_subdirs and get_subdirectories make a lot of 
-### assumptions about the path passed in. Fix this in check_args
-## for now. Later, move to PathLib
-def _get_subdirs(filepath):
-    if filepath.startswith('.'):
-        # return os.path.join(*(data_file.split('/')[2:-1]))
-        return filepath.split('/')[2:-1]
-    else:
-        return filepath.split('/')[1:-1]
+# The functions below get the subdirectories for a given data directory.
+# It expects an absolute path as input.
+def get_subdirectories_split(filepath):
+    return filepath[len(ROOT):].split("/")[1:-1]
 
 # Get the subdirectories of the data file (leave out root and filename)
-def get_subdirectories(filepath):
-    subdir_list = _get_subdirs(filepath)
+# Expects input filepath to start at root. The folder directly beneath root
+# and the leaf folder should have the same name.
+def get_subdirectories_joined(filepath):
+    if not filepath.startswith(ROOT):
+        raise ValueError("filepath arg must start with ROOT")
+
+    subdir_list = get_subdirectories_split(filepath)
     subdirs = os.path.join(*(subdir_list))
     return subdirs
 
