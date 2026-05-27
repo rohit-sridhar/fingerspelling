@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import argparse
 import re
 import os
@@ -5,6 +7,8 @@ import csv
 import sys
 import subprocess
 import shutil
+import logging
+from logging.handlers import MemoryHandler
 
 from itertools import product
 from utils import *
@@ -26,8 +30,8 @@ def parse_args():
         "--data_files",
         type=str,
         nargs='+',
-        default=['./data/supplemental/dl_cmp/dim20/thr1/train/interpall1/pt2/data/'],
-        help="All the different datasets to test. (must end with /data) " + \
+        required=True,
+        help="All the different datasets to test. (must end with /data and begin with DATA_ROOT) " + \
                 "The label path is created from this path."
     )
     
@@ -154,7 +158,7 @@ def parse_args():
         "--test_model_path",
         type=str,
         default=None,
-        help="Model path for testing."
+        help="Model path for testing. Must begin with MODELS_ROOT."
     )
     
     parser.add_argument(
@@ -196,21 +200,22 @@ def _make_options_file(subdirs):
     copy_options_file = shutil.copy2(original_options_file, new_options_file)
     
 # Check args
-def check_args():
+def _check_args():
     for i in range(len(args.data_files)):
-        if args.data_files[i].endswith('/'):
-            args.data_files[i] = args.data_files[i][:-1]
-        
-        if not(args.data_files[i].endswith('data')):
-            raise ValueError("Data files must end with /data (last subdir).")
+        args.data_files[i] = os.path.abspath(args.data_files[i])
+
+        if not valid_data_loc(args.data_files[i]):
+            raise ValueError("Data files must start with DATA_ROOT and end with /data (last subdir).")
 
     if args.test_model_path is not None:
-        if args.test_model_path.startswith("."):
-            args.test_model_path = os.path.join(*args.test_model_path.split(os.path.sep)[1:])
-        
-        if not(args.test_model_path.startswith(MODELS_ROOT)):
-            raise ValueError("Please pass a path where the first dir is (./)?model")
+        # if args.test_model_path.startswith("."):
+        #     args.test_model_path = os.path.join(*args.test_model_path.split(os.path.sep)[1:])
+        # 
+        args.test_model_path = os.path.abspath(args.test_model_path)
+        if not args.test_model_path.startswith(MODELS_ROOT):
+            raise ValueError("Test model path must begin with MODELS_ROOT")
 
+# get the ip ext (for results file naming)
 def get_ip_ext(ip):
     ip_int = abs(int(ip))
     if ip > 0:
@@ -221,11 +226,11 @@ def get_ip_ext(ip):
         return f"{ip_int}ip" 
 
 # Get the name extension for the results/output file
-def get_name_ext(ip, tc, num_its, num_tri_its, hmmdef, trace_value=None):
+def get_name_ext(tc, num_its, num_tri_its, hmmdef, trace_value=None):
     name_ext = ""
 
-    ip_ext = get_ip_ext(ip)
-    name_ext += "_".join([f"{ip_ext}", f"{hmmdef}", f"{num_its}its", f"{num_tri_its}tri-its", f"tc{tc}"])
+    # Do not include insertion-penalty (ip) in the name extension anymore
+    name_ext += "_".join([f"{hmmdef}", f"{num_its}its", f"{num_tri_its}tri-its", f"tc{tc}"])
 
     if args.use_phrase:
         name_ext += "_grliwph"
@@ -248,7 +253,7 @@ def get_name_ext(ip, tc, num_its, num_tri_its, hmmdef, trace_value=None):
     return name_ext
 
 # Get the results filepath
-def get_hresults_filepaths(name_ext, subdirs, ip):
+def get_hresults_prj_filepaths(name_ext, subdirs, ip):
     results_dir = os.path.join(RESULTS_ROOT, subdirs)
     print("##### Creating Results Dirs #####")
     make_dir(results_dir)
@@ -257,25 +262,41 @@ def get_hresults_filepaths(name_ext, subdirs, ip):
         letter_results_file = '_'.join(["hresults.log_letter", name_ext])
         word_results_file = '_'.join(["hresults.log_word", name_ext])
     else:
-        model_dir, model_name = os.path.split(args.test_model_path)
+        test_model_path_relative = args.test_model_path[len(ROOT)+1:]
+        model_dir, model_name = os.path.split(test_model_path_relative)
         model_results_dir = '_'.join(model_dir.split(os.path.sep)[1:])
-
+        
         results_dir = os.path.join(results_dir, model_results_dir)
         make_dir(results_dir)
         
-        #### TODO Need to rm insertion penalty from model names     ####
+        # Ensure model_name contains the correct insertion-penalty token if present; be robust to different name formats
         model_name_split = model_name.split("_")
-        model_name_split[1] = get_ip_ext(ip)
+        ip_token = get_ip_ext(ip)
+        ip_idx = None
+        for i, t in enumerate(model_name_split):
+            if re.match(r'^(pos|neg)?\d+ip$', t):
+                ip_idx = i
+                break
+        
+        if ip_idx is not None:
+            model_name_split[ip_idx] = ip_token
+        else:
+            # insert after first component to preserve legacy structure where applicable
+            if len(model_name_split) >= 1:
+                model_name_split.insert(1, ip_token)
+            else:
+                model_name_split.append(ip_token)
         model_name = "_".join(model_name_split)
 
         letter_results_file = '.'.join(["hresults", "log_letter", model_name])
         word_results_file = '.'.join(["hresults", "log_word", model_name])
         
-    letter_results = os.path.join("${PRJ}", results_dir, letter_results_file)
-    word_results = os.path.join("${PRJ}", results_dir, word_results_file)
+    results_relative = os.path.join(os.path.basename(RESULTS_ROOT), subdirs)
+    letter_results_file = os.path.join("${PRJ}", results_relative, letter_results_file)
+    word_results_file = os.path.join("${PRJ}", results_relative, word_results_file)
     print("#####\n")
 
-    return (letter_results, word_results)
+    return (letter_results_file, word_results_file)
 
 # get ledfile name (uniq for each hyperparam/data setting)
 def get_ledfile_info(subdirs):
@@ -317,11 +338,11 @@ def edit_file(re_search, re_repl, file_to_edit):
 # The function below makes changes for triletter modeling. commands_word and
 # mlf location word stay the same (between single/tri) so those are not modified.
 def make_triletter_changes(subdirs):
-    triletter_search = TRILETTER_VARNAME + "\s*=\s*(yes|no)"
-    dictfile_search = "^DICTFILE\s*=\s*\$\{DICTFILE_ROOT\}\/dict_(tri|letter)2letter"
-    dictfile_word_search = "^DICTFILE_WORD\s*=\s*\$\{DICTFILE_ROOT\}\/dict_(tri|letter)2word"
-    tokens_search = "^TOKENS\s*=\s*\$\{TOKENS_ROOT\}\/commands_(tri_internal|letter)"
-    mlf_location_search = "^MLF_LOCATION\s*=\s*\$\{MLF_ROOT\}\/labels.mlf_(tri_internal|letter)"
+    triletter_search = TRILETTER_VARNAME + r"\s*=\s*(yes|no)"
+    dictfile_search = r"^DICTFILE\s*=\s*\$\{DICTFILE_ROOT\}\/dict_(tri|letter)2letter"
+    dictfile_word_search = r"^DICTFILE_WORD\s*=\s*\$\{DICTFILE_ROOT\}\/dict_(tri|letter)2word"
+    tokens_search = r"^TOKENS\s*=\s*\$\{TOKENS_ROOT\}\/commands_(tri_internal|letter)"
+    mlf_location_search = r"^MLF_LOCATION\s*=\s*\$\{MLF_ROOT\}\/labels.mlf_(tri_internal|letter)"
     
     if args.no_triletter:
         triletter_repl = TRILETTER_VARNAME + "=no"
@@ -345,80 +366,84 @@ def make_triletter_changes(subdirs):
     edit_file(mlf_location_search, mlf_location_repl, options_file)
  
     print("##### Setting Triletter HTK Files #####")
-    run_subprocess(["grep", "^"+TRILETTER_VARNAME+"\s*=\s*", options_file])
-    run_subprocess(["grep", "^DICTFILE\s*=\s*", options_file])
-    run_subprocess(["grep", "^DICTFILE_WORD\s*=\s*", options_file])
-    run_subprocess(["grep", "^TOKENS\s*=\s*", options_file])
-    run_subprocess(["grep", "^MLF_LOCATION\s*=\s*", options_file])
+    run_subprocess(["grep", "^"+TRILETTER_VARNAME+r"\s*=\s*", options_file])
+    run_subprocess(["grep", r"^DICTFILE\s*=\s*", options_file])
+    run_subprocess(["grep", r"^DICTFILE_WORD\s*=\s*", options_file])
+    run_subprocess(["grep", r"^TOKENS\s*=\s*", options_file])
+    run_subprocess(["grep", r"^MLF_LOCATION\s*=\s*", options_file])
     print("#####\n")
     
 
 # Edit options file with all new hyperparams (calls helper above)
 def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_value=None):
-    name_ext = get_name_ext(ip, tc, num_its, num_tri_its, hmmdef) # We leave trace_value out in this call.
-    letter_results, word_results = get_hresults_filepaths(name_ext, subdirs, ip)
+    name_ext = get_name_ext(tc, num_its, num_tri_its, hmmdef) # We leave trace_value out in this call.
+    letter_results_file, word_results_file = get_hresults_prj_filepaths(name_ext, subdirs, ip)
 
     custom_silsp, multi_process, hedfile1, cross_word, whole_word, use_phrase = get_bool_arg_info()
     hedfile2 = f"${{PRJ}}/instr/mktri2_tc.{hmmdef}.hed"
     num_threads = get_machine_info()
 
-    ip_search = IP_VARNAME + "\s*=\s*-?[0-9]+(\.[0-9]+)*"
+    ip_search = IP_VARNAME + r"\s*=\s*-?[0-9]+(\.[0-9]+)*"
     ip_repl = IP_VARNAME + f"={ip}"
 
     tc_search = "^TC [0-9]+"
     tc_repl = f"TC {tc}"
 
-    num_its_search = NUM_ITS_VARNAME + "\s*=\s*[0-9]+"
+    num_its_search = NUM_ITS_VARNAME + r"\s*=\s*[0-9]+"
     num_its_repl = NUM_ITS_VARNAME + f"={num_its}"
 
-    num_tri_its_search = NUM_TRI_ITS_VARNAME + "\s*=\s*[0-9]+"
+    num_tri_its_search = NUM_TRI_ITS_VARNAME + r"\s*=\s*[0-9]+"
     num_tri_its_repl = NUM_TRI_ITS_VARNAME + f"={num_tri_its}"
 
-    hmmdef_search = HMMDEF_VARNAME + "\s*=\s*\$HMM_TOPOLOGY_DIR\/.+"
+    hmmdef_search = HMMDEF_VARNAME + r"\s*=\s*\$HMM_TOPOLOGY_DIR\/.+"
     hmmdef_repl = HMMDEF_VARNAME + f"=$HMM_TOPOLOGY_DIR/{hmmdef}"
 
-    models_dir = os.path.join(MODELS_ROOT, subdirs, hmmdef)
-    models_root_search = MODELS_ROOT_VARNAME + "\s*=\s*\$\{PRJ\}\/models.*"
-    models_root_repl = MODELS_ROOT_VARNAME + os.path.join("=${PRJ}", models_dir)
+    models_relative = os.path.join(os.path.basename(MODELS_ROOT), subdirs, hmmdef)
+    models_root_search = MODELS_ROOT_VARNAME + r"\s*=\s*\$\{PRJ\}\/models.*"
+    models_root_repl = MODELS_ROOT_VARNAME + os.path.join("=${PRJ}", models_relative)
     
-    hedfile1_search = HEDFILE1_VARNAME + "\s*=\s*\$\{PRJ\}\/instr\/mktri1_.*\.hed"
+    # make models dir here
+    models_dir = get_model_path(subdirs, hmmdef)
+    make_dir(models_dir)
+    
+    hedfile1_search = HEDFILE1_VARNAME + r"\s*=\s*\$\{PRJ\}\/instr\/mktri1_.*\.hed"
     hedfile1_repl = HEDFILE1_VARNAME + f"={hedfile1}"
     
-    hedfile2_search = HEDFILE2_VARNAME + "\s*=\s*\$\{PRJ\}\/instr\/mktri2_.*\.hed"
+    hedfile2_search = HEDFILE2_VARNAME + r"\s*=\s*\$\{PRJ\}\/instr\/mktri2_.*\.hed"
     hedfile2_repl = HEDFILE2_VARNAME + f"={hedfile2}"
     
-    custom_silsp_search = CUSTOM_SILSP_VARNAME + "\s*=\s*(yes|no)"
+    custom_silsp_search = CUSTOM_SILSP_VARNAME + r"\s*=\s*(yes|no)"
     custom_silsp_repl = CUSTOM_SILSP_VARNAME + f"={custom_silsp}"
     
-    multi_process_search = MULTI_PROCESS_VARNAME + "\s*=\s*(yes|no)"
+    multi_process_search = MULTI_PROCESS_VARNAME + r"\s*=\s*(yes|no)"
     multi_process_repl = MULTI_PROCESS_VARNAME + f"={multi_process}"
     
-    cross_word_search = CROSS_WORD_VARNAME + "\s*=\s*(yes|no)"
+    cross_word_search = CROSS_WORD_VARNAME + r"\s*=\s*(yes|no)"
     cross_word_repl = CROSS_WORD_VARNAME + f"={cross_word}"
     
-    ngram_word_search = NGRAM_WORD_VARNAME + "\s*=\s*[0-9]"
+    ngram_word_search = NGRAM_WORD_VARNAME + r"\s*=\s*[0-9]"
     ngram_word_repl = NGRAM_WORD_VARNAME + f"={ngram}"
     
-    whole_word_search = WHOLE_WORD_VARNAME + "\s*=\s*(yes|no)"
+    whole_word_search = WHOLE_WORD_VARNAME + r"\s*=\s*(yes|no)"
     whole_word_repl = WHOLE_WORD_VARNAME + f"={whole_word}"
 
-    use_phrase_search = USE_PHRASE_VARNAME + "\s*=\s*(yes|no)"
+    use_phrase_search = USE_PHRASE_VARNAME + r"\s*=\s*(yes|no)"
     use_phrase_repl = USE_PHRASE_VARNAME + f"={use_phrase}"
 
-    cross_word_hedfile1_search = "^CL commands\/commands_tri_(internal|cross)$"
-    cross_word_hedfile1_repl = "CL commands/commands_tri_cross" if args.cross_word else "CL commands/commands_tri_internal"
-    hedfile1_local_file = hedfile1.replace("${PRJ}", ".")
+    hedfile1_tokens_root_search = r"^CL .*commands\/commands_tri_(internal|cross)(\.all)?$"
+    hedfile1_tokens_root_repl = f"CL {ROOT}/commands/commands_tri_internal.all"
+    hedfile1_local_file = hedfile1.replace("${PRJ}", ROOT)
 
-    letter_results_search = LOG_LETTER_VARNAME + "\s*=\s*\$\{PRJ\}\/.*hresults\.log_letter.*"
-    letter_results_repl = LOG_LETTER_VARNAME + f"={letter_results}"
+    letter_results_search = LOG_LETTER_VARNAME + r"\s*=\s*\$\{PRJ\}\/.*hresults\.log_letter.*"
+    letter_results_repl = LOG_LETTER_VARNAME + f"={letter_results_file}"
     
-    word_results_search = LOG_WORD_VARNAME + "\s*=\s*\$\{PRJ\}\/.*hresults\.log_word.*"
-    word_results_repl = LOG_WORD_VARNAME + f"={word_results}"
+    word_results_search = LOG_WORD_VARNAME + r"\s*=\s*\$\{PRJ\}\/.*hresults\.log_word.*"
+    word_results_repl = LOG_WORD_VARNAME + f"={word_results_file}"
 
-    trace_level_search = TRACE_LEVEL_VARNAME + "\s*=\s*[0-9]+"
+    trace_level_search = TRACE_LEVEL_VARNAME + r"\s*=\s*[0-9]+"
     trace_level_repl = TRACE_LEVEL_VARNAME + f"={trace_value}"
 
-    threads_search = THREADS_VARNAME + "\s*=\s*[0-9]+"
+    threads_search = THREADS_VARNAME + r"\s*=\s*[0-9]+"
     threads_repl = THREADS_VARNAME + f"={num_threads}"
     
     options_file = get_options_file(subdirs)
@@ -442,28 +467,26 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     edit_file(threads_search, threads_repl, options_file)
     edit_file(whole_word_search, whole_word_repl, options_file)
     edit_file(use_phrase_search, use_phrase_repl, options_file)
-    
-    # make models dir here
-    make_dir(models_dir)
+    edit_file(hedfile1_tokens_root_search, hedfile1_tokens_root_repl, hedfile1_local_file)
     
     print("##### Hyperparameters #####")
-    run_subprocess(["grep", "^" + IP_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + NUM_ITS_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + NUM_TRI_ITS_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + HMMDEF_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + MODELS_ROOT_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + LOG_LETTER_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + LOG_WORD_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + HEDFILE1_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + HEDFILE2_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + CUSTOM_SILSP_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + MULTI_PROCESS_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + CROSS_WORD_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + NGRAM_WORD_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + TRACE_LEVEL_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + THREADS_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + WHOLE_WORD_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + USE_PHRASE_VARNAME + "\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + IP_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + NUM_ITS_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + NUM_TRI_ITS_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + HMMDEF_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + MODELS_ROOT_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + LOG_LETTER_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + LOG_WORD_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + HEDFILE1_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + HEDFILE2_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + CUSTOM_SILSP_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + MULTI_PROCESS_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + CROSS_WORD_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + NGRAM_WORD_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + TRACE_LEVEL_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + THREADS_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + WHOLE_WORD_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + USE_PHRASE_VARNAME + r"\s*=\s*", options_file])
     run_subprocess(["head", "-n", "1", f"{hedfile1_local_file}"])
     print("#####\n")
 
@@ -475,36 +498,30 @@ def edit_htk_root_file_options(subdirs):
     # Handle triletter changes separately
     make_triletter_changes(subdirs)
 
-    # grammarfile_root_search = GRAMMARFILE_ROOT_VARNAME + "\s*=\s*\$\{PRJ\}\/grammar.*"
-    # grammarfile_root_repl = GRAMMARFILE_ROOT_VARNAME + os.path.join("=${PRJ}", GRAMMAR_ROOT, subdirs)
+    mlf_relative = os.path.basename(MLF_ROOT)
+    mlf_root_search = MLF_ROOT_VARNAME + r"\s*=\s*\$\{PRJ\}\/mlf.*"
+    mlf_root_repl = MLF_ROOT_VARNAME + os.path.join("=${PRJ}", mlf_relative, subdirs)
 
-    # dictfile_root_search = DICTFILE_ROOT_VARNAME + "\s*=\s*\$\{PRJ\}\/dict.*"
-    # dictfile_root_repl = DICTFILE_ROOT_VARNAME + os.path.join("=${PRJ}", DICT_ROOT, subdirs)
-    # 
-    # tokens_root_search = TOKENS_ROOT_VARNAME + "\s*=\s*\$\{PRJ\}\/commands.*"
-    # tokens_root_repl = TOKENS_ROOT_VARNAME + os.path.join("=${PRJ}", TOKENS_ROOT, subdirs)
+    output_relative = os.path.basename(OUTPUT_ROOT)
+    outputfile_root_search = OUTPUTFILE_ROOT_VARNAME + r"\s*=\s*\$\{PRJ\}\/output.*"
+    outputfile_root_repl = OUTPUTFILE_ROOT_VARNAME + os.path.join("=${PRJ}", output_relative, subdirs)
+
+    ext_relative = os.path.basename(EXT_ROOT)
+    ext_dir_search = EXT_DIR_VARNAME + r"\s*=\s*\$\{PRJ\}\/ext.*"
+    ext_dir_repl = EXT_DIR_VARNAME + os.path.join("=${PRJ}", ext_relative, subdirs)
     
-    mlf_root_search = MLF_ROOT_VARNAME + "\s*=\s*\$\{PRJ\}\/mlf.*"
-    mlf_root_repl = MLF_ROOT_VARNAME + os.path.join("=${PRJ}", MLF_ROOT, subdirs)
-
-    outputfile_root_search = OUTPUTFILE_ROOT_VARNAME + "\s*=\s*\$\{PRJ\}\/output.*"
-    outputfile_root_repl = OUTPUTFILE_ROOT_VARNAME + os.path.join("=${PRJ}", OUTPUT_ROOT, subdirs)
-
-    ext_dir_search = EXT_DIR_VARNAME + "\s*=\s*\$\{PRJ\}\/ext.*"
-    ext_dir_repl = EXT_DIR_VARNAME + os.path.join("=${PRJ}", EXT_ROOT, subdirs)
-    
-    ledfile_uniq_search = LEDFILE_UNIQ_VARNAME + "\s*=\s*.+"
+    ledfile_uniq_search = LEDFILE_UNIQ_VARNAME + r"\s*=\s*.+"
     ledfile_uniq_repl = LEDFILE_UNIQ_VARNAME + f"={led_file_info}"
 
-    hmmsil_search = HMMSIL_VARNAME + "\s*=\s*\$HMM_TOPOLOGY_DIR\/3state-pca.+"
+    hmmsil_search = HMMSIL_VARNAME + r"\s*=\s*\$HMM_TOPOLOGY_DIR\/3state-pca.+"
     hmmsil_repl = HMMSIL_VARNAME + f"=$HMM_TOPOLOGY_DIR/3state-pca{vector_dim}-sil-skip-loop"
     hmmsil_repl = hmmsil_repl + "-fullcov" if args.full_cov else hmmsil_repl
 
-    hmmsp_search = HMMSP_VARNAME + "\s*=\s*\$HMM_TOPOLOGY_DIR\/1state-pca.+"
+    hmmsp_search = HMMSP_VARNAME + r"\s*=\s*\$HMM_TOPOLOGY_DIR\/1state-pca.+"
     hmmsp_repl = HMMSP_VARNAME + f"=$HMM_TOPOLOGY_DIR/1state-pca{vector_dim}-sp"
     hmmsp_repl = hmmsp_repl + "-fullcov" if args.full_cov else hmmsp_repl
 
-    vector_length_search = VECTOR_LENGTH_VARNAME + "\s*=\s*[0-9]+"
+    vector_length_search = VECTOR_LENGTH_VARNAME + r"\s*=\s*[0-9]+"
     vector_length_repl = VECTOR_LENGTH_VARNAME + f"={vector_dim}"
 
     # edit_file(grammarfile_root_search, grammarfile_root_repl, options_file)
@@ -519,16 +536,16 @@ def edit_htk_root_file_options(subdirs):
     edit_file(vector_length_search, vector_length_repl, options_file)
 
     print("##### Set root files #####")
-    run_subprocess(["grep", "^" + GRAMMARFILE_ROOT_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + DICTFILE_ROOT_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + TOKENS_ROOT_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + MLF_ROOT_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + OUTPUTFILE_ROOT_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + EXT_DIR_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + LEDFILE_UNIQ_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + HMMSIL_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + HMMSP_VARNAME + "\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + VECTOR_LENGTH_VARNAME + "\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + GRAMMARFILE_ROOT_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + DICTFILE_ROOT_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + TOKENS_ROOT_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + MLF_ROOT_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + OUTPUTFILE_ROOT_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + EXT_DIR_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + LEDFILE_UNIQ_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + HMMSIL_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + HMMSP_VARNAME + r"\s*=\s*", options_file])
+    run_subprocess(["grep", "^" + VECTOR_LENGTH_VARNAME + r"\s*=\s*", options_file])
     print("#####\n")
     
     grammar_dir = os.path.join(GRAMMAR_ROOT, subdirs)
@@ -547,18 +564,37 @@ def edit_htk_root_file_options(subdirs):
     make_dir(ext_dir)
     print("#####\n")
 
-def test_model(ip, tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
-    name_ext = get_name_ext(ip, tc, num_its, num_tri_its, hmmdef, trace_value=trace_value)
+def get_log_file(subdirs, name_ext, mode):
+    """Return a log file path. Ensures the log directory exists.
+
+    mode must be one of: "train", "test", "grid_search". Raises ValueError otherwise.
+    """
+    if mode not in ("train", "test", "grid_search"):
+        raise ValueError("mode must be one of 'train', 'test', or 'grid_search'")
+
+    log_dir = os.path.join(LOG_ROOT, subdirs)
+    make_dir(log_dir)
+
+    if mode == "train":
+        return os.path.join(log_dir, "output.log_" + name_ext)
+    elif mode == "test":
+        return os.path.join(log_dir, "output.log_" + name_ext + ".test_model")
+    elif mode == "grid_search":
+        return os.path.join(log_dir, "grid_search.log_" + name_ext)
+
+
+def test_model(tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
+    name_ext = get_name_ext(tc, num_its, num_tri_its, hmmdef, trace_value=trace_value)
     
     log_dir = os.path.join(LOG_ROOT, subdirs)
     print("##### Creating Testing Log Dir #####")
     make_dir(log_dir)
     print("#####\n")
 
-    log_file = os.path.join(log_dir, "output.log_" + name_ext + ".test_model")
+    log_file = get_log_file(subdirs, name_ext, mode="test")
     
     if args.test_model_path is None:
-        _, new_model_path = get_model_path(subdirs, ip, tc, num_its, num_tri_its, hmmdef)
+        _, new_model_path = get_saved_model_path(subdirs, tc, num_its, num_tri_its, hmmdef)
     else:
         new_model_path = args.test_model_path
     print(f"Model Dir: {new_model_path}")
@@ -576,15 +612,15 @@ def test_model(ip, tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
             subprocess.run(test_args, stdout=f, stderr=subprocess.STDOUT)
 
 # Runs the train model script
-def train_model(ip, tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
-    name_ext = get_name_ext(ip, tc, num_its, num_tri_its, hmmdef, trace_value=trace_value)
+def train_model(tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
+    name_ext = get_name_ext(tc, num_its, num_tri_its, hmmdef, trace_value=trace_value)
     
     log_dir = os.path.join(LOG_ROOT, subdirs)
     print("##### Creating Training Log Dir #####")
     make_dir(log_dir)
     print("#####\n")
     
-    log_file = os.path.join(log_dir, "output.log_" + name_ext)
+    log_file = get_log_file(subdirs, name_ext, mode="train")
     
     options_file = get_options_file(subdirs)
     train_args = [TRAIN_SCRIPT, options_file]
@@ -608,10 +644,10 @@ def get_results(results_file, letter_results=True):
     sent_match = None
     for line in results_lines:
         if line.startswith("WORD: "):
-            corr_match = re.search("Corr=-?[0-9]+\.[0-9]+", line).group(0)
-            acc_match = re.search("Acc=-?[0-9]+\.[0-9]+", line).group(0)
+            corr_match = re.search(r"Corr=-?[0-9]+\.[0-9]+", line).group(0)
+            acc_match = re.search(r"Acc=-?[0-9]+\.[0-9]+", line).group(0)
         if line.startswith("SENT: "):
-            sent_match = re.search("Correct=-?[0-9]+\.[0-9]+", line).group(0)
+            sent_match = re.search(r"Correct=-?[0-9]+\.[0-9]+", line).group(0)
     
     if corr_match is not None and acc_match is not None:
         if letter_results:
@@ -625,11 +661,13 @@ def get_results(results_file, letter_results=True):
     return results
 
 def add_results_to_csv(ip, tc, num_its, num_tri_its, hmmdef, subdirs):
-    name_ext = get_name_ext(ip, tc, num_its, num_tri_its, hmmdef)
-    letter_results_file, word_results_file = get_hresults_filepaths(name_ext, subdirs, ip)
+    name_ext = get_name_ext(tc, num_its, num_tri_its, hmmdef)
+    letter_results_file, word_results_file = get_hresults_prj_filepaths(name_ext, subdirs, ip)
     
-    letter_results_file = os.path.join('.', *letter_results_file.split("/")[1:])
-    word_results_file = os.path.join('.', *word_results_file.split("/")[1:])
+    letter_results_file = swap_prj_to_root(letter_results_file)
+    word_results_file = swap_prj_to_root(word_results_file)
+    # letter_results_file = os.path.join(ROOT, *letter_results_file.split("/")[1:])
+    # word_results_file = os.path.join(ROOT, *word_results_file.split("/")[1:])
     
     letter_results = get_results(letter_results_file, letter_results=True)
     word_results = get_results(word_results_file, letter_results=False)
@@ -661,25 +699,32 @@ def add_results_to_csv(ip, tc, num_its, num_tri_its, hmmdef, subdirs):
             csvwriter.writerow(['letter_results_file','letter_corr', 'letter_acc', 'word_corr', 'word_acc', 'sent_corr'])
             csvwriter.writerow(results)
 
-def get_model_path(subdirs, ip, tc, num_its, num_tri_its, hmmdef):
-    name_ext = get_name_ext(ip, tc, num_its, num_tri_its, hmmdef)  # Pass none for first arg because the model doesn't vary by grammar
+# Gets the model path (in which each iteration is stored). The directory is
+# created before training. After training, save_model copies the last iteration's
+# model 2 levels up to save it.
+def get_model_path(subdirs, hmmdef):
+    return os.path.join(MODELS_ROOT, subdirs, hmmdef)
 
-    new_model_dir = os.path.join(MODELS_ROOT, subdirs)
-    new_model_file = '_'.join([MODEL_MACROS_FILE, name_ext])
-    new_model_path = os.path.join(new_model_dir, new_model_file)
+# gets the saved model path (after grid_search a single model is saved). This
+# is the path to that model (after fixing the hyperparams)
+def get_saved_model_path(subdirs, tc, num_its, num_tri_its, hmmdef):
+    name_ext = get_name_ext(tc, num_its, num_tri_its, hmmdef)  # Pass none for first arg because the model doesn't vary by grammar
 
-    return new_model_dir, new_model_path
+    saved_model_dir = os.path.dirname(get_model_path(subdirs, hmmdef))
+    saved_model_file = '_'.join([MODEL_MACROS_FILE, name_ext])
+    saved_model_path = os.path.join(saved_model_dir, saved_model_file)
 
-def save_model(ip, tc, num_its, num_tri_its, hmmdef, subdirs):
-    curr_model_path = os.path.join(MODELS_ROOT, subdirs, f"hmm0.{num_its-1}", MODEL_MACROS_FILE)
+    return saved_model_dir, saved_model_path
 
-    name_ext = get_name_ext(ip, tc, num_its, num_tri_its, hmmdef)  # Pass none for first arg because the model doesn't vary by grammar
-    new_model_dir, new_model_path = get_model_path(subdirs, ip, tc, num_its, num_tri_its, hmmdef)
+def save_model(tc, num_its, num_tri_its, hmmdef, subdirs):
+    curr_model_path = os.path.join(get_model_path(subdirs, hmmdef), f"hmm0.{num_its-1}", MODEL_MACROS_FILE)
+    
+    new_model_dir, new_model_path = get_saved_model_path(subdirs, tc, num_its, num_tri_its, hmmdef)
     make_dir(new_model_dir)
     
     print(f"Current Model Dir: {curr_model_path}")
     print(f"New Model Dir: {new_model_path}")
-
+    
     if os.path.exists(curr_model_path):
         shutil.copy(curr_model_path, new_model_path)
     else:
@@ -727,23 +772,26 @@ def gen_grammar(subdirs, label_file, grammar_type_arg='word'):
 
 # def clear_results_files(ip, tc, num_its, num_tri_its, hmmdef, subdirs, grammar_type):
 def clear_results_files(ip, tc, num_its, num_tri_its, hmmdef, subdirs):
-    name_ext = get_name_ext(ip, tc, num_its, num_tri_its, hmmdef)
-    letter_results_file, word_results_file = get_hresults_filepaths(name_ext, subdirs, ip)
+    name_ext = get_name_ext(tc, num_its, num_tri_its, hmmdef)
+    letter_results_file, word_results_file = get_hresults_prj_filepaths(name_ext, subdirs, ip)
     
-    letter_results_file = os.path.join(*letter_results_file.split(os.path.sep)[1:])
-    word_results_file = os.path.join(*word_results_file.split(os.path.sep)[1:])
-
+    letter_results_file = swap_prj_to_root(letter_results_file)
+    word_results_file = swap_prj_to_root(word_results_file)
+    # letter_results_file = os.path.join(*letter_results_file.split(os.path.sep)[1:])
+    # word_results_file = os.path.join(*word_results_file.split(os.path.sep)[1:])
+    
     print("##### Clearing Results Files #####")
     with open(letter_results_file, 'w') as f:
         print(f"Cleared letter results")
 
     with open(word_results_file, 'w') as f:
         print(f"Cleared word results")
+    
     print("#####\n")
 
 if __name__ == "__main__":
     args = parse_args()
-    check_args()
+    _check_args()
     
     print("##### Args #####")
     print(args)
@@ -761,8 +809,8 @@ if __name__ == "__main__":
     
     for data_file in args.data_files:
         # TODO Write prepare files function
-        subdirs = get_subdirectories(data_file)
-        label_file = os.path.join('label', subdirs, 'label')
+        subdirs = get_subdirectories_joined(data_file)
+        label_file = os.path.join(LABELS_ROOT, subdirs, 'label')
         
         _make_options_file(subdirs)
         edit_htk_root_file_options(subdirs)
@@ -770,51 +818,6 @@ if __name__ == "__main__":
         if args.prepare_data or args.prepare_data_only:
             prepare_data(data_file, label_file, subdirs)
 
-            # done_file = os.path.join(ROOT, GRAMMAR_ROOT, subdirs, "done")
-            # if not(os.path.exists(done_file)):
-            #     print("##### Run gen_grammar.py #####")
-            #     gen_grammar(
-            #         subdirs,
-            #         label_file,
-            #         grammar_type_arg="word"
-            #     )
-            #     
-            #     gen_grammar(
-            #         subdirs,
-            #         label_file,
-            #         grammar_type_arg="word_sksp"
-            #     )
-
-            #     gen_grammar(
-            #         subdirs,
-            #         label_file,
-            #         grammar_type_arg="word_phrase_sksp"
-            #     )
-            #     
-            #     gen_grammar(
-            #         subdirs,
-            #         label_file,
-            #         grammar_type_arg="word_whole_word"
-            #     )
-            #     
-            #     gen_grammar(
-            #         subdirs,
-            #         label_file,
-            #         grammar_type_arg="letter"
-            #     )
-            #     
-            #     gen_grammar(
-            #         subdirs,
-            #         label_file,
-            #         grammar_type_arg="letter_whole_word"
-            #     )
-            #     with open(done_file, "w") as f:
-            #         f.write("1\n")
-            #     print("#####\n")
-            # else:
-            #     print("##### Grammar files exist. Skipping generation #####")
-            #     print("#####\n")
-        
             # Exit here after prepare_files and gen_grammar finish
             if args.prepare_data_only:
                 exit(0)
@@ -851,7 +854,6 @@ if __name__ == "__main__":
 
             if args.test_model:
                 test_model(
-                    ip,
                     tc,
                     num_its,
                     num_tri_its,
@@ -861,7 +863,6 @@ if __name__ == "__main__":
                 )
             else:
                 train_model(
-                    ip,
                     tc,
                     num_its,
                     num_tri_its,
@@ -871,7 +872,6 @@ if __name__ == "__main__":
                 )
             
                 save_model(
-                    ip,
                     tc,
                     num_its,
                     num_tri_its,

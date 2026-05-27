@@ -15,7 +15,8 @@
 						######      Comments     #####
 						##############################
 						#
-PRJ=`pwd`	# path to the current project
+# PRJ=`pwd`	# path to the current project
+PRJ=`dirname $(cd "$(dirname "$0")" && pwd)`
 SCRIPTS_DIR=${PRJ}/scripts			# location of scripts directory
 						# for this project.
 						#
@@ -231,6 +232,7 @@ HEDFILE2=${PRJ}/instr/mktri2_tc.6state-pca20-gmm2.hed
 LEDFILE_UNIQ=tmp
 LEDFILE_WORD=${PRJ}/instr/mkcmd_word.${LEDFILE_UNIQ}.led
 LEDFILE_LETTER=${PRJ}/instr/mkcmd_letter.${LEDFILE_UNIQ}.led
+LEDFILE_TRI_INTERNAL=${PRJ}/instr/mktri_internal.led
 
 STATS=${OUTPUTFILE_ROOT}/stats
 						#

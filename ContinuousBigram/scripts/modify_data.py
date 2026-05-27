@@ -43,7 +43,8 @@ def parse_args():
         required=required_by_set("--method", DATA_LOC_REQUIRED_METHODS),
         help="Original data location (for all methods except whole_word and import). " + \
                 "Must end with /data (for naming convention), " + \
-                "unless method is import. Used for label loc."
+                "unless method is import. Used for label loc. " + \
+                "Must also start with DATA_ROOT (defined in this file)."
     )
     
     parser.add_argument(
@@ -63,13 +64,6 @@ def parse_args():
         help="File with triletter labels (only for match_triletters method)."
     )
 
-    # parser.add_argument(
-    #     "--char_map_file",
-    #     type=str,
-    #     required=required_by_set("--method", {"import"}),
-    #     help="Maps characters to indices and vice versa (only for import method)."
-    # )
-    # 
     parser.add_argument(
         "--data_aug_map",
         type=str,
@@ -150,51 +144,28 @@ def parse_args():
     
     return parser.parse_args()
 
-# Make dir and overwrite if path exists already
-# def _make_dir(dir_loc):
-#     if os.path.exists(dir_loc):
-#         shutil.rmtree(dir_loc)
-#     os.makedirs(dir_loc)
-
-# Remove trailing slash from a path
-def _rm_trailing_slash(path):
-    if path is not None and path.endswith('/'):
-        return path[:-1]
-    else:
-        return path
-
-# Get data/label paths and new data/label paths
-def get_data_label_paths(subdirs):
-    return os.path.join('data', subdirs, 'data')
-
-def check_data_loc(data_loc):
-    return data_loc is None or \
-             not(data_loc.endswith('/data')) or \
-             (
-               not(data_loc.startswith('./data')) and \
-               not(data_loc.startswith('/data')) \
-             )
 # Checks args and makes modifications.
 def _check_args():
     data_loc, label_loc, new_data_loc, new_label_loc = None, None, None, None
 
     if args.method in DATA_LOC_REQUIRED_METHODS:
-        data_loc = _rm_trailing_slash(args.data_loc)
-        if check_data_loc(data_loc):
-            raise ValueError("Must pass a data path that starts/ends with .?/data.")
+        data_loc = os.path.abspath(args.data_loc)
+        if not valid_data_loc(data_loc):
+            raise ValueError("must pass data subfolder in DATA_ROOT that ends with /data.")
         
-        subdirs = get_subdirectories(data_loc)
-        data_loc = os.path.join('data', subdirs, 'data')
-        label_loc = os.path.join('label', subdirs, 'label')
+        subdirs = get_subdirectories_joined(data_loc)
+        data_loc = os.path.join(DATA_ROOT, subdirs, "data")
+        label_loc = os.path.join(LABELS_ROOT, subdirs, "label")
 
     if args.method in NEW_DATA_LOC_REQUIRED_METHODS:
-        new_data_loc = _rm_trailing_slash(args.new_data_loc)
-        if check_data_loc(new_data_loc):
-            raise ValueError("Must pass a new data path that starts/ends with ./data.")
+        new_data_loc = os.path.abspath(args.new_data_loc)
+        if not valid_data_loc(new_data_loc):
+            raise ValueError("must pass new data subfolder in ROOT that ends with /data.")
         
-        new_subdirs = get_subdirectories(new_data_loc)
-        new_data_loc = os.path.join('data', new_subdirs, 'data')
-        new_label_loc = os.path.join('label', new_subdirs, 'label')
+        new_subdirs = get_subdirectories_joined(new_data_loc)
+        print(new_subdirs)
+        new_data_loc = os.path.join(DATA_ROOT, new_subdirs, "data")
+        new_label_loc = os.path.join(LABELS_ROOT, new_subdirs, "label")
 
     make_dir(new_label_loc, rmdir=True)
     make_dir(new_data_loc, rmdir=True)
@@ -410,7 +381,8 @@ def import_data(new_data_loc, new_label_loc):
     df = pd.read_parquet(args.import_data_loc)
     dl_seq_ids = df.index.to_list()
     
-    dataset = "_".join(new_data_loc.split(os.path.sep)[1:3])
+    # dataset = "_".join(new_data_loc.split(os.path.sep)[1:3])
+    dataset = "_".join(get_subdirectories_split(new_data_loc)[:2])
 
     data_file_dict = load_json_file(DATA_FILE_DICT_FILE)
     data_path = data_file_dict[dataset]["data_path"]
@@ -430,7 +402,11 @@ def import_data(new_data_loc, new_label_loc):
             os.link(label_file, new_label_file)
         else:
             landmarks = get_landmarks(df, seq_id)
-            phrase = [ENTER] + [c for c in df.loc[seq_id].phrase] + [EXIT]
+            phrase = [f"{ENTER}\n"]
+            for c in df.loc[seq_id].phrase:
+                c = c if c != " " else SPACE
+                phrase += [f"{c}\n"]
+            phrase += [f"{EXIT}\n"]
             # phrase = get_labels(df, seq_id, idx_char_map, supplemental)
             
             with open(new_datafile, 'w') as f:
@@ -470,29 +446,6 @@ def data_aug_interpolation(curr_seq_id, datafile, label_file, new_data_loc, new_
     data_aug_map[next_seq_id] = data_aug_entry
     return data_aug_map
 
-############### WORD LEVEL FUNCTIONS ###############
-# def whole_word(datafile, label_file, new_datafile, new_label_file):
-#     with open(label_file, 'r') as lab:
-#         label = lab.readlines()
-#     
-#     new_phrase = [label[0]]
-#     
-#     for i,char in enumerate(label[1:-1], 1):
-#         char2 = char.strip()
-#         next_char = label[i+1]
-# 
-#         if ord('a') <= ord(char2) <= ord('z') and next_char not in (SPACE+'\n', EXIT+'\n'):
-#             new_phrase.append(char2)
-#         else:
-#             new_phrase.append(char)
-#     
-#     new_phrase.append(label[-1])
-#     new_phrase = ''.join(new_phrase)
-# 
-#     with open(new_label_file, 'w') as f:
-#         f.write(new_phrase)
-#     os.link(datafile, new_datafile)
-    
 if __name__ == "__main__":
     args = parse_args()
     print(args)
