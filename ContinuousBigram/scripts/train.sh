@@ -518,7 +518,7 @@ if [[ $TRILETTER = "yes" ]] || [[ $TRILETTER = "1" ]]; then
     last_iteration=$((NUM_HMM_DIR-TRI_ITERATIONS-3))
 
     next_dir=$((hmm_count+1))
-    HHEd -A -T $TRACE_LEVEL $HMM_LOAD_OPT $HMM_TRAINING.$hmm_count/$HMM_MACRO -M $HMM_TRAINING.$next_dir $HEDFILE1 ${TOKENS_ORIGINAL}
+    HHEd -A -T $TRACE_LEVEL $HMM_LOAD_OPT $HMM_TRAINING.$hmm_count/$HMM_MACRO -M $HMM_TRAINING.$next_dir ${HEDFILE1} ${TOKENS_ORIGINAL}
     hmm_count=$((hmm_count+1))
 
     while [[ $hmm_count -lt $last_iteration ]]

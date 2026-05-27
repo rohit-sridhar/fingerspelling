@@ -6,8 +6,10 @@
 # typeset -a seeds=(1248 2248 3248 4248 5248)
 # typeset -a data_splits=(train val)
 
-ROOT=/data/hmm_modeling/fingerspelling/ContinuousBigram
-. ${ROOT}/scripts/experiments/utils.sh
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+ROOT="${SCRIPT_DIR}/../.."
+
+. ${SCRIPT_DIR}/utils.sh
 set_vars $1
 
 ##### For trial 
@@ -25,9 +27,9 @@ for dataset in ${datasets[@]}; do
 for data_split in ${data_splits[@]}; do
 for seed in "${seeds[@]}"; do
     # Code below assumes threshold 0 for all the imported data (should only import thr 0 data)
-    python ${ROOT}/scripts/modify_data.py \
+    ${ROOT}/scripts/modify_data.py \
         --import_data_loc ${TORCH_ROOT}/data/data_${dataset}_sd${seed}_rh.pq.${data_split} \
-        --new_data_loc ./data/${dataset}/dim20/thr0/${data_split}/general/sd${seed}/data \
+        --new_data_loc ${ROOT}/data/${dataset}/dim20/thr0/${data_split}/general/sd${seed}/data \
         --method import &
     pid+=("$!")
 done
@@ -42,9 +44,9 @@ for dataset in ${datasets[@]}; do
 for data_split in ${data_splits[@]}; do
 for seed in "${seeds[@]}"; do
     # Code below assumes threshold 0 for all the imported data (should only import thr 0 data)
-    python ${ROOT}/scripts/modify_data.py \
+    ${ROOT}/scripts/modify_data.py \
         --import_data_loc ${TORCH_ROOT}/data/data_${dataset}_sd${seed}_pca10_rh.pq.${data_split} \
-        --new_data_loc ./data/${dataset}/pca10/thr0/${data_split}/general/sd${seed}/data \
+        --new_data_loc ${ROOT}/data/${dataset}/pca10/thr0/${data_split}/general/sd${seed}/data \
         --method import &
     pid+=("$!")
 done

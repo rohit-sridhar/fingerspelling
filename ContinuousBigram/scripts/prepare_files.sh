@@ -36,34 +36,44 @@ else
     echo ""
 fi
 
-find ${EXT_DIR}/data/ -name "*.ext" -type f | xargs readlink -f | sort -V > ${DATA_SAMPLES}
+find ${EXT_DIR}/data -name "*.ext" -type f | xargs readlink -f | sort -V > ${DATA_SAMPLES}
 
 if [[ ! -f "${MLF_ROOT}/done" ]]; then
     echo "##### Generating mlf letter files .... #####"
-    python ${SCRIPTS_DIR}/gen_mlf.py --ext_loc ${EXT_DIR}/data/ --datafiles_list ${DATAFILES_LIST} --mlf_file ${MLF_LOCATION_ORIGINAL} --mlf_type letter
-    python ${SCRIPTS_DIR}/gen_mlf.py --ext_loc ${EXT_DIR}/data/ --datafiles_list ${DATAFILES_LIST} --mlf_file ${MLF_LOCATION_ORIGINAL_SKSP} --mlf_type letter --sksp
-#     python ${SCRIPTS_DIR}/gen_mlf.py --ext_loc ${EXT_DIR}/data/ --datafiles_list ${DATAFILES_LIST} --mlf_file ${MLF_LOCATION_ORIGINAL_WHOLE} --mlf_type letter --whole_word
+    ${SCRIPTS_DIR}/gen_mlf.py --ext_loc ${EXT_DIR}/data/ --datafiles_list ${DATAFILES_LIST} --mlf_file ${MLF_LOCATION_ORIGINAL} --mlf_type letter
+    ${SCRIPTS_DIR}/gen_mlf.py --ext_loc ${EXT_DIR}/data/ --datafiles_list ${DATAFILES_LIST} --mlf_file ${MLF_LOCATION_ORIGINAL_SKSP} --mlf_type letter --sksp
     echo "#####"
     echo ""
     
     echo "##### Generating mlf word files .... #####"
-    python ${SCRIPTS_DIR}/gen_mlf.py --ext_loc ${EXT_DIR}/data/ --datafiles_list ${DATAFILES_LIST} --mlf_file ${MLF_LOCATION_WORD} --mlf_type word
-    python ${SCRIPTS_DIR}/gen_mlf.py --ext_loc ${EXT_DIR}/data/ --datafiles_list ${DATAFILES_LIST} --mlf_file ${MLF_LOCATION_WORD_SKSP} --mlf_type word --sksp
-#     python ${SCRIPTS_DIR}/gen_mlf.py --ext_loc ${EXT_DIR}/data/ --datafiles_list ${DATAFILES_LIST} --mlf_file ${MLF_LOCATION_WORD_WHOLE} --mlf_type word --whole_word
+    ${SCRIPTS_DIR}/gen_mlf.py --ext_loc ${EXT_DIR}/data/ --datafiles_list ${DATAFILES_LIST} --mlf_file ${MLF_LOCATION_WORD} --mlf_type word
+    ${SCRIPTS_DIR}/gen_mlf.py --ext_loc ${EXT_DIR}/data/ --datafiles_list ${DATAFILES_LIST} --mlf_file ${MLF_LOCATION_WORD_SKSP} --mlf_type word --sksp
     echo "#####"
     echo ""
 
     echo "##### Generating mlf tri letter files #####"
-    HLEd -i ${MLF_LOCATION} instr/mktri_internal.led ${MLF_LOCATION_ORIGINAL}
-    HLEd -i ${MLF_LOCATION_SKSP} instr/mktri_internal.led ${MLF_LOCATION_ORIGINAL_SKSP}
-#     HLEd -i ${MLF_LOCATION_WHOLE} instr/mktri_internal.led ${MLF_LOCATION_ORIGINAL_WHOLE}
+    HLEd -i ${MLF_LOCATION} ${LEDFILE_TRI_INTERNAL} ${MLF_LOCATION_ORIGINAL}
+    HLEd -i ${MLF_LOCATION_SKSP} ${LEDFILE_TRI_INTERNAL} ${MLF_LOCATION_ORIGINAL_SKSP}
+
+    # ln -s ${MLF_LOCATION} mlf_loc
+    # ln -s ${MLF_LOCATION_ORIGINAL} mlf_loc_original
+    # ln -s ${MLF_LOCATION_SKSP} mlf_loc_sksp
+    # ln -s ${MLF_LOCATION_ORIGINAL_SKSP} mlf_loc_original_sksp
+    # ln -s ${LEDFILE_TRI_INTERNAL} ledfile_tri_int
+    # HLEd -i mlf_loc ledfile_tri_int mlf_loc_original
+    # HLEd -i mlf_loc_sksp ledfile_tri_int mlf_loc_original_sksp
+    # unlink mlf_loc
+    # unlink mlf_loc_original
+    # unlink mlf_loc_sksp
+    # unlink mlf_loc_original_sksp
+    # unlink ledfile_tri_int
     echo "#####"
     echo ""
     
-    echo "##### Generating mlf phrase files .... #####"
-    scripts/gen_mlf_phrase.sh ${DATAFILES_LIST} ext ${OPTIONS_FILE} > mlf/labels.mlf_phrase
-    echo "#####"
-    echo ""
+#     echo "##### Generating mlf phrase files .... #####"
+#     scripts/gen_mlf_phrase.sh ${DATAFILES_LIST} ext ${OPTIONS_FILE} > mlf/labels.mlf_phrase
+#     echo "#####"
+#     echo ""
     
     echo "1" > ${MLF_ROOT}/done
 else
@@ -73,20 +83,20 @@ else
 fi
 
 # # echo "##### Generating phrase list for language modeling #####"
-# # python ${SCRIPTS_DIR}/gen_phrases.py --label_loc $3/ --phrases_loc ${SENTENCES_FILE}
+# # ${SCRIPTS_DIR}/gen_phrases.py --label_loc $3/ --phrases_loc ${SENTENCES_FILE}
 # # echo "#####"
 # # echo ""
 # 
 # if [[ ! -f "${DICTFILE_ROOT}/done" ]]; then
 #     echo "##### Generating dict (tri2letter/tri2word) files .... #####"
-#     python ${SCRIPTS_DIR}/gen_dict.py --label_loc $3/ --dict_type tri_letter --dict_loc ${DICTFILE}
-#     python ${SCRIPTS_DIR}/gen_dict.py --label_loc $3/ --dict_type tri_letter_whole --dict_loc ${DICTFILE_WHOLE}
-#     python ${SCRIPTS_DIR}/gen_dict.py --label_loc $3/ --dict_type cross_letter --dict_loc ${DICTFILE_CROSS}
+#     ${SCRIPTS_DIR}/gen_dict.py --label_loc $3/ --dict_type tri_letter --dict_loc ${DICTFILE}
+#     ${SCRIPTS_DIR}/gen_dict.py --label_loc $3/ --dict_type tri_letter_whole --dict_loc ${DICTFILE_WHOLE}
+#     ${SCRIPTS_DIR}/gen_dict.py --label_loc $3/ --dict_type cross_letter --dict_loc ${DICTFILE_CROSS}
 # 
-#     python ${SCRIPTS_DIR}/gen_dict.py --label_loc $3/ --dict_type tri_word --dict_loc ${DICTFILE_WORD}
-#     python ${SCRIPTS_DIR}/gen_dict.py --label_loc $3/ --dict_type tri_word_sksp --dict_loc ${DICTFILE_WORD_SKSP}
-#     python ${SCRIPTS_DIR}/gen_dict.py --label_loc $3/ --dict_type tri_word_whole --dict_loc ${DICTFILE_WORD_WHOLE}
-#     python ${SCRIPTS_DIR}/gen_dict.py --label_loc $3/ --dict_type cross_word --dict_loc ${DICTFILE_CROSS_WORD}
+#     ${SCRIPTS_DIR}/gen_dict.py --label_loc $3/ --dict_type tri_word --dict_loc ${DICTFILE_WORD}
+#     ${SCRIPTS_DIR}/gen_dict.py --label_loc $3/ --dict_type tri_word_sksp --dict_loc ${DICTFILE_WORD_SKSP}
+#     ${SCRIPTS_DIR}/gen_dict.py --label_loc $3/ --dict_type tri_word_whole --dict_loc ${DICTFILE_WORD_WHOLE}
+#     ${SCRIPTS_DIR}/gen_dict.py --label_loc $3/ --dict_type cross_word --dict_loc ${DICTFILE_CROSS_WORD}
 #     echo "#####"
 #     echo ""
 #     

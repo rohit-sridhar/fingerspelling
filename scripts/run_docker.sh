@@ -58,6 +58,7 @@ case "$cmd" in
         fs_transformers_path="${FS_TRANSFORMERS_PATH:-${PROJECTS_ROOT}/deep_learning/fs_transformers}"
         fingerspelling_video_path="${FINGERSPELLING_VIDEO_PATH:-${PROJECTS_ROOT}/sign_language_videos/fingerspelling_videos}"
         islr_mputils_out_path="${ISLR_MPUTILS_OUT_PATH:-${PROJECTS_ROOT}/deep_learning/ISLR-ML/mputils/out}"
+        vimrc_dir="${VIM_DIR:-${HOME}/.vim}"
         vimrc_file="${VIMRC_FILE:-${HOME}/.vimrc}"
 
         # --platform linux/arm64 \
@@ -66,6 +67,7 @@ case "$cmd" in
           -v "${fs_transformers_path}":"/data/deep_learning/fs_transformers" \
           -v "${fingerspelling_video_path}":"/data/sign_language_videos/fingerspelling_videos:ro" \
           -v "${islr_mputils_out_path}":"/data/deep_learning/ISLR-ML/mputils:ro" \
+          -v "${vimrc_dir}":"/root/.vim:ro" \
           -v "${vimrc_file}":"/root/.vimrc:ro" \
           -e HOSTNAME_SERVER="$HOSTNAME" \
           --name "$container" "$LOCAL_HTK_IMAGE"
@@ -85,6 +87,7 @@ case "$cmd" in
         fs_transformers_path="${FS_TRANSFORMERS_PATH:-${PROJECTS_ROOT}/deep_learning/fs_transformers}"
         fingerspelling_video_path="${FINGERSPELLING_VIDEO_PATH:-${PROJECTS_ROOT}/sign_language_videos/fingerspelling_videos}"
         islr_mputils_out_path="${ISLR_MPUTILS_OUT_PATH:-${PROJECTS_ROOT}/deep_learning/ISLR-ML/mputils/out}"
+        vimrc_dir="${VIM_DIR:-${HOME}/.vim}"
         vimrc_file="${VIMRC_FILE:-${HOME}/.vimrc}"
 
         docker run --rm \
@@ -92,6 +95,7 @@ case "$cmd" in
           -v "${fs_transformers_path}":"/data/deep_learning/fs_transformers" \
           -v "${fingerspelling_video_path}":"/data/sign_language_videos/fingerspelling_videos:ro" \
           -v "${islr_mputils_out_path}":"/data/deep_learning/ISLR-ML/mputils:ro" \
+          -v "${vimrc_dir}":"/root/.vim:ro" \
           -v "${vimrc_file}":"/root/.vimrc:ro" \
           -e HOSTNAME_SERVER="$HOSTNAME" \
           --name "$container" "$LOCAL_HTK_IMAGE" bash -lc "${script} ${extra_args[@]}"

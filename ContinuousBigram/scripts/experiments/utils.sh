@@ -6,11 +6,10 @@ typeset -a seeds=(1248)
 typeset -a data_splits=(train val)
 typeset -a datasets=()
 typeset -a participants=()
-typeset -a thresholds=(0 1)
+typeset -a thresholds=(0)
 
 function set_vars {
     base_dataset=$1
-    # datasets=(${base_dataset}_drop-na_lininterp0 ${base_dataset}_na-thr0.3_drop-na_lininterp0 ${base_dataset}_drop-na_lininterp1 ${base_dataset}_na-thr0.3_drop-na_lininterp1)
     datasets=(${base_dataset}_drop-na_lininterp0)
     if [[ $1 == "supplemental_gen" ]]; then
         participants=(3f8b 13e3 494d b2d1 c0df d3ab 8e3b fe96 8c4d a3d4 3a6e 3d12 f9ea 2ff7 e0f7 ed8e 51f5 a362 a6ed 0ba8 812c 03ad a021 a442 1d72 711d a95b fa10 1bd5 6b92 5b63 bd21 1f91 917d fbb7 4ddc ab12 dbf9 99cb 39e5 4f1e 63a1 163a c82a f418 9d2b b718 39a6 4c3d 675f 9b23 9ed9 d478 f066 e3c0 fede 0a77 0bea d05c 9ff4 f760 7f32 80fe 19d3 6f68 a3e7 cf84 d69c 1f86 2f35 e4fa 5d33)

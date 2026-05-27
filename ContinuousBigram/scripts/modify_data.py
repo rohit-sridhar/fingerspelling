@@ -163,6 +163,7 @@ def _check_args():
             raise ValueError("must pass new data subfolder in ROOT that ends with /data.")
         
         new_subdirs = get_subdirectories_joined(new_data_loc)
+        print(new_subdirs)
         new_data_loc = os.path.join(DATA_ROOT, new_subdirs, "data")
         new_label_loc = os.path.join(LABELS_ROOT, new_subdirs, "label")
 
@@ -401,7 +402,11 @@ def import_data(new_data_loc, new_label_loc):
             os.link(label_file, new_label_file)
         else:
             landmarks = get_landmarks(df, seq_id)
-            phrase = [ENTER] + [c for c in df.loc[seq_id].phrase] + [EXIT]
+            phrase = [f"{ENTER}\n"]
+            for c in df.loc[seq_id].phrase:
+                c = c if c != " " else SPACE
+                phrase += [f"{c}\n"]
+            phrase += [f"{EXIT}\n"]
             # phrase = get_labels(df, seq_id, idx_char_map, supplemental)
             
             with open(new_datafile, 'w') as f:
