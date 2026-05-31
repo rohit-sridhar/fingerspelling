@@ -22,7 +22,7 @@ container="${2:-}"
 if [ "$cmd" = "run" ]; then
     script="${3:-}"
     # capture additional args after the script and forward them to the command run inside container
-    extra_args=("${@:4}")
+    extra_args="${@:4}"
 fi
 
 local_image="rohit_hmm_fingerspelling"

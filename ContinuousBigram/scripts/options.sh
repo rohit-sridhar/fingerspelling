@@ -179,7 +179,7 @@ TOKENS_WORD_SKSP=${TOKENS_ROOT}/commands_word_sksp
 # TOKENS_WORD_WHOLE=${TOKENS_ROOT}/commands_word_whole
 
 ###### USE FOR CROSS WORD TRILETTER ######
-# TOKENS_CROSS=${TOKENS_ROOT}/commands_tri_cross
+TOKENS_CROSS=${TOKENS_ROOT}/commands_tri_cross
 
 #######################################################
 ##################### MLF FILES #######################
@@ -211,7 +211,7 @@ MLF_LOCATION_WORD_SKSP=${MLF_ROOT}/labels.mlf_word_sksp
 # MLF_LOCATION_WORD_WHOLE=${MLF_ROOT}/labels.mlf_word_whole
 
 ###### USE FOR CROSS WORD TRILETTER ######
-# MLF_LOCATION_CROSS=${MLF_ROOT}/labels.mlf_tri_cross
+MLF_LOCATION_CROSS=${MLF_ROOT}/labels.mlf_tri_cross
 
 ###### USE FOR SINGLE LETTER ######
 # MLF_LOCATION=${PRJ}/mlf/labels.mlf_letter
@@ -233,6 +233,7 @@ LEDFILE_UNIQ=tmp
 LEDFILE_WORD=${PRJ}/instr/mkcmd_word.${LEDFILE_UNIQ}.led
 LEDFILE_LETTER=${PRJ}/instr/mkcmd_letter.${LEDFILE_UNIQ}.led
 LEDFILE_TRI_INTERNAL=${PRJ}/instr/mktri_internal.led
+LEDFILE_TRI_CROSS=${PRJ}/instr/mktri_cross.led
 
 STATS=${OUTPUTFILE_ROOT}/stats
 						#

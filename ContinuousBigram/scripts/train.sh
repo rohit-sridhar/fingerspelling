@@ -60,6 +60,18 @@ if [[ $WORD_SKSP == "yes" ]]; then
     MLF_LOCATION_ORIGINAL=$MLF_LOCATION_ORIGINAL_SKSP
 fi
 
+if [[ $CROSS_WORD == "yes" ]]; then
+    # Dict Files
+    DICTFILE=$DICTFILE_CROSS
+    DICTFILE_WORD=$DICTFILE_WORD_CROSS
+
+    # Token Files
+    TOKENS=$TOKENS_CROSS
+
+    # MLF Files
+    MLF_LOCATION=$MLF_LOCATION_CROSS
+fi
+
 # Overwrites the choice made above because whole_word contains
 # no spaces. 
 # if [[ $WHOLE_WORD == "yes" ]]; then

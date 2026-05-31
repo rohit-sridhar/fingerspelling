@@ -3,6 +3,8 @@ import sys
 import json
 import shutil
 import subprocess
+import logging
+from pathlib import Path
 
 from glob import glob
 
@@ -11,6 +13,7 @@ ROOT = "/data/hmm_modeling/fingerspelling/ContinuousBigram"
 LOG_ROOT = os.path.join(ROOT, "logs")
 OUTPUT_ROOT = os.path.join(ROOT, "output")
 RESULTS_ROOT = os.path.join(ROOT, "results")
+TEST_RESULTS_ROOT = os.path.join(ROOT, "test_results")
 MODELS_ROOT = os.path.join(ROOT, "models")
 GRAMMAR_ROOT = os.path.join(ROOT, "grammar")
 MLF_ROOT = os.path.join(ROOT, "mlf")
@@ -305,4 +308,23 @@ def get_next_seq_id(data_aug_map):
             next_seq_id = seq_ids[next_seq_id] + 1
     
     return str(next_seq_id)
+
+
+# set up the logger for any script
+def setup_logger(log_dir, debug=False):
+    log_dir = Path(log_dir)
+    log_file = (log_dir / "log").with_suffix(".txt")
+
+    filemode='w'
+    if log_file.exists():
+        filemode='a'
+
+    logging.basicConfig(
+        filename=log_file,
+        filemode=filemode,
+        level=logging.DEBUG if debug else logging.INFO,
+        format="%(asctime)s - %(funcName)s - %(filename)s - %(levelname)s - %(message)s",
+        datefmt="%Y-%m-%d | %H:%M:%S",
+    )
+
 

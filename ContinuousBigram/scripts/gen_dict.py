@@ -1,31 +1,69 @@
 #!/usr/bin/env python
 
 import argparse
+import sys
 import os
 import string
+import logging
 
 from utils import *
+from pathlib import Path
 
 WRITTEN = set()
 global args
 
+logger = logging.getLogger(__name__)
+
 #################### GENERAL HELPERS ####################
+# check if path is valid and if it exists
+def label_path(pth):
+    try:
+        pth = Path(pth)
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"{pth} not a valid path.")
+    
+    if not pth.is_dir():
+        raise argparse.ArgumentTypeError(f"{pth} must be a directory.")
+    
+    pth = pth.resolve()
+    if not str(pth)[len(ROOT)+1:].startswith("label") or not str(pth)[len(ROOT)+1:].endswith("label"):
+        raise ValueError("The directory directly under ROOT and the leaf must be named \"label\".")
+    
+    return pth
+
+# check if path is valid and if it exists
+def dict_path(pth):
+    try:
+        pth = Path(pth)
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"{pth} not a valid path.")
+    
+    pth = pth.resolve()
+    if not str(pth)[len(ROOT)+1:].startswith("dict") and not str(pth.parent)[len(ROOT)+1:].endswith("dict"):
+        raise ValueError("The directory directly under ROOT and the leaf must be named \"dict\".")
+
+    return pth
 
 def parse_args():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument(
+        "--debug", "-dbg",
+        action="store_true",
+        help="run in debug mode",
+    )
+    parser.add_argument(
         "--label_loc",
-        type=str,
-        default="./label/thr8/label/",
-        help="Label file location"
+        type=label_path,
+        required=True,
+        help="Label file location",
     )
     
     parser.add_argument(
         "--dict_loc",
-        type=str,
-        default="./dict/dict_tri2letter",
-        help="New dict name"
+        type=dict_path,
+        required=True,
+        help="New dict name",
     )
     
     parser.add_argument(
@@ -37,6 +75,9 @@ def parse_args():
     )
     
     return parser.parse_args()
+
+# set up the logger for training moved to utils.setup_logger
+# function removed from this file. See ContinuousBigram/scripts/utils.py for implementation.
 
 # Initialize the tri letter dictionary with sil/enter/exit vars
 def initialize_dict():
@@ -59,7 +100,11 @@ def write_entry_to_file(entry):
 
 # Process the first entry for any word
 def process_first_triletter(word, letter=True):
-    val = '+'.join([word[0],word[1]])
+    logger.debug(f"{word=}")
+    try:
+        val = '+'.join([word[0],word[1]])
+    except:
+        raise ValueError(word)
     entry = ' '.join([word[0], val])
     
     if letter:
@@ -87,11 +132,7 @@ def process_middle_triletter(word, i, letter=True):
 
 # Write a single letter entry
 def write_single_entry(word, sksp=False):
-    if sksp:
-        entry = ' '.join([word, word])
-    else:
-        entry = ' '.join([word, word])
-        
+    entry = ' '.join([word, word])
     write_entry_to_file(entry)
 
 # Write the entry for any word with more than 2 letters
@@ -164,16 +205,36 @@ def add_word_to_dict(word, sksp=False):
     else:
         word = word.strip(SPACE)
         entries = get_full_word_entry(word)
+
+        ### NOTE about the if statement below.
+        # Counterintuitive but is the way it should be.
+        # when skipping space, they don't go away. They
+        # are appended to the end of the word. When not
+        # skipping spaces mlf word doesn't model them and
+        # leaves them at the letter level.
         if sksp:
             entries.append(SPACE)
-        ## Not sure what the code below does. May have something to do with cross word
-        # if word.endswith(SPACE):
-        #     del entries[-1]
-        # if word.startswith(SPACE):
-        #     del entries[1]
 
         entry = ' '.join(entries)
         write_entry_to_file(entry)
+
+def add_cross_word_to_dict(word, first=False, last=False):
+    if first and last:
+        logger.info(f"phrase consists of just {word}")
+
+    if len(word) == 1:
+        entries = [word, word]
+    else:
+        entries = get_full_word_entry(word)
+
+    if not first:
+        entries[1] = f"{SPACE}-{entries[1]}"
+    if not last:
+        entries[-1] = f"{entries[-1]}+{SPACE}"
+
+    logger.debug(f"{entries=}")
+    entry = ' '.join(entries)
+    write_entry_to_file(entry)
 
 #################### UNILETTER WORD LEVEL FUNCTIONS ####################
 def add_uniletter_word_to_dict(word):
@@ -184,8 +245,10 @@ def add_uniletter_word_to_dict(word):
 # Ingests the whole label file into the dict
 def ingest_label_file(label_filepath):
     tokens = collect_tokens(label_filepath)
+    logger.debug(f"{label_filepath=}")
     phrase = SPACE.join(tokens)
     if args.dict_type == "cross_letter":
+        logger.debug(f"{phrase=}")
         add_letter_to_dict(phrase)
     elif args.dict_type == "tri_letter_whole":
         add_whole_letter_to_dict(phrase)
@@ -203,16 +266,16 @@ def ingest_label_file(label_filepath):
                 add_word_to_dict(word, sksp=True)
             # Note we don't use the sksp arg with dict_type cross_word
             elif args.dict_type == "cross_word":
-                if i == 0:
-                    add_word_to_dict(word + SPACE)
-                elif i == len(tokens) - 1:
-                    add_word_to_dict(SPACE + word)
-                else:
-                    add_word_to_dict(SPACE + word + SPACE)
+                add_cross_word_to_dict(
+                    word,
+                    first=(i==0),
+                    last=(i==len(tokens)-1),
+                )
 
 if __name__ == "__main__":
     args = parse_args()
-    print(args)
+    setup_logger(args.dict_loc.parent, debug=args.debug)
+    logger.info(args)
     
     initialize_dict()
     if args.dict_type == "letter":

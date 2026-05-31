@@ -230,10 +230,13 @@ def get_name_ext(tc, num_its, num_tri_its, hmmdef, trace_value=None):
     name_ext = ""
 
     # Do not include insertion-penalty (ip) in the name extension anymore
-    name_ext += "_".join([f"{hmmdef}", f"{num_its}its", f"{num_tri_its}tri-its", f"tc{tc}"])
+    if args.test_model_path is not None:
+        name_ext += os.path.basename(args.test_model_path)[len(MODEL_MACROS_FILE) + 1:]
+    else:
+        name_ext += "_".join([f"{hmmdef}", f"{num_its}its", f"{num_tri_its}tri-its", f"tc{tc}"])
 
-    if args.use_phrase:
-        name_ext += "_grliwph"
+    # if args.use_phrase:
+    #     name_ext += "_grliwph"
 
     if args.no_custom_silsp:
         name_ext += "_no-silsp"
@@ -291,7 +294,7 @@ def get_hresults_prj_filepaths(name_ext, subdirs, ip):
         letter_results_file = '.'.join(["hresults", "log_letter", model_name])
         word_results_file = '.'.join(["hresults", "log_word", model_name])
         
-    results_relative = os.path.join(os.path.basename(RESULTS_ROOT), subdirs)
+    results_relative = results_dir[len(ROOT)+1:]
     letter_results_file = os.path.join("${PRJ}", results_relative, letter_results_file)
     word_results_file = os.path.join("${PRJ}", results_relative, word_results_file)
     print("#####\n")
@@ -590,7 +593,7 @@ def test_model(tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
     print("##### Creating Testing Log Dir #####")
     make_dir(log_dir)
     print("#####\n")
-
+    
     log_file = get_log_file(subdirs, name_ext, mode="test")
     
     if args.test_model_path is None:
@@ -598,10 +601,11 @@ def test_model(tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
     else:
         new_model_path = args.test_model_path
     print(f"Model Dir: {new_model_path}")
-
+    
     options_file = get_options_file(subdirs)
     test_data_file = get_test_data_file(subdirs)
     test_args = [TEST_SCRIPT, options_file, test_data_file, new_model_path]  # Last arg is for phrase grammar
+    
     print("Test Command: " + ' '.join(test_args))
     print(f"Log file: {log_file}\n")
 

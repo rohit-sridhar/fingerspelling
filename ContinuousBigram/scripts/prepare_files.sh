@@ -52,29 +52,13 @@ if [[ ! -f "${MLF_ROOT}/done" ]]; then
     echo ""
 
     echo "##### Generating mlf tri letter files #####"
-    HLEd -i ${MLF_LOCATION} ${LEDFILE_TRI_INTERNAL} ${MLF_LOCATION_ORIGINAL}
-    HLEd -i ${MLF_LOCATION_SKSP} ${LEDFILE_TRI_INTERNAL} ${MLF_LOCATION_ORIGINAL_SKSP}
+    HLEd -n ${TOKENS} -i ${MLF_LOCATION} ${LEDFILE_TRI_INTERNAL} ${MLF_LOCATION_ORIGINAL}
+    HLEd -n ${TOKENS} -i ${MLF_LOCATION_SKSP} ${LEDFILE_TRI_INTERNAL} ${MLF_LOCATION_ORIGINAL_SKSP}
+    HLEd -n ${TOKENS_CROSS} -i ${MLF_LOCATION_CROSS} ${LEDFILE_TRI_CROSS} ${MLF_LOCATION_ORIGINAL}
 
-    # ln -s ${MLF_LOCATION} mlf_loc
-    # ln -s ${MLF_LOCATION_ORIGINAL} mlf_loc_original
-    # ln -s ${MLF_LOCATION_SKSP} mlf_loc_sksp
-    # ln -s ${MLF_LOCATION_ORIGINAL_SKSP} mlf_loc_original_sksp
-    # ln -s ${LEDFILE_TRI_INTERNAL} ledfile_tri_int
-    # HLEd -i mlf_loc ledfile_tri_int mlf_loc_original
-    # HLEd -i mlf_loc_sksp ledfile_tri_int mlf_loc_original_sksp
-    # unlink mlf_loc
-    # unlink mlf_loc_original
-    # unlink mlf_loc_sksp
-    # unlink mlf_loc_original_sksp
-    # unlink ledfile_tri_int
     echo "#####"
     echo ""
-    
-#     echo "##### Generating mlf phrase files .... #####"
-#     scripts/gen_mlf_phrase.sh ${DATAFILES_LIST} ext ${OPTIONS_FILE} > mlf/labels.mlf_phrase
-#     echo "#####"
-#     echo ""
-    
+     
     echo "1" > ${MLF_ROOT}/done
 else
     echo "##### MLF files exist. Skipping generation #####"
@@ -82,6 +66,28 @@ else
     echo ""
 fi
 
+################################################################################################## OLD CODE ##################################################################################################
+
+################################################## MLF Code
+#     echo "##### Generating mlf phrase files .... #####"
+#     scripts/gen_mlf_phrase.sh ${DATAFILES_LIST} ext ${OPTIONS_FILE} > mlf/labels.mlf_phrase
+#     echo "#####"
+#     echo ""
+
+#     ln -s ${MLF_LOCATION} mlf_loc
+#     ln -s ${MLF_LOCATION_ORIGINAL} mlf_loc_original
+#     ln -s ${MLF_LOCATION_SKSP} mlf_loc_sksp
+#     ln -s ${MLF_LOCATION_ORIGINAL_SKSP} mlf_loc_original_sksp
+#     ln -s ${LEDFILE_TRI_INTERNAL} ledfile_tri_int
+#     HLEd -i mlf_loc ledfile_tri_int mlf_loc_original
+#     HLEd -i mlf_loc_sksp ledfile_tri_int mlf_loc_original_sksp
+#     unlink mlf_loc
+#     unlink mlf_loc_original
+#     unlink mlf_loc_sksp
+#     unlink mlf_loc_original_sksp
+#     unlink ledfile_tri_int
+
+################################################## Phrase List Code
 # # echo "##### Generating phrase list for language modeling #####"
 # # ${SCRIPTS_DIR}/gen_phrases.py --label_loc $3/ --phrases_loc ${SENTENCES_FILE}
 # # echo "#####"
@@ -120,7 +126,10 @@ fi
 #     HLEd -b -n ${TOKENS_WORD_WHOLE} ${LEDFILE_WORD} ${MLF_LOCATION_WORD_WHOLE}
 # 
 #     # The first two HLEd commands below output to the same tokens file because
-#     # mlf sksp/non sksp letter files both contain spaces
+#     # mlf sksp/non sksp letter files both contain spaces. Even the non sksp MLF
+#     # file contains spaces since spaces are only removed on the word level. In this case,
+#     # instead it is better to add a space to the end of the final word in the phrase
+#     # as well.
 #     ##### This was moved to the mlf creation location
 #     HLEd -n ${TOKENS} -i ${MLF_LOCATION} instr/mktri_internal.led ${MLF_LOCATION_ORIGINAL}
 #     HLEd -n ${TOKENS} -i ${MLF_LOCATION_SKSP} instr/mktri_internal.led ${MLF_LOCATION_ORIGINAL_SKSP}

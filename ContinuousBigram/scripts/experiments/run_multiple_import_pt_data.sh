@@ -11,7 +11,7 @@ echo "STARTING IMPORT"
 echo ""
 
 participants=(ab12)
-############################## IMPORT MULTIPLE (TRAIN,VAL) ##############################
+############################## IMPORT MULTIPLE (TRAIN,VAL,TEST) ##############################
 
 for dataset in ${datasets[@]}; do
 for data_split in ${data_splits[@]}; do
@@ -29,22 +29,3 @@ done
 done
 done
 
-# ############################## IMPORT MULTIPLE (TEST) ##############################
-# 
-# typeset -a data_splits=(test)
-# typeset -a datasets=(${base_dataset}_drop-na_lininterp0)
-# 
-# for dataset in ${datasets[@]}; do
-# for data_split in ${data_splits[@]}; do
-# pid=()
-# for participant in "${participants[@]}"; do
-#     python ${ROOT}/scripts/modify_data.py \
-#         --import_data_loc ${TORCH_ROOT}/data/data_${dataset}_pt-${participant}_rh.pq.all \
-#         --new_data_loc ${ROOT}/data/${dataset}/dim20/thr0/${data_split}/pt/${participant}/data \
-#         --method import &
-#     pid+=("$!")
-# done
-# wait "${pid[@]}"
-# done
-# done
-# 
