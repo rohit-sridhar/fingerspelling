@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Usage: run_docker.sh <ls|run|launch|rm|build|enter> [CONTAINER_NAME] [SCRIPT_FOR_run]
+# Usage: run_docker.sh <cls|ils|run|launch|rm|build|enter> [CONTAINER_NAME] [SCRIPT_FOR_run]
 # Environment variables (optional): LOCAL_HTK_IMAGE, PROJECTS_ROOT, FINGERSPELLING_PATH, FS_TRANSFORMERS_PATH, FINGERSPELLING_VIDEO_PATH, ISLR_MPUTILS_OUT_PATH, VIMRC_FILE
 
 usage() {
-    echo "Usage: $0 <ls|run|launch|rm|build|enter> [CONTAINER_NAME] [SCRIPT_FOR_run] [SCRIPT_ARGS...]"
+    echo "Usage: $0 <cls|ils|run|launch|rm|build|enter> [CONTAINER_NAME] [SCRIPT_FOR_run] [SCRIPT_ARGS...]"
     echo ""
     echo "Notes:"
     echo "  - For 'run', provide CONTAINER_NAME and SCRIPT_FOR_run; any additional args after the script are forwarded to the script inside the container."
@@ -29,6 +29,13 @@ local_image="rohit_hmm_fingerspelling"
 
 PROJECTS_ROOT="${PROJECTS_ROOT:-/data}"
 LOCAL_HTK_IMAGE="${LOCAL_HTK_IMAGE:-rohit_hmm_fingerspelling}"
+
+fingerspelling_path="${FINGERSPELLING_PATH:-${PROJECTS_ROOT}/hmm_modeling/fingerspelling}"
+fs_transformers_path="${FS_TRANSFORMERS_PATH:-${PROJECTS_ROOT}/deep_learning/fs_transformers}"
+fingerspelling_video_path="${FINGERSPELLING_VIDEO_PATH:-${PROJECTS_ROOT}/sign_language_videos/fingerspelling_videos}"
+islr_mputils_out_path="${ISLR_MPUTILS_OUT_PATH:-${PROJECTS_ROOT}/deep_learning/ISLR-ML/mputils/out}"
+vimrc_dir="${VIM_DIR:-${HOME}/.vim}"
+vimrc_file="${VIMRC_FILE:-${HOME}/.vimrc}"
 
 case "$cmd" in
     ils)
@@ -54,13 +61,6 @@ case "$cmd" in
             usage
         fi
 
-        fingerspelling_path="${FINGERSPELLING_PATH:-${PROJECTS_ROOT}/hmm_modeling/fingerspelling}"
-        fs_transformers_path="${FS_TRANSFORMERS_PATH:-${PROJECTS_ROOT}/deep_learning/fs_transformers}"
-        fingerspelling_video_path="${FINGERSPELLING_VIDEO_PATH:-${PROJECTS_ROOT}/sign_language_videos/fingerspelling_videos}"
-        islr_mputils_out_path="${ISLR_MPUTILS_OUT_PATH:-${PROJECTS_ROOT}/deep_learning/ISLR-ML/mputils/out}"
-        vimrc_dir="${VIM_DIR:-${HOME}/.vim}"
-        vimrc_file="${VIMRC_FILE:-${HOME}/.vimrc}"
-
         # --platform linux/arm64 \
         docker run -it --rm \
           -v "${fingerspelling_path}":"/data/hmm_modeling/fingerspelling" \
@@ -82,13 +82,6 @@ case "$cmd" in
             echo "Specify script path (relative to container WORKDIR) as the third argument"
             usage
         fi
-
-        fingerspelling_path="${FINGERSPELLING_PATH:-${PROJECTS_ROOT}/hmm_modeling/fingerspelling}"
-        fs_transformers_path="${FS_TRANSFORMERS_PATH:-${PROJECTS_ROOT}/deep_learning/fs_transformers}"
-        fingerspelling_video_path="${FINGERSPELLING_VIDEO_PATH:-${PROJECTS_ROOT}/sign_language_videos/fingerspelling_videos}"
-        islr_mputils_out_path="${ISLR_MPUTILS_OUT_PATH:-${PROJECTS_ROOT}/deep_learning/ISLR-ML/mputils/out}"
-        vimrc_dir="${VIM_DIR:-${HOME}/.vim}"
-        vimrc_file="${VIMRC_FILE:-${HOME}/.vimrc}"
 
         docker run --rm \
           -v "${fingerspelling_path}":"/data/hmm_modeling/fingerspelling" \

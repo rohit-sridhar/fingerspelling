@@ -4,9 +4,12 @@ import json
 import shutil
 import subprocess
 import logging
+from logging.handlers import MemoryHandler
 from pathlib import Path
-
 from glob import glob
+
+logger = logging.getLogger(__name__)
+_BUFFER_HANDLER = None
 
 ROOT = "/data/hmm_modeling/fingerspelling/ContinuousBigram"
 
@@ -181,9 +184,6 @@ def run_subprocess(cmd, live_print=True, logger=None):
     If live_print is False, capture output and log at debug (stdout) or error (stderr).
     Returns the subprocess return code.
     """
-    if logger is None:
-        logger = logging.getLogger(__name__)
-
     if live_print:
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
         try:
@@ -328,40 +328,93 @@ def get_next_seq_id(data_aug_map):
     
     return str(next_seq_id)
 
+##### Logging utils #####
+def init_buffering_logger(capacity=10000, flush_level=logging.ERROR):
+    """Attach a MemoryHandler to the root logger to buffer logs until file handlers are configured.
+    initialize the root logger piping to /dev/null. Pass a file handler or stream handler to 
+    setup_logger with a module level logger to log. Anything stored in _BUFFER_HANDLER will be 
+    emptied during the first call to setup_logger from any module that imports this one.
+    _BUFFER_HANDLER stays None after that for the duration of the script.
+
+    capacity: max number of records to buffer
+    flush_level: level at which buffer will flush to target
+    """
+    logging.basicConfig(
+        filename=os.devnull,
+        level=logging.DEBUG,
+    )
+    global _BUFFER_HANDLER
+    root = logging.getLogger()
+    if _BUFFER_HANDLER is not None and _BUFFER_HANDLER in root.handlers:
+        return _BUFFER_HANDLER
+
+    mem = MemoryHandler(capacity=capacity, flushLevel=flush_level, target=None)
+    mem.setLevel(logging.DEBUG)
+    root.addHandler(mem)
+    _BUFFER_HANDLER = mem
+
+
+# Initialize buffering at import so early log calls are not lost
+init_buffering_logger()
+
+def _attach_file_handler(log_path, module_logger, level=logging.DEBUG, mode='w'):
+    """Attach a FileHandler to the given logger (or module logger) that writes to log_path.
+
+    Returns the handler so callers can remove/close it when done.
+    """
+    fh = logging.FileHandler(log_path, mode=mode)
+    formatter = logging.Formatter("%(asctime)s - %(funcName)s - %(filename)s - %(levelname)s - %(message)s", datefmt="%Y-%m-%d | %H:%M:%S")
+    fh.setFormatter(formatter)
+    fh.setLevel(level)
+    module_logger.addHandler(fh)
+    return fh
+
 
 # set up the logger for any script
-def setup_logger(log_dir=None, log_level=logging.INFO, stdout=False):
-    """Configure basic logging.
+def setup_logger(log_file, module_logger, log_level=logging.INFO):
+    """Configure logging to a file and flush any buffered logs.
 
-    Use either stdout=True (with log_dir=None) OR provide a log_dir path to log to a file.
-    log_level should be an int logging level (e.g., logging.INFO). Raises ValueError on invalid combinations.
+    log_file must be a valid file path. logger should be a module logger.
+    log_level should be an int logging level. Buffered logs (from init_buffering_logger)
+    will be flushed to an existing FileHandler on the module logger if present;
+    otherwise they will be flushed to the new root FileHandler created here.
     """
-    # Validate args: require exactly one of (stdout True) or (log_dir provided)
-    if (stdout and log_dir is not None) or (not stdout and log_dir is None):
-        raise ValueError("Provide either stdout=True (with log_dir=None) or stdout=False with a valid log_dir")
+    log_file = Path(log_file)
+    log_file.parent.mkdir(parents=True, exist_ok=True)
 
-    if stdout:
-        # Configure logging to stdout initially. Use force to reconfigure handlers.
-        logging.basicConfig(
-            stream=sys.stdout,
-            level=log_level,
-            format="%(asctime)s - %(funcName)s - %(filename)s - %(levelname)s - %(message)s",
-            datefmt="%Y-%m-%d | %H:%M:%S",
-            force=True,
-        )
-    else:
-        log_dir = Path(log_dir)
-        log_dir.mkdir(parents=True, exist_ok=True)
+    # Reuse attach helper to create and attach a FileHandler to the root logger
+    fh = _attach_file_handler(log_file, module_logger, level=log_level)
 
-        log_file = (log_dir / "log").with_suffix(".txt")
-        filemode = 'a' if log_file.exists() else 'w'
-        logging.basicConfig(
-            filename=log_file,
-            filemode=filemode,
-            level=log_level,
-            format="%(asctime)s - %(funcName)s - %(filename)s - %(levelname)s - %(message)s",
-            datefmt="%Y-%m-%d | %H:%M:%S",
-            force=True,
-        )
+    # If a buffer handler exists, pick a suitable target and flush into it.
+    global _BUFFER_HANDLER
+    if _BUFFER_HANDLER is not None:
+        try:
+            # Prefer an existing FileHandler attached to the module logger so buffered
+            # records go to per-context files (e.g., grid_handler). Fall back to root fh.
 
+            target = fh
+            # target = None
+            # for h in logger.handlers:
+            #     if isinstance(h, logging.FileHandler):
+            #         target = h
+            #         break
+
+            # if target is None:
+            #     target = fh
+
+            _BUFFER_HANDLER.setTarget(target)
+            _BUFFER_HANDLER.flush()
+
+            root = logging.getLogger()
+            root.removeHandler(_BUFFER_HANDLER)
+        except Exception:
+            pass
+
+    try:
+        _BUFFER_HANDLER.close()
+    except Exception:
+        pass
+
+    _BUFFER_HANDLER = None
+    return fh
 

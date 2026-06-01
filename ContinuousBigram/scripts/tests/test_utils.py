@@ -38,7 +38,7 @@ def test_setup_logger_creates_file_and_sets_info(tmp_path):
     import logging
 
     # Clear any existing handlers so logging.basicConfig will configure a file handler
-    for h in logging.root.handlers[:]:
+    for h in logging.root.handlers:
         logging.root.removeHandler(h)
 
     # Call the moved setup_logger (utils is imported as ut at module level)
@@ -64,7 +64,7 @@ def test_setup_logger_creates_file_and_sets_info(tmp_path):
 def test_setup_logger_debug_sets_debug_level(tmp_path):
     import logging
 
-    for h in logging.root.handlers[:]:
+    for h in logging.root.handlers:
         logging.root.removeHandler(h)
 
     ut.setup_logger(log_dir=tmp_path, log_level=logging.DEBUG)
@@ -79,32 +79,17 @@ def test_setup_logger_debug_sets_debug_level(tmp_path):
     assert logging.getLogger().level == logging.DEBUG
 
 
-def test_setup_logger_arg_validation(tmp_path):
-    import pytest, logging
-    for h in logging.root.handlers[:]:
-        logging.root.removeHandler(h)
-
-    # stdout=False requires a log_dir
-    with pytest.raises(ValueError):
-        ut.setup_logger(None, stdout=False)
-
-    # stdout=True requires log_dir to be None
-    with pytest.raises(ValueError):
-        ut.setup_logger(tmp_path, stdout=True)
-
-
-def test_setup_logger_stdout_attaches_stream_handler(tmp_path):
+def test_buffer_handler_attached(tmp_path):
     import logging
-    for h in logging.root.handlers[:]:
+    from logging.handlers import MemoryHandler
+
+    # Remove any handlers, then re-initialize buffering
+    for h in logging.root.handlers:
         logging.root.removeHandler(h)
 
-    # Should not raise
-    ut.setup_logger(None, stdout=True)
-    # check that the last handler is a StreamHandler pointing to stdout
-    handlers = logging.getLogger().handlers
-    assert handlers, "Expected at least one handler"
-    from logging import StreamHandler
-    stream_handlers = [h for h in handlers if isinstance(h, StreamHandler)]
-    assert stream_handlers, "Expected a StreamHandler when stdout=True"
-    # check stream is sys.stdout
-    assert stream_handlers[-1].stream is sys.stdout
+    ut.init_buffering_logger()
+
+    # Check that the module-level buffer exists and is attached
+    assert getattr(ut, '_BUFFER_HANDLER', None) is not None
+    assert isinstance(ut._BUFFER_HANDLER, MemoryHandler)
+    assert ut._BUFFER_HANDLER in logging.getLogger().handlers

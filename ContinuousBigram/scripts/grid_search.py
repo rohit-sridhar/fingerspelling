@@ -581,39 +581,25 @@ def get_log_file(subdirs, name_ext, mode):
     make_dir(log_dir)
 
     if mode == "train":
-        return os.path.join(log_dir, "output.log_" + name_ext)
+        return os.path.join(log_dir, "train.log_" + name_ext)
     elif mode == "test":
-        return os.path.join(log_dir, "output.log_" + name_ext + ".test_model")
+        return os.path.join(log_dir, "test.log_" + name_ext)
     elif mode == "grid_search":
         return os.path.join(log_dir, "grid_search.log_" + name_ext)
 
 
-# Helper to attach a file handler to the module logger for a specific log file.
-def _attach_file_handler(log_path, level=logging.DEBUG, mode='a'):
-    """Attach a FileHandler to the module logger that writes to log_path.
-
-    Returns the handler so callers can remove/close it when done.
-    """
-    fh = logging.FileHandler(log_path, mode=mode)
-    formatter = logging.Formatter("%(asctime)s - %(funcName)s - %(filename)s - %(levelname)s - %(message)s", datefmt="%Y-%m-%d | %H:%M:%S")
-    fh.setFormatter(formatter)
-    fh.setLevel(level)
-    logger.addHandler(fh)
-    return fh
-
-
-def test_model(tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
+def test_model(tc, num_its, num_tri_its, hmmdef, subdirs, trace_value, main_log_handler):
     name_ext = get_name_ext(tc, num_its, num_tri_its, hmmdef, trace_value=trace_value)
-    
-    log_dir = os.path.join(LOG_ROOT, subdirs)
-    logger.info("##### Creating Testing Log Dir #####")
-    make_dir(log_dir)
-    logger.info("#####\n")
-    
+    # log_dir = os.path.join(LOG_ROOT, subdirs)
+    # make_dir(log_dir)
     log_file = get_log_file(subdirs, name_ext, mode="test")
 
     # attach a per-test file handler so test output goes to its own file
-    test_handler = _attach_file_handler(log_file, level=logging.DEBUG, mode='w')
+    # Use utils.attach_file_handler via wildcard import from utils
+    test_handler = setup_logger(log_file, logger, log_level=logging.INFO)
+    logger.info("##### Running test.sh #####")
+    logger.info(f"Log file: {log_file}\n")
+    main_log_handler.setLevel(logging.ERROR)
     try:
         if args.test_model_path is None:
             _, new_model_path = get_saved_model_path(subdirs, tc, num_its, num_tri_its, hmmdef)
@@ -626,38 +612,39 @@ def test_model(tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
         test_args = [TEST_SCRIPT, options_file, test_data_file, new_model_path]  # Last arg is for phrase grammar
 
         logger.info("Test Command: " + ' '.join(test_args))
-        logger.info(f"Log file: {log_file}\n")
-
         # Run and stream output into the test logger
         run_subprocess(test_args, logger=logger)
     finally:
         logger.removeHandler(test_handler)
+        main_log_handler.setLevel(logging.INFO)
         test_handler.close()
+    logger.info("#####\n")
 
 # Runs the train model script
-def train_model(tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
+def train_model(tc, num_its, num_tri_its, hmmdef, subdirs, trace_value, main_log_handler):
     name_ext = get_name_ext(tc, num_its, num_tri_its, hmmdef, trace_value=trace_value)
-    
-    log_dir = os.path.join(LOG_ROOT, subdirs)
-    logger.info("##### Creating Training Log Dir #####")
-    make_dir(log_dir)
-    logger.info("#####\n")
-    
+    # log_dir = os.path.join(LOG_ROOT, subdirs)
+    # make_dir(log_dir)
+    # logger.info("#####\n")
     log_file = get_log_file(subdirs, name_ext, mode="train")
 
     # attach a per-train file handler so training output goes to its own file
-    train_handler = _attach_file_handler(log_file, level=logging.DEBUG, mode='w')
+    # train_handler = attach_file_handler(log_file, level=logging.INFO, mode='w')
+
+    train_handler = setup_logger(log_file, logger, log_level=logging.INFO)
+    logger.info("##### Running train.sh script #####")
+    logger.info(f"Log file: {log_file}\n")
+    main_log_handler.setLevel(logging.ERROR)
     try:
         options_file = get_options_file(subdirs)
         train_args = [TRAIN_SCRIPT, options_file]
 
         logger.info("Train Command: " + ' '.join(train_args))
-        logger.info(f"Output file: {log_file}\n")
-
         # Run and stream output into the train logger
         run_subprocess(train_args, logger=logger)
     finally:
         logger.removeHandler(train_handler)
+        main_log_handler.setLevel(logging.INFO)
         train_handler.close()
 
 def get_results(results_file, letter_results=True):
@@ -819,10 +806,8 @@ if __name__ == "__main__":
     args = parse_args()
     _check_args()
 
-    # Start logging to stdout initially so early messages are visible to the user
-    # then later per-context file handlers will be attached. Use log_dir=None when stdout=True.
-    setup_logger(log_dir=None, log_level=logging.INFO, stdout=True)
-
+    # Buffering logger initialized at import so early messages are buffered until
+    # per-context file handlers are attached and setup_logger is called.
     logger.info("##### Args #####")
     logger.info(str(args))
     logger.info("#####\n")
@@ -864,10 +849,10 @@ if __name__ == "__main__":
             # Attach a grid-search-level log file for this hyperparam setting
             name_ext = get_name_ext(tc, num_its, num_tri_its, hmmdef, trace_value=trace_value)
             grid_log = get_log_file(subdirs, name_ext, mode="grid_search")
-            grid_handler = _attach_file_handler(grid_log, level=logging.INFO, mode='a')
+
             # Reconfigure logging to write to files in the log directory for this subdirs.
-            # This ensures further logging goes to file backends instead of stdout.
-            setup_logger(log_dir=os.path.join(LOG_ROOT, subdirs), log_level=logging.WARNING, stdout=False)
+            # This ensures further logging goes to file backends (and flushes buffered logs).
+            main_log_handler = setup_logger(grid_log, logger, log_level=logging.INFO)
             try:
                 edit_options(
                     ip,
@@ -897,7 +882,8 @@ if __name__ == "__main__":
                         num_tri_its,
                         hmmdef,
                         subdirs,
-                        trace_value
+                        trace_value,
+                        main_log_handler,
                     )
                 else:
                     train_model(
@@ -906,7 +892,8 @@ if __name__ == "__main__":
                         num_tri_its,
                         hmmdef,
                         subdirs,
-                        trace_value
+                        trace_value,
+                        main_log_handler,
                     )
                     
                     save_model(
@@ -929,6 +916,6 @@ if __name__ == "__main__":
                 
                 logger.info("")
             finally:
-                logger.removeHandler(grid_handler)
-                grid_handler.close()
+                logger.removeHandler(main_log_handler)
+                main_log_handler.close()
 
