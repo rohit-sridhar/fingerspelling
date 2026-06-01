@@ -174,15 +174,34 @@ NEW_DATA_LOC_REQUIRED_METHODS = {
 # }
 
 ########## Utils functions for python scripts ##########
-def run_subprocess(cmd, live_print=True):
+def run_subprocess(cmd, live_print=True, logger=None):
+    """Run a subprocess and route its output to the provided logger.
+
+    If live_print is True, stream stdout/stderr lines to logger.info in real time.
+    If live_print is False, capture output and log at debug (stdout) or error (stderr).
+    Returns the subprocess return code.
+    """
+    if logger is None:
+        logger = logging.getLogger(__name__)
+
     if live_print:
-        subprocess.run(cmd, stdout=sys.stdout)
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+        try:
+            for line in proc.stdout:
+                logger.info(line.rstrip())
+        finally:
+            proc.wait()
+        return proc.returncode
     else:
         result = subprocess.run(cmd, capture_output=True, text=True)
         if result.returncode == 0:
-            print(result.stdout)
+            if result.stdout:
+                logger.debug(result.stdout)
         else:
-            print(result.stderr)
+            # include stdout for context when showing errors
+            out = (result.stdout or '') + (result.stderr or '')
+            logger.error(out)
+        return result.returncode
 
 ##### SUBDIRECTORY UTILS #####
 # swaps an absolute path's prefix ${PRJ} with
