@@ -274,7 +274,7 @@ def ingest_label_file(label_filepath):
 
 if __name__ == "__main__":
     args = parse_args()
-    setup_logger(args.dict_loc.parent, debug=args.debug)
+    setup_logger(log_dir=args.dict_loc.parent, log_level=logging.DEBUG if args.debug else logging.INFO, stdout=False)
     logger.info(args)
     
     initialize_dict()

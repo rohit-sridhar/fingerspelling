@@ -42,7 +42,8 @@ def test_setup_logger_creates_file_and_sets_info(tmp_path):
         logging.root.removeHandler(h)
 
     # Call the moved setup_logger (utils is imported as ut at module level)
-    ut.setup_logger(tmp_path, debug=False)
+    import logging
+    ut.setup_logger(log_dir=tmp_path, log_level=logging.INFO)
 
     # Emit a log record to ensure the file is created
     logger = logging.getLogger("test_setup_logger")
@@ -66,7 +67,7 @@ def test_setup_logger_debug_sets_debug_level(tmp_path):
     for h in logging.root.handlers[:]:
         logging.root.removeHandler(h)
 
-    ut.setup_logger(tmp_path, debug=True)
+    ut.setup_logger(log_dir=tmp_path, log_level=logging.DEBUG)
     logger = logging.getLogger("test_setup_logger_debug")
     logger.debug("debug message")
     logging.shutdown()

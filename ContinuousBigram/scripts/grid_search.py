@@ -821,7 +821,7 @@ if __name__ == "__main__":
 
     # Start logging to stdout initially so early messages are visible to the user
     # then later per-context file handlers will be attached. Use log_dir=None when stdout=True.
-    setup_logger(log_dir=None, debug=args.debug, stdout=True)
+    setup_logger(log_dir=None, log_level=logging.INFO, stdout=True)
 
     logger.info("##### Args #####")
     logger.info(str(args))
@@ -865,6 +865,9 @@ if __name__ == "__main__":
             name_ext = get_name_ext(tc, num_its, num_tri_its, hmmdef, trace_value=trace_value)
             grid_log = get_log_file(subdirs, name_ext, mode="grid_search")
             grid_handler = _attach_file_handler(grid_log, level=logging.INFO, mode='a')
+            # Reconfigure logging to write to files in the log directory for this subdirs.
+            # This ensures further logging goes to file backends instead of stdout.
+            setup_logger(log_dir=os.path.join(LOG_ROOT, subdirs), log_level=logging.WARNING, stdout=False)
             try:
                 edit_options(
                     ip,
