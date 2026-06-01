@@ -818,11 +818,15 @@ def clear_results_files(ip, tc, num_its, num_tri_its, hmmdef, subdirs):
 if __name__ == "__main__":
     args = parse_args()
     _check_args()
-    
+
+    # Start logging to stdout initially so early messages are visible to the user
+    # then later per-context file handlers will be attached. Use log_dir=None when stdout=True.
+    setup_logger(log_dir=None, debug=args.debug, stdout=True)
+
     logger.info("##### Args #####")
     logger.info(str(args))
     logger.info("#####\n")
-    
+
     arg_iter = product(
         args.ip_values,
         args.hmmdefs,

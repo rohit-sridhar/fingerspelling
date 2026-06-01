@@ -330,20 +330,40 @@ def get_next_seq_id(data_aug_map):
 
 
 # set up the logger for any script
-def setup_logger(log_dir, debug=False):
-    log_dir = Path(log_dir)
-    log_file = (log_dir / "log").with_suffix(".txt")
+def setup_logger(log_dir=None, debug=False, stdout=False):
+    """Configure basic logging.
 
-    filemode='w'
-    if log_file.exists():
-        filemode='a'
+    Use either stdout=True (with log_dir=None) OR provide a log_dir path to log to a file.
+    Raises ValueError on invalid combinations.
+    """
+    # Validate args: require exactly one of (stdout True) or (log_dir provided)
+    if (stdout and log_dir is not None) or (not stdout and log_dir is None):
+        raise ValueError("Provide either stdout=True (with log_dir=None) or stdout=False with a valid log_dir")
 
-    logging.basicConfig(
-        filename=log_file,
-        filemode=filemode,
-        level=logging.DEBUG if debug else logging.INFO,
-        format="%(asctime)s - %(funcName)s - %(filename)s - %(levelname)s - %(message)s",
-        datefmt="%Y-%m-%d | %H:%M:%S",
-    )
+    level = logging.DEBUG if debug else logging.INFO
+
+    if stdout:
+        # Configure logging to stdout initially. Use force to reconfigure handlers.
+        logging.basicConfig(
+            stream=sys.stdout,
+            level=level,
+            format="%(asctime)s - %(funcName)s - %(filename)s - %(levelname)s - %(message)s",
+            datefmt="%Y-%m-%d | %H:%M:%S",
+            force=True,
+        )
+    else:
+        log_dir = Path(log_dir)
+        log_dir.mkdir(parents=True, exist_ok=True)
+
+        log_file = (log_dir / "log").with_suffix(".txt")
+        filemode = 'a' if log_file.exists() else 'w'
+        logging.basicConfig(
+            filename=log_file,
+            filemode=filemode,
+            level=level,
+            format="%(asctime)s - %(funcName)s - %(filename)s - %(levelname)s - %(message)s",
+            datefmt="%Y-%m-%d | %H:%M:%S",
+            force=True,
+        )
 
 
