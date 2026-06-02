@@ -3,12 +3,14 @@ import sys
 import json
 import shutil
 import subprocess
+import threading
 import logging
 from logging.handlers import MemoryHandler
 from pathlib import Path
 from glob import glob
 
 logger = logging.getLogger(__name__)
+root_logger = logging.getLogger()
 _BUFFER_HANDLER = None
 
 ROOT = "/data/hmm_modeling/fingerspelling/ContinuousBigram"
@@ -177,31 +179,48 @@ NEW_DATA_LOC_REQUIRED_METHODS = {
 # }
 
 ########## Utils functions for python scripts ##########
-def run_subprocess(cmd, live_print=True, logger=None):
+def run_subprocess(cmd, logger=None):
     """Run a subprocess and route its output to the provided logger.
 
     If live_print is True, stream stdout/stderr lines to logger.info in real time.
     If live_print is False, capture output and log at debug (stdout) or error (stderr).
     Returns the subprocess return code.
     """
-    if live_print:
-        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
-        try:
-            for line in proc.stdout:
-                logger.info(line.rstrip())
-        finally:
-            proc.wait()
-        return proc.returncode
+    with subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        bufsize=1,
+    ) as proc:
+        # Create separate threads to read stdout and stderr simultaneously
+        stdout_thread = threading.Thread(target=log_stream, args=(proc.stdout, logger.info))
+        stderr_thread = threading.Thread(target=log_stream, args=(proc.stderr, logger.error))
+
+        stdout_thread.start()
+        stderr_thread.start()
+
+        # Wait for threads to finish reading all output
+        stdout_thread.join()
+        stderr_thread.join()
+
+    return_code = proc.returncode
+    output_msg = f"Process {' '.join(cmd)} exited with {return_code=}"
+    if proc.returncode == 0:
+        logger.info(output_msg)
     else:
-        result = subprocess.run(cmd, capture_output=True, text=True)
-        if result.returncode == 0:
-            if result.stdout:
-                logger.debug(result.stdout)
-        else:
-            # include stdout for context when showing errors
-            out = (result.stdout or '') + (result.stderr or '')
-            logger.error(out)
-        return result.returncode
+        logger.error(output_msg)
+
+    # else:
+    #     result = subprocess.run(cmd, capture_output=True, text=True)
+    #     if result.returncode == 0:
+    #         if result.stdout:
+    #             logger.info(result.stdout)
+    #     else:
+    #         # include stdout for context when showing errors
+    #         out = (result.stdout or '') + (result.stderr or '')
+    #         logger.error(out)
+    #     return result.returncode
 
 ##### SUBDIRECTORY UTILS #####
 # swaps an absolute path's prefix ${PRJ} with
@@ -329,6 +348,16 @@ def get_next_seq_id(data_aug_map):
     return str(next_seq_id)
 
 ##### Logging utils #####
+def log_stream(stream, log_level_function):
+    """Reads a stream line-by-line and sends it to a specific logging function."""
+    with stream:
+        for line in stream:
+            log_level_function(line.rstrip("\r\n"))
+
+def set_buffer_handler_level(new_level=logging.INFO):
+    if _BUFFER_HANDLER is not None and _BUFFER_HANDLER in root_logger.handlers:
+        _BUFFER_HANDLER.setLevel(new_level)
+
 def init_buffering_logger(capacity=10000, flush_level=logging.ERROR):
     """Attach a MemoryHandler to the root logger to buffer logs until file handlers are configured.
     initialize the root logger piping to /dev/null. Pass a file handler or stream handler to 
@@ -344,34 +373,35 @@ def init_buffering_logger(capacity=10000, flush_level=logging.ERROR):
         level=logging.DEBUG,
     )
     global _BUFFER_HANDLER
-    root = logging.getLogger()
-    if _BUFFER_HANDLER is not None and _BUFFER_HANDLER in root.handlers:
-        return _BUFFER_HANDLER
+    if _BUFFER_HANDLER is not None and _BUFFER_HANDLER in root_logger.handlers:
+        return
 
     mem = MemoryHandler(capacity=capacity, flushLevel=flush_level, target=None)
-    mem.setLevel(logging.DEBUG)
-    root.addHandler(mem)
+    mem.setLevel(logging.INFO)
+    root_logger.addHandler(mem)
     _BUFFER_HANDLER = mem
 
 
 # Initialize buffering at import so early log calls are not lost
 init_buffering_logger()
 
-def _attach_file_handler(log_path, module_logger, level=logging.DEBUG, mode='w'):
-    """Attach a FileHandler to the given logger (or module logger) that writes to log_path.
+def _attach_file_handler(log_file, level=logging.DEBUG, mode='w'):
+    """Attach a FileHandler to the given logger (or module logger) that writes to log_file.
 
     Returns the handler so callers can remove/close it when done.
     """
-    fh = logging.FileHandler(log_path, mode=mode)
+    fh = logging.FileHandler(log_file, mode=mode)
     formatter = logging.Formatter("%(asctime)s - %(funcName)s - %(filename)s - %(levelname)s - %(message)s", datefmt="%Y-%m-%d | %H:%M:%S")
     fh.setFormatter(formatter)
     fh.setLevel(level)
-    module_logger.addHandler(fh)
+
+    root_logger.addHandler(fh)
     return fh
 
 
 # set up the logger for any script
-def setup_logger(log_file, module_logger, log_level=logging.INFO):
+# def setup_logger(log_file, module_logger, flush_buffer=False, log_level=logging.INFO):
+def setup_logger(log_file, flush_buffer=False, log_level=logging.INFO):
     """Configure logging to a file and flush any buffered logs.
 
     log_file must be a valid file path. logger should be a module logger.
@@ -383,38 +413,28 @@ def setup_logger(log_file, module_logger, log_level=logging.INFO):
     log_file.parent.mkdir(parents=True, exist_ok=True)
 
     # Reuse attach helper to create and attach a FileHandler to the root logger
-    fh = _attach_file_handler(log_file, module_logger, level=log_level)
+    # fh = _attach_file_handler(log_file, module_logger, level=log_level)
+    fh = _attach_file_handler(log_file, level=log_level)
 
-    # If a buffer handler exists, pick a suitable target and flush into it.
+    # If a buffer handler exists flush it into fh.
     global _BUFFER_HANDLER
-    if _BUFFER_HANDLER is not None:
+    if flush_buffer and _BUFFER_HANDLER is not None:
         try:
-            # Prefer an existing FileHandler attached to the module logger so buffered
-            # records go to per-context files (e.g., grid_handler). Fall back to root fh.
-
             target = fh
-            # target = None
-            # for h in logger.handlers:
-            #     if isinstance(h, logging.FileHandler):
-            #         target = h
-            #         break
-
-            # if target is None:
-            #     target = fh
 
             _BUFFER_HANDLER.setTarget(target)
             _BUFFER_HANDLER.flush()
 
-            root = logging.getLogger()
-            root.removeHandler(_BUFFER_HANDLER)
+            root_logger.removeHandler(_BUFFER_HANDLER)
         except Exception:
             pass
 
-    try:
-        _BUFFER_HANDLER.close()
-    except Exception:
-        pass
+        try:
+            _BUFFER_HANDLER.close()
+        except Exception:
+            pass
 
-    _BUFFER_HANDLER = None
+        _BUFFER_HANDLER = None
+
     return fh
 
