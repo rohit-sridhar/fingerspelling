@@ -227,12 +227,12 @@ def make_dir(dir_loc, rmdir=False):
     if os.path.exists(dir_loc) and rmdir:
         shutil.rmtree(dir_loc)
         os.makedirs(dir_loc)
-        print(f"Deleted {dir_loc} and recreated it since it exists and rmdir is True.")
+        logger.info(f"Deleted {dir_loc} and recreated it since it exists and rmdir is True.")
     elif not(os.path.exists(dir_loc)):
         os.makedirs(dir_loc)
-        print(f"Created {dir_loc}")
+        logger.info(f"Created {dir_loc}")
     else:
-        print(f"Did not create {dir_loc} since it exists and rmdir is False.")
+        logger.info(f"Did not create {dir_loc} since it exists and rmdir is False.")
 
 # The functions below get the subdirectories for a given data directory.
 # It expects an absolute path as input.

@@ -299,7 +299,7 @@ def get_hresults_prj_filepaths(name_ext, subdirs, ip):
     results_relative = results_dir[len(ROOT)+1:]
     letter_results_file = os.path.join("${PRJ}", results_relative, letter_results_file)
     word_results_file = os.path.join("${PRJ}", results_relative, word_results_file)
-    print("#####\n")
+    logger.info("#####\n")
 
     return (letter_results_file, word_results_file)
 
@@ -586,6 +586,8 @@ def get_log_file(subdirs, name_ext, mode):
         return os.path.join(log_dir, "test.log_" + name_ext)
     elif mode == "grid_search":
         return os.path.join(log_dir, "grid_search.log_" + name_ext)
+    elif mode == "prepare_data":
+        return os.path.join(log_dir, "prepare_data.log_" + name_ext)
 
 
 def test_model(tc, num_its, num_tri_its, hmmdef, subdirs, trace_value, main_log_handler):
