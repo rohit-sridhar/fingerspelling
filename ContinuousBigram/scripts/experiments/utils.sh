@@ -1,9 +1,10 @@
-#/bin/ksh
+#!/usr/bin/env bash
+set -euo pipefail
 
 TORCH_ROOT=/data/deep_learning/fs_transformers
 
 typeset -a seeds=(1248)
-typeset -a data_splits=(train val)
+typeset -a data_splits=(train val test)
 typeset -a datasets=()
 typeset -a participants=()
 typeset -a thresholds=(0)

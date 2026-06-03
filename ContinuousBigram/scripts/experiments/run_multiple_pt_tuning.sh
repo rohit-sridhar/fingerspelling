@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 ROOT="${SCRIPT_DIR}/../.."
@@ -6,7 +7,7 @@ ROOT="${SCRIPT_DIR}/../.."
 . ${SCRIPT_DIR}/utils.sh
 set_vars $1
 
-output_dir=${ROOT}/results/pt_results/tot/${dataset}
+output_dir=${ROOT}/results/pt_results/tot/${datasets[0]}
 
 # Assumes we're in ContinuousBigram dir
 if [ ! -d "${output_dir}" ]; then

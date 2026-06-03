@@ -14,6 +14,8 @@ from itertools import product
 from utils import *
 from glob import glob
 
+logger = logging.getLogger(__name__)
+
 ###### TO ADD A NEW HYPERPARAM #######
 ### Below, we describe the workflow for adding new hyperparams
 # Add an arg to parse_args
@@ -127,13 +129,23 @@ def parse_args():
     parser.add_argument(
         "--prepare_data",
         action='store_true',
-        help="If true, will prepare data before training. Warning: not thread safe."
+        help="If true, will prepare data before training."
     )
     
     parser.add_argument(
         "--prepare_data_only",
         action='store_true',
         help="If true, will prepare data before training."
+    )
+
+    parser.add_argument(
+        "--prepare_data_all",
+        action='store_true',
+        help=(
+            "If true, will prepare all data (incl. dict, grammar, commands) before training. "
+            "Otherwise prepares only mlf and ext files. Usually only used when preparing all "
+            "the data of some dataset."
+        )
     )
     
     parser.add_argument(
@@ -191,9 +203,9 @@ def parse_args():
 # Makes the dir for the options file
 def _make_options_file(subdirs):
     options_dir = os.path.join(SCRIPTS_ROOT, subdirs)
-    print("##### Setting Up Options File #####")
+    logger.info("##### Setting Up Options File #####")
     make_dir(options_dir)
-    print("#####\n")
+    logger.info("#####\n")
 
     new_options_file = os.path.join(options_dir, OPTIONS_FILENAME)
     original_options_file = os.path.join(SCRIPTS_ROOT, OPTIONS_FILENAME)
@@ -230,10 +242,13 @@ def get_name_ext(tc, num_its, num_tri_its, hmmdef, trace_value=None):
     name_ext = ""
 
     # Do not include insertion-penalty (ip) in the name extension anymore
-    name_ext += "_".join([f"{hmmdef}", f"{num_its}its", f"{num_tri_its}tri-its", f"tc{tc}"])
+    if args.test_model_path is not None:
+        name_ext += os.path.basename(args.test_model_path)[len(MODEL_MACROS_FILE) + 1:]
+    else:
+        name_ext += "_".join([f"{hmmdef}", f"{num_its}its", f"{num_tri_its}tri-its", f"tc{tc}"])
 
-    if args.use_phrase:
-        name_ext += "_grliwph"
+    # if args.use_phrase:
+    #     name_ext += "_grliwph"
 
     if args.no_custom_silsp:
         name_ext += "_no-silsp"
@@ -255,7 +270,7 @@ def get_name_ext(tc, num_its, num_tri_its, hmmdef, trace_value=None):
 # Get the results filepath
 def get_hresults_prj_filepaths(name_ext, subdirs, ip):
     results_dir = os.path.join(RESULTS_ROOT, subdirs)
-    print("##### Creating Results Dirs #####")
+    logger.info("##### Creating Results Dirs #####")
     make_dir(results_dir)
     
     if args.test_model_path is None:
@@ -291,10 +306,10 @@ def get_hresults_prj_filepaths(name_ext, subdirs, ip):
         letter_results_file = '.'.join(["hresults", "log_letter", model_name])
         word_results_file = '.'.join(["hresults", "log_word", model_name])
         
-    results_relative = os.path.join(os.path.basename(RESULTS_ROOT), subdirs)
+    results_relative = results_dir[len(ROOT)+1:]
     letter_results_file = os.path.join("${PRJ}", results_relative, letter_results_file)
     word_results_file = os.path.join("${PRJ}", results_relative, word_results_file)
-    print("#####\n")
+    logger.info("#####\n")
 
     return (letter_results_file, word_results_file)
 
@@ -365,13 +380,13 @@ def make_triletter_changes(subdirs):
     edit_file(tokens_search, tokens_repl, options_file)
     edit_file(mlf_location_search, mlf_location_repl, options_file)
  
-    print("##### Setting Triletter HTK Files #####")
-    run_subprocess(["grep", "^"+TRILETTER_VARNAME+r"\s*=\s*", options_file])
-    run_subprocess(["grep", r"^DICTFILE\s*=\s*", options_file])
-    run_subprocess(["grep", r"^DICTFILE_WORD\s*=\s*", options_file])
-    run_subprocess(["grep", r"^TOKENS\s*=\s*", options_file])
-    run_subprocess(["grep", r"^MLF_LOCATION\s*=\s*", options_file])
-    print("#####\n")
+    logger.info("##### Setting Triletter HTK Files #####")
+    run_subprocess(["grep", "^"+TRILETTER_VARNAME+r"\s*=\s*", options_file], logger=logger)
+    run_subprocess(["grep", r"^DICTFILE\s*=\s*", options_file], logger=logger)
+    run_subprocess(["grep", r"^DICTFILE_WORD\s*=\s*", options_file], logger=logger)
+    run_subprocess(["grep", r"^TOKENS\s*=\s*", options_file], logger=logger)
+    run_subprocess(["grep", r"^MLF_LOCATION\s*=\s*", options_file], logger=logger)
+    logger.info("#####\n")
     
 
 # Edit options file with all new hyperparams (calls helper above)
@@ -421,14 +436,14 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     cross_word_search = CROSS_WORD_VARNAME + r"\s*=\s*(yes|no)"
     cross_word_repl = CROSS_WORD_VARNAME + f"={cross_word}"
     
-    ngram_word_search = NGRAM_WORD_VARNAME + r"\s*=\s*[0-9]"
-    ngram_word_repl = NGRAM_WORD_VARNAME + f"={ngram}"
+    # ngram_word_search = NGRAM_WORD_VARNAME + r"\s*=\s*[0-9]"
+    # ngram_word_repl = NGRAM_WORD_VARNAME + f"={ngram}"
     
-    whole_word_search = WHOLE_WORD_VARNAME + r"\s*=\s*(yes|no)"
-    whole_word_repl = WHOLE_WORD_VARNAME + f"={whole_word}"
+    # whole_word_search = WHOLE_WORD_VARNAME + r"\s*=\s*(yes|no)"
+    # whole_word_repl = WHOLE_WORD_VARNAME + f"={whole_word}"
 
-    use_phrase_search = USE_PHRASE_VARNAME + r"\s*=\s*(yes|no)"
-    use_phrase_repl = USE_PHRASE_VARNAME + f"={use_phrase}"
+    # use_phrase_search = USE_PHRASE_VARNAME + r"\s*=\s*(yes|no)"
+    # use_phrase_repl = USE_PHRASE_VARNAME + f"={use_phrase}"
 
     hedfile1_tokens_root_search = r"^CL .*commands\/commands_tri_(internal|cross)(\.all)?$"
     hedfile1_tokens_root_repl = f"CL {ROOT}/commands/commands_tri_internal.all"
@@ -462,33 +477,33 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     edit_file(custom_silsp_search, custom_silsp_repl, options_file)
     edit_file(multi_process_search, multi_process_repl, options_file)
     edit_file(cross_word_search, cross_word_repl, options_file)
-    edit_file(ngram_word_search, ngram_word_repl, options_file)
+    # edit_file(ngram_word_search, ngram_word_repl, options_file)
     edit_file(trace_level_search, trace_level_repl, options_file)
     edit_file(threads_search, threads_repl, options_file)
-    edit_file(whole_word_search, whole_word_repl, options_file)
-    edit_file(use_phrase_search, use_phrase_repl, options_file)
+    # edit_file(whole_word_search, whole_word_repl, options_file)
+    # edit_file(use_phrase_search, use_phrase_repl, options_file)
     edit_file(hedfile1_tokens_root_search, hedfile1_tokens_root_repl, hedfile1_local_file)
     
-    print("##### Hyperparameters #####")
-    run_subprocess(["grep", "^" + IP_VARNAME + r"\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + NUM_ITS_VARNAME + r"\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + NUM_TRI_ITS_VARNAME + r"\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + HMMDEF_VARNAME + r"\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + MODELS_ROOT_VARNAME + r"\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + LOG_LETTER_VARNAME + r"\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + LOG_WORD_VARNAME + r"\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + HEDFILE1_VARNAME + r"\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + HEDFILE2_VARNAME + r"\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + CUSTOM_SILSP_VARNAME + r"\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + MULTI_PROCESS_VARNAME + r"\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + CROSS_WORD_VARNAME + r"\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + NGRAM_WORD_VARNAME + r"\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + TRACE_LEVEL_VARNAME + r"\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + THREADS_VARNAME + r"\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + WHOLE_WORD_VARNAME + r"\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + USE_PHRASE_VARNAME + r"\s*=\s*", options_file])
-    run_subprocess(["head", "-n", "1", f"{hedfile1_local_file}"])
-    print("#####\n")
+    logger.info("##### Hyperparameters #####")
+    run_subprocess(["grep", "^" + IP_VARNAME + r"\s*=\s*", options_file], logger=logger)
+    run_subprocess(["grep", "^" + NUM_ITS_VARNAME + r"\s*=\s*", options_file], logger=logger)
+    run_subprocess(["grep", "^" + NUM_TRI_ITS_VARNAME + r"\s*=\s*", options_file], logger=logger)
+    run_subprocess(["grep", "^" + HMMDEF_VARNAME + r"\s*=\s*", options_file], logger=logger)
+    run_subprocess(["grep", "^" + MODELS_ROOT_VARNAME + r"\s*=\s*", options_file], logger=logger)
+    run_subprocess(["grep", "^" + LOG_LETTER_VARNAME + r"\s*=\s*", options_file], logger=logger)
+    run_subprocess(["grep", "^" + LOG_WORD_VARNAME + r"\s*=\s*", options_file], logger=logger)
+    run_subprocess(["grep", "^" + HEDFILE1_VARNAME + r"\s*=\s*", options_file], logger=logger)
+    run_subprocess(["grep", "^" + HEDFILE2_VARNAME + r"\s*=\s*", options_file], logger=logger)
+    run_subprocess(["grep", "^" + CUSTOM_SILSP_VARNAME + r"\s*=\s*", options_file], logger=logger)
+    run_subprocess(["grep", "^" + MULTI_PROCESS_VARNAME + r"\s*=\s*", options_file], logger=logger)
+    run_subprocess(["grep", "^" + CROSS_WORD_VARNAME + r"\s*=\s*", options_file], logger=logger)
+    # run_subprocess(["grep", "^" + NGRAM_WORD_VARNAME + r"\s*=\s*", options_file], logger=logger)
+    run_subprocess(["grep", "^" + TRACE_LEVEL_VARNAME + r"\s*=\s*", options_file], logger=logger)
+    run_subprocess(["grep", "^" + THREADS_VARNAME + r"\s*=\s*", options_file], logger=logger)
+    # run_subprocess(["grep", "^" + WHOLE_WORD_VARNAME + r"\s*=\s*", options_file], logger=logger)
+    # run_subprocess(["grep", "^" + USE_PHRASE_VARNAME + r"\s*=\s*", options_file], logger=logger)
+    run_subprocess(["head", "-n", "1", f"{hedfile1_local_file}"], logger=logger)
+    logger.info("#####\n")
 
 def edit_htk_root_file_options(subdirs):
     options_file = get_options_file(subdirs)
@@ -535,18 +550,18 @@ def edit_htk_root_file_options(subdirs):
     edit_file(hmmsp_search, hmmsp_repl, options_file)
     edit_file(vector_length_search, vector_length_repl, options_file)
 
-    print("##### Set root files #####")
-    run_subprocess(["grep", "^" + GRAMMARFILE_ROOT_VARNAME + r"\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + DICTFILE_ROOT_VARNAME + r"\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + TOKENS_ROOT_VARNAME + r"\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + MLF_ROOT_VARNAME + r"\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + OUTPUTFILE_ROOT_VARNAME + r"\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + EXT_DIR_VARNAME + r"\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + LEDFILE_UNIQ_VARNAME + r"\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + HMMSIL_VARNAME + r"\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + HMMSP_VARNAME + r"\s*=\s*", options_file])
-    run_subprocess(["grep", "^" + VECTOR_LENGTH_VARNAME + r"\s*=\s*", options_file])
-    print("#####\n")
+    logger.info("##### Set root files #####")
+    run_subprocess(["grep", "^" + GRAMMARFILE_ROOT_VARNAME + r"\s*=\s*", options_file], logger=logger)
+    run_subprocess(["grep", "^" + DICTFILE_ROOT_VARNAME + r"\s*=\s*", options_file], logger=logger)
+    run_subprocess(["grep", "^" + TOKENS_ROOT_VARNAME + r"\s*=\s*", options_file], logger=logger)
+    run_subprocess(["grep", "^" + MLF_ROOT_VARNAME + r"\s*=\s*", options_file], logger=logger)
+    run_subprocess(["grep", "^" + OUTPUTFILE_ROOT_VARNAME + r"\s*=\s*", options_file], logger=logger)
+    run_subprocess(["grep", "^" + EXT_DIR_VARNAME + r"\s*=\s*", options_file], logger=logger)
+    run_subprocess(["grep", "^" + LEDFILE_UNIQ_VARNAME + r"\s*=\s*", options_file], logger=logger)
+    run_subprocess(["grep", "^" + HMMSIL_VARNAME + r"\s*=\s*", options_file], logger=logger)
+    run_subprocess(["grep", "^" + HMMSP_VARNAME + r"\s*=\s*", options_file], logger=logger)
+    run_subprocess(["grep", "^" + VECTOR_LENGTH_VARNAME + r"\s*=\s*", options_file], logger=logger)
+    logger.info("#####\n")
     
     grammar_dir = os.path.join(GRAMMAR_ROOT, subdirs)
     dict_dir = os.path.join(DICT_ROOT, subdirs)
@@ -555,84 +570,93 @@ def edit_htk_root_file_options(subdirs):
     outputfile_dir = os.path.join(OUTPUT_ROOT, subdirs)
     ext_dir = os.path.join(EXT_ROOT, subdirs)
     
-    print("##### Create HTK File Directories #####")
+    logger.info("##### Create HTK File Directories #####")
     make_dir(grammar_dir)
     make_dir(dict_dir)
     make_dir(tokens_dir)
     make_dir(mlf_dir)
     make_dir(outputfile_dir)
     make_dir(ext_dir)
-    print("#####\n")
+    logger.info("#####\n")
 
 def get_log_file(subdirs, name_ext, mode):
     """Return a log file path. Ensures the log directory exists.
 
-    mode must be one of: "train", "test", "grid_search". Raises ValueError otherwise.
+    mode must be one of: "train", "test", "grid_search", "prepare_data". Raises ValueError otherwise.
     """
-    if mode not in ("train", "test", "grid_search"):
-        raise ValueError("mode must be one of 'train', 'test', or 'grid_search'")
+    if mode not in ("train", "test", "grid_search", "prepare_data"):
+        raise ValueError("mode must be one of 'train', 'test', 'grid_search', or 'prepare_data'")
 
     log_dir = os.path.join(LOG_ROOT, subdirs)
     make_dir(log_dir)
 
     if mode == "train":
-        return os.path.join(log_dir, "output.log_" + name_ext)
+        return os.path.join(log_dir, "train.log_" + name_ext)
     elif mode == "test":
-        return os.path.join(log_dir, "output.log_" + name_ext + ".test_model")
+        return os.path.join(log_dir, "test.log_" + name_ext)
     elif mode == "grid_search":
         return os.path.join(log_dir, "grid_search.log_" + name_ext)
+    elif mode == "prepare_data":
+        return os.path.join(log_dir, "prepare_data.log_" + name_ext)
 
 
-def test_model(tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
+def test_model(tc, num_its, num_tri_its, hmmdef, subdirs, trace_value, main_log_handler):
     name_ext = get_name_ext(tc, num_its, num_tri_its, hmmdef, trace_value=trace_value)
-    
-    log_dir = os.path.join(LOG_ROOT, subdirs)
-    print("##### Creating Testing Log Dir #####")
-    make_dir(log_dir)
-    print("#####\n")
-
+    # log_dir = os.path.join(LOG_ROOT, subdirs)
+    # make_dir(log_dir)
     log_file = get_log_file(subdirs, name_ext, mode="test")
-    
+
+    # attach a per-test file handler so test output goes to its own file
+    # Use utils.attach_file_handler via wildcard import from utils
+    test_handler = setup_logger(log_file, log_level=logging.INFO)
+    logger.info("##### Running test.sh #####")
+    logger.info(f"Log file: {log_file}\n")
+    main_log_handler.setLevel(logging.ERROR)
+
     if args.test_model_path is None:
         _, new_model_path = get_saved_model_path(subdirs, tc, num_its, num_tri_its, hmmdef)
     else:
         new_model_path = args.test_model_path
-    print(f"Model Dir: {new_model_path}")
+    logger.info(f"Model Dir: {new_model_path}")
 
     options_file = get_options_file(subdirs)
     test_data_file = get_test_data_file(subdirs)
     test_args = [TEST_SCRIPT, options_file, test_data_file, new_model_path]  # Last arg is for phrase grammar
-    print("Test Command: " + ' '.join(test_args))
-    print(f"Log file: {log_file}\n")
 
-    if args.print_mode:
-        run_subprocess(test_args)
-    else:
-        with open(log_file, "w") as f:
-            subprocess.run(test_args, stdout=f, stderr=subprocess.STDOUT)
+    logger.info("Test Command: " + ' '.join(test_args))
+    # Run and stream output into the test logger
+    run_subprocess(test_args, logger=logger)
+
+    root_logger.removeHandler(test_handler)
+    main_log_handler.setLevel(logging.INFO)
+    test_handler.close()
+
+    logger.info("#####\n")
 
 # Runs the train model script
-def train_model(tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
+def train_model(tc, num_its, num_tri_its, hmmdef, subdirs, trace_value, main_log_handler):
     name_ext = get_name_ext(tc, num_its, num_tri_its, hmmdef, trace_value=trace_value)
-    
-    log_dir = os.path.join(LOG_ROOT, subdirs)
-    print("##### Creating Training Log Dir #####")
-    make_dir(log_dir)
-    print("#####\n")
-    
+    # log_dir = os.path.join(LOG_ROOT, subdirs)
+    # make_dir(log_dir)
+    # logger.info("#####\n")
     log_file = get_log_file(subdirs, name_ext, mode="train")
-    
+
+    # attach a per-train file handler so training output goes to its own file
+    train_handler = setup_logger(log_file, log_level=logging.INFO)
+    logger.info("##### Running train.sh script #####")
+    logger.info(f"Log file: {log_file}\n")
+    main_log_handler.setLevel(logging.ERROR)
+
     options_file = get_options_file(subdirs)
     train_args = [TRAIN_SCRIPT, options_file]
-    
-    print("Train Command: " + ' '.join(train_args))
-    print(f"Output file: {log_file}\n")
-    
-    if args.print_mode:
-        run_subprocess(train_args)
-    else:
-        with open(log_file, "w") as f:
-            subprocess.run(train_args, stdout=f, stderr=subprocess.STDOUT)
+
+    logger.info("Train Command: " + ' '.join(train_args))
+    # Run and stream output into the train logger
+    run_subprocess(train_args, logger=logger)
+
+    root_logger.removeHandler(train_handler)
+    main_log_handler.setLevel(logging.INFO)
+    train_handler.close()
 
 def get_results(results_file, letter_results=True):
     with open(results_file, "r") as f:
@@ -655,9 +679,9 @@ def get_results(results_file, letter_results=True):
         elif sent_match is not None:
             results = [corr_match.split('=')[1], acc_match.split('=')[1], sent_match.split('=')[1]]
         else:
-            print("No sentence results found. Check results file for error.")
+            logger.warning("No sentence results found. Check results file for error.")
     else:
-        print("No word/letter results found. Check results file for error.")
+        logger.warning("No word/letter results found. Check results file for error.")
     return results
 
 def add_results_to_csv(ip, tc, num_its, num_tri_its, hmmdef, subdirs):
@@ -722,53 +746,67 @@ def save_model(tc, num_its, num_tri_its, hmmdef, subdirs):
     new_model_dir, new_model_path = get_saved_model_path(subdirs, tc, num_its, num_tri_its, hmmdef)
     make_dir(new_model_dir)
     
-    print(f"Current Model Dir: {curr_model_path}")
-    print(f"New Model Dir: {new_model_path}")
+    logger.info(f"Current Model Dir: {curr_model_path}")
+    logger.info(f"New Model Dir: {new_model_path}")
     
     if os.path.exists(curr_model_path):
         shutil.copy(curr_model_path, new_model_path)
     else:
-        print("Model wasn't created or is missing. Check the log file")
+        logger.error("Model wasn't created or is missing. Check the log file")
 
 # Prepare data using scripts/prepare_files.sh. Not in use currently.
 def prepare_data(data_file, label_file, subdirs):
     options_file = get_options_file(subdirs)
     prepare_command = [PREPARE_SCRIPT, options_file, data_file, label_file]
-    
-    print("##### Run prepare data #####")
-    print(f"Prepare Data: {' '.join(prepare_command)}")
-    print("#####\n")
+    if args.prepare_data_all:
+        prepare_command.append("all")
 
-    run_subprocess(prepare_command)
+    name_ext = ""
+    log_file = get_log_file(subdirs, name_ext, mode="prepare_data")
+
+    prep_handler = setup_logger(log_file, log_level=logging.INFO)
+    logger.info("##### Run prepare data #####")
+    logger.info(f"Log file: {log_file}\n")
+    set_buffer_handler_level(logging.ERROR)
+
+    # Attach a per-prepare file handler so prepare output goes to its own file
+    logger.info(f"Prepare Data: {' '.join(prepare_command)}")
+    run_subprocess(prepare_command, logger=logger)
+
+    root_logger.removeHandler(prep_handler)
+    prep_handler.close()
+    set_buffer_handler_level(logging.INFO)
+
+    logger.info("#####\n")
 
 # TODO Standardize the output file naming and name ext (with trace ext)
 # Note that grammar_type_arg is different from grammar_type.
 # In this case grammar_type is hardcoded as grliwi, but it should be
 # hardcoded everywhere
-def gen_grammar(subdirs, label_file, grammar_type_arg='word'):
-    if grammar_type_arg.startswith("letter"):
-        grammar_file = "_".join([LETTER_GRAMMAR, "isolated"])
-        if grammar_type_arg.endswith("_whole_word"):
-            grammar_file = "_".join([grammar_file, "whole"])
-    else:
-        grammar_file = WORD_GRAMMAR
-        if grammar_type_arg.endswith("_phrase_sksp"):
-            grammar_file = "_".join([grammar_file, "phrase", "sksp"])
-        elif grammar_type_arg.endswith("_sksp"):
-            grammar_file = "_".join([grammar_file, "isolated", "sksp"])
-        elif grammar_type_arg.endswith("_whole_word"):
-            grammar_file = "_".join([grammar_file, "isolated", "whole"])
-        else:
-            grammar_file = "_".join([grammar_file, "isolated"])
-
-    grammar_filepath = os.path.join(GRAMMAR_ROOT, subdirs, grammar_file)
-
-    gen_grammar_args = ['python', GEN_GRAMMAR_SCRIPT]
-    gen_grammar_args += ["--label_loc", label_file]
-    gen_grammar_args += ["--grammar_file", grammar_filepath]
-
-    print("Gen Grammar Command: " + ' '.join(gen_grammar_args))
-    run_subprocess(gen_grammar_args)
+# def gen_grammar(subdirs, label_file, grammar_type_arg='word'):
+#     if grammar_type_arg.startswith("letter"):
+#         grammar_file = "_".join([LETTER_GRAMMAR, "isolated"])
+#         if grammar_type_arg.endswith("_whole_word"):
+#             grammar_file = "_".join([grammar_file, "whole"])
+#     else:
+#         grammar_file = WORD_GRAMMAR
+#         if grammar_type_arg.endswith("_phrase_sksp"):
+#             grammar_file = "_".join([grammar_file, "phrase", "sksp"])
+#         elif grammar_type_arg.endswith("_sksp"):
+#             grammar_file = "_".join([grammar_file, "isolated", "sksp"])
+#         elif grammar_type_arg.endswith("_whole_word"):
+#             grammar_file = "_".join([grammar_file, "isolated", "whole"])
+#         else:
+#             grammar_file = "_".join([grammar_file, "isolated"])
+# 
+#     grammar_filepath = os.path.join(GRAMMAR_ROOT, subdirs, grammar_file)
+# 
+#     gen_grammar_args = ['python', GEN_GRAMMAR_SCRIPT]
+#     gen_grammar_args += ["--label_loc", label_file]
+#     gen_grammar_args += ["--grammar_file", grammar_filepath]
+# 
+#     logger.info("Gen Grammar Command: " + ' '.join(gen_grammar_args))
+#     run_subprocess(gen_grammar_args, logger=logger)
 
 # def clear_results_files(ip, tc, num_its, num_tri_its, hmmdef, subdirs, grammar_type):
 def clear_results_files(ip, tc, num_its, num_tri_its, hmmdef, subdirs):
@@ -780,23 +818,25 @@ def clear_results_files(ip, tc, num_its, num_tri_its, hmmdef, subdirs):
     # letter_results_file = os.path.join(*letter_results_file.split(os.path.sep)[1:])
     # word_results_file = os.path.join(*word_results_file.split(os.path.sep)[1:])
     
-    print("##### Clearing Results Files #####")
+    logger.info("##### Clearing Results Files #####")
     with open(letter_results_file, 'w') as f:
-        print(f"Cleared letter results")
+        logger.info(f"Cleared letter results")
 
     with open(word_results_file, 'w') as f:
-        print(f"Cleared word results")
+        logger.info(f"Cleared word results")
     
-    print("#####\n")
+    logger.info("#####\n")
 
 if __name__ == "__main__":
     args = parse_args()
     _check_args()
-    
-    print("##### Args #####")
-    print(args)
-    print("#####\n")
-    
+
+    # Buffering logger initialized at import so early messages are buffered until
+    # per-context file handlers are attached and setup_logger is called.
+    logger.info("##### Args #####")
+    logger.info(str(args))
+    logger.info("#####\n")
+
     arg_iter = product(
         args.ip_values,
         args.hmmdefs,
@@ -830,64 +870,77 @@ if __name__ == "__main__":
             num_tri_its = arg_tup[4]
             trace_value = arg_tup[5]
             ngram = arg_tup[6]
-            
-            edit_options(
-                ip,
-                tc,
-                num_its,
-                num_tri_its,
-                hmmdef,
-                subdirs,
-                ngram,
-                trace_value=trace_value,
-            )
- 
-            if args.clear_hresults:
-                clear_results_files(
+
+            # Attach a grid-search-level log file for this hyperparam setting
+            name_ext = get_name_ext(tc, num_its, num_tri_its, hmmdef, trace_value=trace_value)
+            grid_log = get_log_file(subdirs, name_ext, mode="grid_search")
+
+            # Reconfigure logging to write to files in the log directory for this subdirs.
+            # This ensures further logging goes to file backends (and flushes buffered logs).
+            main_log_handler = setup_logger(grid_log, flush_buffer=True, log_level=logging.INFO)
+            try:
+                edit_options(
                     ip,
                     tc,
                     num_its,
                     num_tri_its,
                     hmmdef,
                     subdirs,
+                    ngram,
+                    trace_value=trace_value,
                 )
+  
+                if args.clear_hresults:
+                    clear_results_files(
+                        ip,
+                        tc,
+                        num_its,
+                        num_tri_its,
+                        hmmdef,
+                        subdirs,
+                    )
 
-            if args.test_model:
-                test_model(
-                    tc,
-                    num_its,
-                    num_tri_its,
-                    hmmdef,
-                    subdirs,
-                    trace_value
-                )
-            else:
-                train_model(
-                    tc,
-                    num_its,
-                    num_tri_its,
-                    hmmdef,
-                    subdirs,
-                    trace_value
-                )
-            
-                save_model(
-                    tc,
-                    num_its,
-                    num_tri_its,
-                    hmmdef,
-                    subdirs,
-                )
+                if args.test_model:
+                    test_model(
+                        tc,
+                        num_its,
+                        num_tri_its,
+                        hmmdef,
+                        subdirs,
+                        trace_value,
+                        main_log_handler,
+                    )
+                else:
+                    train_model(
+                        tc,
+                        num_its,
+                        num_tri_its,
+                        hmmdef,
+                        subdirs,
+                        trace_value,
+                        main_log_handler,
+                    )
+                    
+                    save_model(
+                        tc,
+                        num_its,
+                        num_tri_its,
+                        hmmdef,
+                        subdirs,
+                    )
 
-            if args.results_csv is not None:
-                add_results_to_csv(
-                    ip,
-                    tc,
-                    num_its,
-                    num_tri_its,
-                    hmmdef,
-                    subdirs,
-                )
-            
-            print()
+                if args.results_csv is not None:
+                    add_results_to_csv(
+                        ip,
+                        tc,
+                        num_its,
+                        num_tri_its,
+                        hmmdef,
+                        subdirs,
+                    )
+                
+                logger.info("")
+            finally:
+                root_logger.removeHandler(main_log_handler)
+                main_log_handler.close()
 

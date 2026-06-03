@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
 ########## NOTE
 ## Pass 1+ args of paths to results json files

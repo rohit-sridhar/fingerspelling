@@ -1,4 +1,6 @@
-#!/bin/ksh
+#!/usr/bin/env bash
+set -euo pipefail
+
 ##################################################################
 # All code in the project is provided under the terms specified in
 # the file "Public Use.doc" (plaintext version in "Public Use.txt").

@@ -1,4 +1,5 @@
-#!/bin/ksh
+#!/usr/bin/env bash
+set -euo pipefail
 
 ###############################################################################
 # Generate Testing sets for testing a model. Run prepare_data.sh on the test
@@ -15,5 +16,5 @@ ALL_FILES=$1
 NAME_SCRIPT=$3
 
 TESTING=`$NAME_SCRIPT $2 0`	# generate name for the testing file
-cp $ALL_FILES $TESTING
+cat $ALL_FILES | sort -R | head -n $4 > $TESTING
 

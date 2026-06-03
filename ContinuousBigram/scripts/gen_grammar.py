@@ -14,11 +14,11 @@ def parse_args():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     
     # TODO Make remaining args using Path instead of str
-    parser.add_argument(
-        "--metadata_file",
-        type=Path,
-        help="metadata file name"
-    )
+    # parser.add_argument(
+    #     "--metadata_file",
+    #     type=Path,
+    #     help="metadata file name"
+    # )
 
     parser.add_argument(
         "--label_loc",

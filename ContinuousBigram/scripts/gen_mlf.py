@@ -37,7 +37,7 @@ def parse_args():
         "--mlf_type",
         type=str,
         default="letter",
-        choices=["letter","word"],
+        choices=["letter","word", "cross_letter"],
         help="Type of mlf to create."
     )
     

@@ -1,4 +1,6 @@
-#!/bin/ksh
+#!/usr/bin/env bash
+set -euo pipefail
+
 ##################################################################
 # All code in the project is provided under the terms specified in
 # the file "Public Use.doc" (plaintext version in "Public Use.txt").
@@ -82,7 +84,7 @@ CROSS_WORD=no # whether triletters should expand across words  TODO
 
 FORCE_ALIGN=no # Use to enable/disable forced alignment during training
 EXPORT_MLF=no # Use to export MLF for use outside project
-WHOLE_WORD=yes
+# WHOLE_WORD=yes
 
 NUM_HMM_DIR=20 # number of hmm dirs to generate, has a direct relation to number of times HERest is called
 TRI_ITERATIONS=5 # number of HERest calls to make for triletter stages
@@ -142,8 +144,8 @@ DICTFILE_WORD_SKSP=${DICTFILE_ROOT}/dict_tri2word_sksp
 # DICTFILE_WORD_WHOLE=${DICTFILE_ROOT}/dict_tri2word_whole
 
 ###### USE FOR CROSS WORD TRILETTER ######
-# DICTFILE_CROSS=${DICTFILE_ROOT}/dict_tri2letter_cross
-# DICTFILE_CROSS_WORD=${DICTFILE_ROOT}/dict_tri2word_cross
+DICTFILE_CROSS=${DICTFILE_ROOT}/dict_tri2letter_cross
+DICTFILE_CROSS_WORD=${DICTFILE_ROOT}/dict_tri2word_cross
 
 ###### USE FOR SINGLE LETTER ######
 # DICTFILE=${PRJ}/dict/dict_letter2letter
@@ -179,7 +181,7 @@ TOKENS_WORD_SKSP=${TOKENS_ROOT}/commands_word_sksp
 # TOKENS_WORD_WHOLE=${TOKENS_ROOT}/commands_word_whole
 
 ###### USE FOR CROSS WORD TRILETTER ######
-# TOKENS_CROSS=${TOKENS_ROOT}/commands_tri_cross
+TOKENS_CROSS=${TOKENS_ROOT}/commands_tri_cross
 
 #######################################################
 ##################### MLF FILES #######################
@@ -211,7 +213,7 @@ MLF_LOCATION_WORD_SKSP=${MLF_ROOT}/labels.mlf_word_sksp
 # MLF_LOCATION_WORD_WHOLE=${MLF_ROOT}/labels.mlf_word_whole
 
 ###### USE FOR CROSS WORD TRILETTER ######
-# MLF_LOCATION_CROSS=${MLF_ROOT}/labels.mlf_tri_cross
+MLF_LOCATION_CROSS=${MLF_ROOT}/labels.mlf_tri_cross
 
 ###### USE FOR SINGLE LETTER ######
 # MLF_LOCATION=${PRJ}/mlf/labels.mlf_letter
@@ -233,6 +235,7 @@ LEDFILE_UNIQ=tmp
 LEDFILE_WORD=${PRJ}/instr/mkcmd_word.${LEDFILE_UNIQ}.led
 LEDFILE_LETTER=${PRJ}/instr/mkcmd_letter.${LEDFILE_UNIQ}.led
 LEDFILE_TRI_INTERNAL=${PRJ}/instr/mktri_internal.led
+LEDFILE_TRI_CROSS=${PRJ}/instr/mktri_cross.led
 
 STATS=${OUTPUTFILE_ROOT}/stats
 						#

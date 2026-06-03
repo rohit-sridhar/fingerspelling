@@ -1,4 +1,6 @@
-#!/bin/ksh
+#!/usr/bin/env bash
+set -euo pipefail
+
 ##################################################################
 # All code in the project is provided under the terms specified in
 # the file "Public Use.doc" (plaintext version in "Public Use.txt").
@@ -28,7 +30,7 @@ fi
 . ${OPTIONS_FILE}
 
 rm -f $TESTING_BASENAME*
-$SCRIPTS_DIR/cv/gen_test_set.sh $DATA_SAMPLES $TESTING_BASENAME $TT_NAME_SCRIPT
+$SCRIPTS_DIR/cv/gen_test_set.sh $DATA_SAMPLES $TESTING_BASENAME $TT_NAME_SCRIPT $NUM_TEST_SAMPLES
 
 
 HMM_LOAD_OPT="-H"

@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 # -*- coding: utf-8 -*-
 
 # File: ROOT/ContinuousBigram/scripts/experiments/run_multiple_modify_pt_data.sh

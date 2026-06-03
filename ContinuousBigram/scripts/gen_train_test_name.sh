@@ -1,4 +1,6 @@
-#!/bin/ksh
+#!/usr/bin/env bash
+set -euo pipefail
+
 ##################################################################
 # All code in the project is provided under the terms specified in
 # the file "Public Use.doc" (plaintext version in "Public Use.txt").
@@ -21,7 +23,7 @@
 #
 ###############################################################################
 
-BASENAME=$1
-INDEX=$2
+BASENAME=${1:-}
+INDEX=${2:-}
 
-echo "$BASENAME$INDEX"	# filenameXX
+echo "${BASENAME}${INDEX}"	# filenameXX

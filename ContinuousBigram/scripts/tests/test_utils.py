@@ -33,3 +33,63 @@ def test_get_subdirectories_absolute():
     assert subdirs2 == os.path.join('a', 'b', 'c')
     assert subdirs3 == os.path.join('a', 'b', 'c')
 
+
+def test_setup_logger_creates_file_and_sets_info(tmp_path):
+    import logging
+
+    # Clear any existing handlers so logging.basicConfig will configure a file handler
+    for h in logging.root.handlers:
+        logging.root.removeHandler(h)
+
+    # Call the moved setup_logger (utils is imported as ut at module level)
+    import logging
+    ut.setup_logger(log_dir=tmp_path, log_level=logging.INFO)
+
+    # Emit a log record to ensure the file is created
+    logger = logging.getLogger("test_setup_logger")
+    logger.info("setup logger test info")
+
+    # Ensure records are flushed to disk
+    logging.shutdown()
+
+    log_file = tmp_path / "log.txt"
+    assert log_file.exists(), f"Expected log file at {log_file}"
+
+    content = log_file.read_text()
+    assert "setup logger test info" in content
+    # Root level should be INFO when debug=False
+    assert logging.getLogger().level == logging.INFO
+
+
+def test_setup_logger_debug_sets_debug_level(tmp_path):
+    import logging
+
+    for h in logging.root.handlers:
+        logging.root.removeHandler(h)
+
+    ut.setup_logger(log_dir=tmp_path, log_level=logging.DEBUG)
+    logger = logging.getLogger("test_setup_logger_debug")
+    logger.debug("debug message")
+    logging.shutdown()
+
+    log_file = tmp_path / "log.txt"
+    assert log_file.exists()
+    content = log_file.read_text()
+    assert "debug message" in content
+    assert logging.getLogger().level == logging.DEBUG
+
+
+def test_buffer_handler_attached(tmp_path):
+    import logging
+    from logging.handlers import MemoryHandler
+
+    # Remove any handlers, then re-initialize buffering
+    for h in logging.root.handlers:
+        logging.root.removeHandler(h)
+
+    ut.init_buffering_logger()
+
+    # Check that the module-level buffer exists and is attached
+    assert getattr(ut, '_BUFFER_HANDLER', None) is not None
+    assert isinstance(ut._BUFFER_HANDLER, MemoryHandler)
+    assert ut._BUFFER_HANDLER in logging.getLogger().handlers
