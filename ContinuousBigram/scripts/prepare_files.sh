@@ -18,9 +18,11 @@ data_loc="${2:-}"
 label_loc="${3:-}"
 prep_all_flag="${4:-}"
 
-if [ "${prep_all_flag}" != "all" ] && [ -n "${prep_all_flag}" ]; then
-    echo ""
-fi
+[[ ${prep_all_flag} == "all" ]] && prep_all_flag=1 || prep_all_flag=0
+
+# if [ "${prep_all_flag}" != "all" ] && [ -n "${prep_all_flag}" ]; then
+#     echo ""
+# fi
 
 OPTIONS_FILE=${options}
 . ${OPTIONS_FILE}
@@ -82,7 +84,7 @@ else
     echo ""
 fi
 
-if [[ "${prep_all_flag}" == "" ]]; then
+if [[ ${prep_all_flag} -eq 0 ]]; then
     echo "Dict/Tokens/Grammar won't be prepared. Call with \"all\" to generate them."
     exit 0
 fi
