@@ -82,7 +82,7 @@ CROSS_WORD=no # whether triletters should expand across words  TODO
 
 FORCE_ALIGN=no # Use to enable/disable forced alignment during training
 EXPORT_MLF=no # Use to export MLF for use outside project
-WHOLE_WORD=yes
+# WHOLE_WORD=yes
 
 NUM_HMM_DIR=20 # number of hmm dirs to generate, has a direct relation to number of times HERest is called
 TRI_ITERATIONS=5 # number of HERest calls to make for triletter stages
@@ -142,8 +142,8 @@ DICTFILE_WORD_SKSP=${DICTFILE_ROOT}/dict_tri2word_sksp
 # DICTFILE_WORD_WHOLE=${DICTFILE_ROOT}/dict_tri2word_whole
 
 ###### USE FOR CROSS WORD TRILETTER ######
-# DICTFILE_CROSS=${DICTFILE_ROOT}/dict_tri2letter_cross
-# DICTFILE_CROSS_WORD=${DICTFILE_ROOT}/dict_tri2word_cross
+DICTFILE_CROSS=${DICTFILE_ROOT}/dict_tri2letter_cross
+DICTFILE_CROSS_WORD=${DICTFILE_ROOT}/dict_tri2word_cross
 
 ###### USE FOR SINGLE LETTER ######
 # DICTFILE=${PRJ}/dict/dict_letter2letter

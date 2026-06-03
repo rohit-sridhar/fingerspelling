@@ -129,13 +129,23 @@ def parse_args():
     parser.add_argument(
         "--prepare_data",
         action='store_true',
-        help="If true, will prepare data before training. Warning: not thread safe."
+        help="If true, will prepare data before training."
     )
     
     parser.add_argument(
         "--prepare_data_only",
         action='store_true',
         help="If true, will prepare data before training."
+    )
+
+    parser.add_argument(
+        "--prepare_data_all",
+        action='store_true',
+        help=(
+            "If true, will prepare all data (incl. dict, grammar, commands) before training. "
+            "Otherwise prepares only mlf and ext files. Usually only used when preparing all "
+            "the data of some dataset."
+        )
     )
     
     parser.add_argument(
@@ -487,7 +497,7 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     run_subprocess(["grep", "^" + CUSTOM_SILSP_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + MULTI_PROCESS_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + CROSS_WORD_VARNAME + r"\s*=\s*", options_file], logger=logger)
-    run_subprocess(["grep", "^" + NGRAM_WORD_VARNAME + r"\s*=\s*", options_file], logger=logger)
+    # run_subprocess(["grep", "^" + NGRAM_WORD_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + TRACE_LEVEL_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + THREADS_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + WHOLE_WORD_VARNAME + r"\s*=\s*", options_file], logger=logger)
@@ -748,6 +758,8 @@ def save_model(tc, num_its, num_tri_its, hmmdef, subdirs):
 def prepare_data(data_file, label_file, subdirs):
     options_file = get_options_file(subdirs)
     prepare_command = [PREPARE_SCRIPT, options_file, data_file, label_file]
+    if args.prepare_data_all:
+        prepare_command.append("all")
 
     name_ext = ""
     log_file = get_log_file(subdirs, name_ext, mode="prepare_data")
@@ -759,7 +771,6 @@ def prepare_data(data_file, label_file, subdirs):
 
     # Attach a per-prepare file handler so prepare output goes to its own file
     logger.info(f"Prepare Data: {' '.join(prepare_command)}")
-
     run_subprocess(prepare_command, logger=logger)
 
     root_logger.removeHandler(prep_handler)
@@ -772,30 +783,30 @@ def prepare_data(data_file, label_file, subdirs):
 # Note that grammar_type_arg is different from grammar_type.
 # In this case grammar_type is hardcoded as grliwi, but it should be
 # hardcoded everywhere
-def gen_grammar(subdirs, label_file, grammar_type_arg='word'):
-    if grammar_type_arg.startswith("letter"):
-        grammar_file = "_".join([LETTER_GRAMMAR, "isolated"])
-        if grammar_type_arg.endswith("_whole_word"):
-            grammar_file = "_".join([grammar_file, "whole"])
-    else:
-        grammar_file = WORD_GRAMMAR
-        if grammar_type_arg.endswith("_phrase_sksp"):
-            grammar_file = "_".join([grammar_file, "phrase", "sksp"])
-        elif grammar_type_arg.endswith("_sksp"):
-            grammar_file = "_".join([grammar_file, "isolated", "sksp"])
-        elif grammar_type_arg.endswith("_whole_word"):
-            grammar_file = "_".join([grammar_file, "isolated", "whole"])
-        else:
-            grammar_file = "_".join([grammar_file, "isolated"])
-
-    grammar_filepath = os.path.join(GRAMMAR_ROOT, subdirs, grammar_file)
-
-    gen_grammar_args = ['python', GEN_GRAMMAR_SCRIPT]
-    gen_grammar_args += ["--label_loc", label_file]
-    gen_grammar_args += ["--grammar_file", grammar_filepath]
-
-    logger.info("Gen Grammar Command: " + ' '.join(gen_grammar_args))
-    run_subprocess(gen_grammar_args, logger=logger)
+# def gen_grammar(subdirs, label_file, grammar_type_arg='word'):
+#     if grammar_type_arg.startswith("letter"):
+#         grammar_file = "_".join([LETTER_GRAMMAR, "isolated"])
+#         if grammar_type_arg.endswith("_whole_word"):
+#             grammar_file = "_".join([grammar_file, "whole"])
+#     else:
+#         grammar_file = WORD_GRAMMAR
+#         if grammar_type_arg.endswith("_phrase_sksp"):
+#             grammar_file = "_".join([grammar_file, "phrase", "sksp"])
+#         elif grammar_type_arg.endswith("_sksp"):
+#             grammar_file = "_".join([grammar_file, "isolated", "sksp"])
+#         elif grammar_type_arg.endswith("_whole_word"):
+#             grammar_file = "_".join([grammar_file, "isolated", "whole"])
+#         else:
+#             grammar_file = "_".join([grammar_file, "isolated"])
+# 
+#     grammar_filepath = os.path.join(GRAMMAR_ROOT, subdirs, grammar_file)
+# 
+#     gen_grammar_args = ['python', GEN_GRAMMAR_SCRIPT]
+#     gen_grammar_args += ["--label_loc", label_file]
+#     gen_grammar_args += ["--grammar_file", grammar_filepath]
+# 
+#     logger.info("Gen Grammar Command: " + ' '.join(gen_grammar_args))
+#     run_subprocess(gen_grammar_args, logger=logger)
 
 # def clear_results_files(ip, tc, num_its, num_tri_its, hmmdef, subdirs, grammar_type):
 def clear_results_files(ip, tc, num_its, num_tri_its, hmmdef, subdirs):

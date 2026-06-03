@@ -163,7 +163,6 @@ def _check_args():
             raise ValueError("must pass new data subfolder in ROOT that ends with /data.")
         
         new_subdirs = get_subdirectories_joined(new_data_loc)
-        print(new_subdirs)
         new_data_loc = os.path.join(DATA_ROOT, new_subdirs, "data")
         new_label_loc = os.path.join(LABELS_ROOT, new_subdirs, "label")
 
