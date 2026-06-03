@@ -1,4 +1,5 @@
-#!/bin/ksh
+#!/usr/bin/env bash
+set -euo pipefail
 
 OPTIONS_FILE=$1
 . ${OPTIONS_FILE}

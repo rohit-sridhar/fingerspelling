@@ -1,4 +1,6 @@
-#!/bin/ksh
+#!/usr/bin/env bash
+set -euo pipefail
+
 ##################################################################
 # All code in the project is provided under the terms specified in
 # the file "Public Use.doc" (plaintext version in "Public Use.txt").
@@ -19,14 +21,14 @@
 # NOTES: scripts/train.sh scripts/options.sh &> output
 #
 
-# Load in project options (specified on the command line!)
-if [ -z "$1" ]; then
+OPTIONS_FILE=${1:-}
 
-	echo "usage: $0 <options file>"
-	exit
+# Load in project options (specified on the command line!)
+if [ -z "${OPTIONS_FILE}" ]; then
+    echo "usage: $0 <options file>"
+    exit
 fi
 
-OPTIONS_FILE=$1
 . ${OPTIONS_FILE}
 
 
@@ -41,7 +43,11 @@ OPTIONS_FILE=$1
 ##########################################################
 
 # check options for proper values, verify existence and executability of utils
-. ${UTIL_DIR}/check_opts.sh
+if [ -f "${UTIL_DIR}/check_opts.sh" ]; then
+    . "${UTIL_DIR}/check_opts.sh"
+else
+    echo "Warning: ${UTIL_DIR}/check_opts.sh not found; skipping option checks. Set UTIL_DIR or install the utils package." >&2
+fi
 
 # When Cross word is enabled this logic may need to be changed
 if [[ $WORD_SKSP == "yes" ]]; then
@@ -186,7 +192,10 @@ BASE_MLF_LOCATION=$MLF_LOCATION
 BASE_MLF_LOCATION_GEN=$MLF_LOCATION_GEN
 
 if [ ! -d "$BASE_MLF_LOCATION_GEN" ]; then
-    mkdir $BASE_MLF_LOCATION_GEN
+    if ! mkdir -p "$BASE_MLF_LOCATION_GEN"; then
+        echo "Error: cannot create directory $BASE_MLF_LOCATION_GEN (permission denied)." >&2
+        exit 2
+    fi
 fi
 
 #clean up old training data
@@ -199,8 +208,7 @@ rm -f $WORD_LATTICE*
 rm -rf $MLF_LOCATION_GEN/*
 for i in ${HMM_TRAINING}*\.*
 do
-	rm -f $i/*
-	rmdir $i
+	rm -rf $i/*
 done
 
 # generate a list of all data samples HTK has avaliable to it.
@@ -272,13 +280,16 @@ OUTPUT_MLF_WORD=$BASE_OUTPUT_MLF_WORD$cycle;
 MLF_LOCATION=$BASE_MLF_LOCATION;
 MLF_LOCATION_GEN=${BASE_MLF_LOCATION_GEN}/${cycle};
 
-mkdir ${BASE_MLF_LOCATION_GEN}/${cycle}
+if ! mkdir -p "${BASE_MLF_LOCATION_GEN}/${cycle}"; then
+    echo "Error: cannot create directory ${BASE_MLF_LOCATION_GEN}/${cycle} (permission denied)." >&2
+    exit 2
+fi
 
 ## generate the directories to store the iterations of HMM training
 hmm_count=0
 while [[ $hmm_count -lt $NUM_HMM_DIR ]]
 do
-    mkdir $HMM_TRAINING.$hmm_count 
+    mkdir -p $HMM_TRAINING.$hmm_count 
     hmm_count=$((hmm_count+1))
 done
 

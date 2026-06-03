@@ -1,4 +1,5 @@
-#!/bin/ksh
+#!/usr/bin/env bash
+set -euo pipefail
 
 ###############################################################################
 # Generate Testing sets for testing a model. Run prepare_data.sh on the test

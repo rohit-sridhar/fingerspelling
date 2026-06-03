@@ -1,4 +1,5 @@
-#/bin/ksh
+#!/usr/bin/env bash
+set -euo pipefail
 
 TORCH_ROOT=/data/deep_learning/fs_transformers
 

@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
 ROOT=/data/hmm_modeling/fingerspelling/ContinuousBigram
 . ${ROOT}/scripts/experiments/utils.sh

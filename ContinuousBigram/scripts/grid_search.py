@@ -436,14 +436,14 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     cross_word_search = CROSS_WORD_VARNAME + r"\s*=\s*(yes|no)"
     cross_word_repl = CROSS_WORD_VARNAME + f"={cross_word}"
     
-    ngram_word_search = NGRAM_WORD_VARNAME + r"\s*=\s*[0-9]"
-    ngram_word_repl = NGRAM_WORD_VARNAME + f"={ngram}"
+    # ngram_word_search = NGRAM_WORD_VARNAME + r"\s*=\s*[0-9]"
+    # ngram_word_repl = NGRAM_WORD_VARNAME + f"={ngram}"
     
-    whole_word_search = WHOLE_WORD_VARNAME + r"\s*=\s*(yes|no)"
-    whole_word_repl = WHOLE_WORD_VARNAME + f"={whole_word}"
+    # whole_word_search = WHOLE_WORD_VARNAME + r"\s*=\s*(yes|no)"
+    # whole_word_repl = WHOLE_WORD_VARNAME + f"={whole_word}"
 
-    use_phrase_search = USE_PHRASE_VARNAME + r"\s*=\s*(yes|no)"
-    use_phrase_repl = USE_PHRASE_VARNAME + f"={use_phrase}"
+    # use_phrase_search = USE_PHRASE_VARNAME + r"\s*=\s*(yes|no)"
+    # use_phrase_repl = USE_PHRASE_VARNAME + f"={use_phrase}"
 
     hedfile1_tokens_root_search = r"^CL .*commands\/commands_tri_(internal|cross)(\.all)?$"
     hedfile1_tokens_root_repl = f"CL {ROOT}/commands/commands_tri_internal.all"
@@ -477,11 +477,11 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     edit_file(custom_silsp_search, custom_silsp_repl, options_file)
     edit_file(multi_process_search, multi_process_repl, options_file)
     edit_file(cross_word_search, cross_word_repl, options_file)
-    edit_file(ngram_word_search, ngram_word_repl, options_file)
+    # edit_file(ngram_word_search, ngram_word_repl, options_file)
     edit_file(trace_level_search, trace_level_repl, options_file)
     edit_file(threads_search, threads_repl, options_file)
-    edit_file(whole_word_search, whole_word_repl, options_file)
-    edit_file(use_phrase_search, use_phrase_repl, options_file)
+    # edit_file(whole_word_search, whole_word_repl, options_file)
+    # edit_file(use_phrase_search, use_phrase_repl, options_file)
     edit_file(hedfile1_tokens_root_search, hedfile1_tokens_root_repl, hedfile1_local_file)
     
     logger.info("##### Hyperparameters #####")
@@ -500,8 +500,8 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     # run_subprocess(["grep", "^" + NGRAM_WORD_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + TRACE_LEVEL_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + THREADS_VARNAME + r"\s*=\s*", options_file], logger=logger)
-    run_subprocess(["grep", "^" + WHOLE_WORD_VARNAME + r"\s*=\s*", options_file], logger=logger)
-    run_subprocess(["grep", "^" + USE_PHRASE_VARNAME + r"\s*=\s*", options_file], logger=logger)
+    # run_subprocess(["grep", "^" + WHOLE_WORD_VARNAME + r"\s*=\s*", options_file], logger=logger)
+    # run_subprocess(["grep", "^" + USE_PHRASE_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["head", "-n", "1", f"{hedfile1_local_file}"], logger=logger)
     logger.info("#####\n")
 
