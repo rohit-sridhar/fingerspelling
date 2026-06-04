@@ -147,16 +147,23 @@ def parse_args():
 # Checks args and makes modifications.
 def _check_args():
     data_loc, label_loc, new_data_loc, new_label_loc = None, None, None, None
+    
+    if args.method == "import":
+        if not os.path.exists(args.import_data_loc):
+            raise ValueError("must pass an existing import data location.")
 
     if args.method in DATA_LOC_REQUIRED_METHODS:
         data_loc = os.path.abspath(args.data_loc)
-        if not valid_data_loc(data_loc):
-            raise ValueError("must pass data subfolder in DATA_ROOT that ends with /data.")
+        if not valid_data_loc(data_loc) or not os.path.exists(data_loc):
+            raise ValueError("must pass data subfolder that exists in DATA_ROOT and ends with /data.")
         
         subdirs = get_subdirectories_joined(data_loc)
         data_loc = os.path.join(DATA_ROOT, subdirs, "data")
         label_loc = os.path.join(LABELS_ROOT, subdirs, "label")
 
+        if not os.path.exists(label_loc):
+            raise ValueError("label loc (derived from data loc arg) must exist in LABELS_ROOT.")
+    
     if args.method in NEW_DATA_LOC_REQUIRED_METHODS:
         new_data_loc = os.path.abspath(args.new_data_loc)
         if not valid_data_loc(new_data_loc):
@@ -454,7 +461,7 @@ if __name__ == "__main__":
 
     if args.method == "import":
         import_data(new_data_loc, new_label_loc)
-        sys.exit()
+        sys.exit(0)
 
     if args.method == "match_triletters":
         commands_triletters = read_triletters_from_commands()

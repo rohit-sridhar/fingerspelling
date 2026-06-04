@@ -7,7 +7,7 @@ ROOT="${SCRIPT_DIR}/../.."
 . ${SCRIPT_DIR}/utils.sh
 set_vars $1
 
-output_dir=${ROOT}/results/pt_results/tot/${datasets[0]}
+output_dir=${ROOT}/results/pt_results/tot/
 
 # Assumes we're in ContinuousBigram dir
 if [ ! -d "${output_dir}" ]; then
@@ -23,7 +23,7 @@ for seed in ${seeds[@]}; do
 for participant in ${participants[@]}; do
     ${ROOT}/scripts/grid_search.py \
         --data_files ${ROOT}/data/${dataset}/dim20/thr${threshold}/train/pt/${participant}/sd${seed}/data/ \
-        --hmmdefs 4state-pca20-gmm2 \
+        --hmmdefs 4state-pca20-gmm2-skip \
         --results_csv ${output_dir}/results_pt${participant}_sd${seed}_tuning.csv \
         --prepare_data --clear_hresults
 done
