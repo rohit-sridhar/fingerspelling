@@ -350,6 +350,20 @@ def get_next_seq_id(data_aug_map):
     return str(next_seq_id)
 
 ##### Logging utils #####
+def get_log_file(subdirs, name_ext, mode):
+    """Return a log file path. Ensures the log directory exists.
+
+    mode must be one of: "train", "test", "grid_search", "prepare_data". Raises ValueError otherwise.
+    """
+    if mode not in ("train", "test", "grid_search", "prepare_data", "modify_data"):
+        raise ValueError("mode must be one of 'train', 'test', 'grid_search', 'modify_data' or 'prepare_data'")
+
+    log_dir = os.path.join(LOG_ROOT, subdirs)
+    make_dir(log_dir)
+
+    return os.path.join(log_dir, f"{mode}.log_" + name_ext)
+
+
 def log_stream(stream, log_level_function):
     """Reads a stream line-by-line and sends it to a specific logging function."""
     with stream:

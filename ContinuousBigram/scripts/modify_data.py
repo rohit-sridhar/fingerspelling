@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import logging
 import argparse
 import os
 import sys
@@ -118,6 +119,12 @@ def parse_args():
     )
 
     parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="Run in debug mode (verbose logging)."
+    )
+
+    parser.add_argument(
         "--seed",
         type=int,
         default=7268,
@@ -149,6 +156,7 @@ def _check_args():
     data_loc, label_loc, new_data_loc, new_label_loc = None, None, None, None
     
     if args.method == "import":
+        args.import_data_loc = os.path.abspath(args.import_data_loc)
         if not os.path.exists(args.import_data_loc):
             raise ValueError("must pass an existing import data location.")
 
@@ -403,10 +411,13 @@ def import_data(new_data_loc, new_label_loc):
         datafile = os.path.join(data_path, str(seq_id))
         label_file = os.path.join(label_path, str(seq_id) + ".lab")
         
+        logger.debug(datafile)
         if os.path.exists(datafile) and os.path.exists(label_file):
+            logger.debug(f"{datafile} and {label_file} exist.")
             os.link(datafile, new_datafile)
             os.link(label_file, new_label_file)
         else:
+            logger.debug(f"either {datafile} or {label_file} don't exist.")
             landmarks = get_landmarks(df, seq_id)
             phrase = [f"{ENTER}\n"]
             for c in df.loc[seq_id].phrase:
@@ -454,10 +465,14 @@ def data_aug_interpolation(curr_seq_id, datafile, label_file, new_data_loc, new_
 
 if __name__ == "__main__":
     args = parse_args()
-    print(args)
+    logger.info(args)
+    random.seed(args.seed)
 
     data_loc, new_data_loc, label_loc, new_label_loc = _check_args()
-    random.seed(args.seed)
+    subdirs = get_subdirectories_joined(new_data_loc)
+
+    log_file = get_log_file(subdirs, "", "modify_data")
+    setup_logger(log_file, flush_buffer=True, log_level=logging.DEBUG if args.debug else logging.INFO)
 
     if args.method == "import":
         import_data(new_data_loc, new_label_loc)

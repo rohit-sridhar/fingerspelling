@@ -25,7 +25,7 @@ for participant in ${participants[@]}; do
         --data_files ${ROOT}/data/${dataset}/dim20/thr${threshold}/train/pt/${participant}/sd${seed}/data/ \
         --hmmdefs 4state-pca20-gmm2-skip \
         --results_csv ${output_dir}/results_pt${participant}_sd${seed}_tuning.csv \
-        --prepare_data --clear_hresults
+        --prepare_data_only --clear_hresults
 done
 done
 done

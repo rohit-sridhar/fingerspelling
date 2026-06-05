@@ -216,8 +216,8 @@ def _check_args():
     for i in range(len(args.data_files)):
         args.data_files[i] = os.path.abspath(args.data_files[i])
 
-        if not valid_data_loc(args.data_files[i]):
-            raise ValueError("Data files must start with DATA_ROOT and end with /data (last subdir).")
+        if not valid_data_loc(args.data_files[i]) or not os.path.exists(args.data_files[i]):
+            raise ValueError("Data files must start with DATA_ROOT and exist with /data (last subdir).")
 
     if args.test_model_path is not None:
         # if args.test_model_path.startswith("."):
@@ -578,26 +578,6 @@ def edit_htk_root_file_options(subdirs):
     make_dir(outputfile_dir)
     make_dir(ext_dir)
     logger.info("#####\n")
-
-def get_log_file(subdirs, name_ext, mode):
-    """Return a log file path. Ensures the log directory exists.
-
-    mode must be one of: "train", "test", "grid_search", "prepare_data". Raises ValueError otherwise.
-    """
-    if mode not in ("train", "test", "grid_search", "prepare_data"):
-        raise ValueError("mode must be one of 'train', 'test', 'grid_search', or 'prepare_data'")
-
-    log_dir = os.path.join(LOG_ROOT, subdirs)
-    make_dir(log_dir)
-
-    if mode == "train":
-        return os.path.join(log_dir, "train.log_" + name_ext)
-    elif mode == "test":
-        return os.path.join(log_dir, "test.log_" + name_ext)
-    elif mode == "grid_search":
-        return os.path.join(log_dir, "grid_search.log_" + name_ext)
-    elif mode == "prepare_data":
-        return os.path.join(log_dir, "prepare_data.log_" + name_ext)
 
 
 def test_model(tc, num_its, num_tri_its, hmmdef, subdirs, trace_value, main_log_handler):
