@@ -5,8 +5,6 @@ import argparse
 from utils import *
 from tqdm import tqdm
 
-global args
-
 def parse_args():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     

@@ -15,8 +15,6 @@ from tqdm import tqdm
 from math import ceil
 from utils import *
 
-global args
-
 ############### GENERAL HELPER FUNCTIONS ###############
 
 # This helper resticts which args are required through
@@ -464,6 +462,7 @@ def data_aug_interpolation(curr_seq_id, datafile, label_file, new_data_loc, new_
     return data_aug_map
 
 if __name__ == "__main__":
+    global args
     args = parse_args()
     logger.info(args)
     random.seed(args.seed)
@@ -472,7 +471,7 @@ if __name__ == "__main__":
     subdirs = get_subdirectories_joined(new_data_loc)
 
     log_file = get_log_file(subdirs, "", "modify_data")
-    setup_logger(log_file, flush_buffer=True, log_level=logging.DEBUG if args.debug else logging.INFO)
+    setup_logger(log_file, flush=True, log_level=logging.DEBUG if args.debug else logging.INFO)
 
     if args.method == "import":
         import_data(new_data_loc, new_label_loc)

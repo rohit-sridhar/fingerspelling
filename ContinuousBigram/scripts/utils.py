@@ -269,6 +269,7 @@ def get_subdirectories_joined(filepath):
 
     subdir_list = get_subdirectories_split(filepath)
     subdirs = os.path.join(*(subdir_list))
+    logger.debug(f"{subdirs=}")
     return subdirs
 
 def get_test_data_file(subdirs):
@@ -393,7 +394,7 @@ def init_buffering_logger(capacity=10000, flush_level=logging.ERROR):
         return
 
     mem = MemoryHandler(capacity=capacity, flushLevel=flush_level, target=None)
-    mem.setLevel(logging.INFO)
+    mem.setLevel(logging.DEBUG)
     root_logger.addHandler(mem)
     _BUFFER_HANDLER = mem
 
@@ -414,27 +415,9 @@ def _attach_file_handler(log_file, level=logging.DEBUG, mode='w'):
     root_logger.addHandler(fh)
     return fh
 
-
-# set up the logger for any script
-# def setup_logger(log_file, module_logger, flush_buffer=False, log_level=logging.INFO):
-def setup_logger(log_file, flush_buffer=False, log_level=logging.INFO):
-    """Configure logging to a file and flush any buffered logs.
-
-    log_file must be a valid file path. logger should be a module logger.
-    log_level should be an int logging level. Buffered logs (from init_buffering_logger)
-    will be flushed to an existing FileHandler on the module logger if present;
-    otherwise they will be flushed to the new root FileHandler created here.
-    """
-    log_file = Path(log_file)
-    log_file.parent.mkdir(parents=True, exist_ok=True)
-
-    # Reuse attach helper to create and attach a FileHandler to the root logger
-    # fh = _attach_file_handler(log_file, module_logger, level=log_level)
-    fh = _attach_file_handler(log_file, level=log_level)
-
-    # If a buffer handler exists flush it into fh.
+def flush_buffer(fh):
     global _BUFFER_HANDLER
-    if flush_buffer and _BUFFER_HANDLER is not None:
+    if _BUFFER_HANDLER is not None:
         try:
             target = fh
 
@@ -451,6 +434,27 @@ def setup_logger(log_file, flush_buffer=False, log_level=logging.INFO):
             pass
 
         _BUFFER_HANDLER = None
+
+# set up the logger for any script
+# def setup_logger(log_file, module_logger, flush=False, log_level=logging.INFO):
+def setup_logger(log_file, flush=False, log_level=logging.INFO):
+    """Configure logging to a file and flush any buffered logs.
+
+    log_file must be a valid file path. logger should be a module logger.
+    log_level should be an int logging level. Buffered logs (from init_buffering_logger)
+    will be flushed to an existing FileHandler on the module logger if present;
+    otherwise they will be flushed to the new root FileHandler created here.
+    """
+    log_file = Path(log_file)
+    log_file.parent.mkdir(parents=True, exist_ok=True)
+
+    # Reuse attach helper to create and attach a FileHandler to the root logger
+    # fh = _attach_file_handler(log_file, module_logger, level=log_level)
+    fh = _attach_file_handler(log_file, level=log_level)
+
+    # If a buffer handler exists flush it into fh.
+    if flush:
+        flush_buffer(fh)
 
     return fh
 

@@ -10,8 +10,6 @@ from utils import *
 from pathlib import Path
 
 WRITTEN = set()
-global args
-
 logger = logging.getLogger(__name__)
 
 #################### GENERAL HELPERS ####################

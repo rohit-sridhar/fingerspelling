@@ -7,8 +7,6 @@ import re
 from glob import glob
 from utils import *
 
-global args
-
 def parse_args():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     

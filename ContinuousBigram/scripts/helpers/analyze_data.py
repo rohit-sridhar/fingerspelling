@@ -13,24 +13,24 @@ DATA_PATH = "./data_original/"
 def parse_args():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument(
-        '--analysis_type',
+        "--analysis_type",
         type=str,
-        choices=['frames_per_letter', 'phrases', 'count'],
-        default='frames_per_letter',
+        choices=["frames_per_letter", "phrases", "count"],
+        default="frames_per_letter",
         help="Type of analysis."
     )
     
     parser.add_argument(
-        '--label_dir',
+        "--label_dir",
         type=str,
-        default='./label/label_all',
+        default="./label/label_all",
         help="Types of label files to analyze."
     )
     
     parser.add_argument(
-        '--data_dir',
+        "--data_dir",
         type=str,
-        default='./data/data_all',
+        default="./data/data_all",
         help="Types of data files to analyze."
     )
 
@@ -116,4 +116,6 @@ if __name__ == "__main__":
         analyze_phrases(args.label_dir)
     elif args.analysis_type == "count":
         analyze_counts(args.label_dir)
+    elif args.analysis_type == "cov":
+        print_covariance_matrix(args.data_dir)
 

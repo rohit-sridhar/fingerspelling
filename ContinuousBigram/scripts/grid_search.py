@@ -10,6 +10,7 @@ import shutil
 import logging
 from logging.handlers import MemoryHandler
 
+from datetime import datetime
 from itertools import product
 from utils import *
 from glob import glob
@@ -38,12 +39,34 @@ def parse_args():
     )
     
     parser.add_argument(
+        "--test_model_path",
+        type=str,
+        default=None,
+        help="Model path for testing. Must begin with MODELS_ROOT."
+    )
+    
+    parser.add_argument(
+        "--hmmdefs",
+        type=str,
+        nargs='+',
+        default=['6state-pca20-gmm2'],
+        help="HMM Def files to test on."
+    )
+
+    parser.add_argument(
         "--results_csv",
         type=str,
         default=None,
         help="Results CSV to append results to. If the file does not exist, it is created. \
                 If it does exist, results are appended. If nothing is passed the results \
                 won't be saved."
+    )
+
+    parser.add_argument(
+        "--custom_ext",
+        type=str,
+        default=None,
+        help="Custom label the results/log file."
     )
 
     parser.add_argument(
@@ -86,14 +109,6 @@ def parse_args():
         help="Trace Values. If not passed, uses 1 by default."
     )
     
-    parser.add_argument(
-        "--hmmdefs",
-        type=str,
-        nargs='+',
-        default=['6state-pca20-gmm2'],
-        help="HMM Def files to test on."
-    )
-
     parser.add_argument(
         "--ngrams",
         type=int,
@@ -167,13 +182,6 @@ def parse_args():
     )
     
     parser.add_argument(
-        "--test_model_path",
-        type=str,
-        default=None,
-        help="Model path for testing. Must begin with MODELS_ROOT."
-    )
-    
-    parser.add_argument(
         "--cross_word",
         action="store_true",
         help="True if using cross word triphones."
@@ -186,18 +194,11 @@ def parse_args():
     )
     
     parser.add_argument(
-        "--print_mode",
+        "--debug",
         action="store_true",
-        help="If true, only prints. Does not train or test. Data will still be prepared and dirs/files will be created."
+        help="If true, runs in debug mode and logs additional information."
     )
     
-    parser.add_argument(
-        "--custom_ext",
-        type=str,
-        default=None,
-        help="Custom label the results/log file."
-    )
-
     return parser.parse_args()
 
 # Makes the dir for the options file
@@ -247,14 +248,14 @@ def get_name_ext(tc, num_its, num_tri_its, hmmdef, trace_value=None):
     else:
         name_ext += "_".join([f"{hmmdef}", f"{num_its}its", f"{num_tri_its}tri-its", f"tc{tc}"])
 
-    # if args.use_phrase:
-    #     name_ext += "_grliwph"
-
     if args.no_custom_silsp:
         name_ext += "_no-silsp"
     
     if args.cross_word:
         name_ext += "_cross"
+
+    if args.full_cov:
+        name_ext += "_fc"
     
     if args.no_triletter:
         name_ext += "_no-triletter"
@@ -319,6 +320,28 @@ def get_ledfile_info(subdirs):
     new_subdirs = '_'.join(subdir_arr)
     return new_subdirs
 
+# get hedfile search/repl info
+def get_hedfile1_info(subdirs):
+    dataset = "_".join(subdirs.split(os.path.sep)[:2])
+    data_file_dict = load_json_file(DATA_FILE_DICT_FILE)
+    tokens_path = data_file_dict[dataset]["label_path"].replace("label", "commands")
+    tokens_path = os.path.split(tokens_path)[0]
+
+    hedfile1_tokens_root_search = r"^CL .*\/commands_tri_(internal|cross)(\.all)?$"
+    if args.cross_word:
+        hedfile1_tokens_root_repl = f"CL {tokens_path}/commands_tri_cross"
+    else:
+        hedfile1_tokens_root_repl = f"CL {tokens_path}/commands_tri_internal"
+
+    return hedfile1_tokens_root_search, hedfile1_tokens_root_repl
+
+def get_hedfile2_info(subdirs):
+    hedfile2_tokens_root_search = r"^RO 100.0 .*\/stats$"
+    stats_file = os.path.join(OUTPUT_ROOT, subdirs, "stats")
+    hedfile2_tokens_root_repl = f"RO 100.0 {stats_file}"
+
+    return hedfile2_tokens_root_search, hedfile2_tokens_root_repl
+
 def get_vector_dim(subdirs):
     vector_dim_str = subdirs.split(os.path.sep)[1]
     vector_dim = int(re.search(r"[0-9]+", vector_dim_str).group())
@@ -341,6 +364,7 @@ def get_machine_info():
 
 # Helper to edit the options file with new hyperparam (for 1 param)
 def edit_file(re_search, re_repl, file_to_edit):
+    logger.debug(f"{file_to_edit=}")
     with open(file_to_edit, 'r') as f:
         lines = f.readlines()
      
@@ -395,7 +419,10 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     letter_results_file, word_results_file = get_hresults_prj_filepaths(name_ext, subdirs, ip)
 
     custom_silsp, multi_process, hedfile1, cross_word, whole_word, use_phrase = get_bool_arg_info()
-    hedfile2 = f"${{PRJ}}/instr/mktri2_tc.{hmmdef}.hed"
+    if args.full_cov:
+        hedfile2 = f"${{PRJ}}/instr/mktri2_fc.hed"
+    else:
+        hedfile2 = f"${{PRJ}}/instr/mktri2_tc.{hmmdef}.hed"
     num_threads = get_machine_info()
 
     ip_search = IP_VARNAME + r"\s*=\s*-?[0-9]+(\.[0-9]+)*"
@@ -445,9 +472,11 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     # use_phrase_search = USE_PHRASE_VARNAME + r"\s*=\s*(yes|no)"
     # use_phrase_repl = USE_PHRASE_VARNAME + f"={use_phrase}"
 
-    hedfile1_tokens_root_search = r"^CL .*commands\/commands_tri_(internal|cross)(\.all)?$"
-    hedfile1_tokens_root_repl = f"CL {ROOT}/commands/commands_tri_internal.all"
+    hedfile1_tokens_root_search, hedfile1_tokens_root_repl = get_hedfile1_info(subdirs)
     hedfile1_local_file = hedfile1.replace("${PRJ}", ROOT)
+
+    hedfile2_tokens_root_search, hedfile2_tokens_root_repl = get_hedfile2_info(subdirs)
+    hedfile2_local_file = hedfile2.replace("${PRJ}", ROOT)
 
     letter_results_search = LOG_LETTER_VARNAME + r"\s*=\s*\$\{PRJ\}\/.*hresults\.log_letter.*"
     letter_results_repl = LOG_LETTER_VARNAME + f"={letter_results_file}"
@@ -483,6 +512,7 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     # edit_file(whole_word_search, whole_word_repl, options_file)
     # edit_file(use_phrase_search, use_phrase_repl, options_file)
     edit_file(hedfile1_tokens_root_search, hedfile1_tokens_root_repl, hedfile1_local_file)
+    edit_file(hedfile2_tokens_root_search, hedfile2_tokens_root_repl, hedfile2_local_file)
     
     logger.info("##### Hyperparameters #####")
     run_subprocess(["grep", "^" + IP_VARNAME + r"\s*=\s*", options_file], logger=logger)
@@ -503,6 +533,7 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     # run_subprocess(["grep", "^" + WHOLE_WORD_VARNAME + r"\s*=\s*", options_file], logger=logger)
     # run_subprocess(["grep", "^" + USE_PHRASE_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["head", "-n", "1", f"{hedfile1_local_file}"], logger=logger)
+    run_subprocess(["head", "-n", "1", f"{hedfile2_local_file}"], logger=logger)
     logger.info("#####\n")
 
 def edit_htk_root_file_options(subdirs):
@@ -530,11 +561,11 @@ def edit_htk_root_file_options(subdirs):
 
     hmmsil_search = HMMSIL_VARNAME + r"\s*=\s*\$HMM_TOPOLOGY_DIR\/3state-pca.+"
     hmmsil_repl = HMMSIL_VARNAME + f"=$HMM_TOPOLOGY_DIR/3state-pca{vector_dim}-sil-skip-loop"
-    hmmsil_repl = hmmsil_repl + "-fullcov" if args.full_cov else hmmsil_repl
+    # hmmsil_repl = hmmsil_repl + "-fullcov" if args.full_cov else hmmsil_repl
 
     hmmsp_search = HMMSP_VARNAME + r"\s*=\s*\$HMM_TOPOLOGY_DIR\/1state-pca.+"
     hmmsp_repl = HMMSP_VARNAME + f"=$HMM_TOPOLOGY_DIR/1state-pca{vector_dim}-sp"
-    hmmsp_repl = hmmsp_repl + "-fullcov" if args.full_cov else hmmsp_repl
+    # hmmsp_repl = hmmsp_repl + "-fullcov" if args.full_cov else hmmsp_repl
 
     vector_length_search = VECTOR_LENGTH_VARNAME + r"\s*=\s*[0-9]+"
     vector_length_repl = VECTOR_LENGTH_VARNAME + f"={vector_dim}"
@@ -580,7 +611,7 @@ def edit_htk_root_file_options(subdirs):
     logger.info("#####\n")
 
 
-def test_model(tc, num_its, num_tri_its, hmmdef, subdirs, trace_value, main_log_handler):
+def test_model(tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
     name_ext = get_name_ext(tc, num_its, num_tri_its, hmmdef, trace_value=trace_value)
     # log_dir = os.path.join(LOG_ROOT, subdirs)
     # make_dir(log_dir)
@@ -614,7 +645,7 @@ def test_model(tc, num_its, num_tri_its, hmmdef, subdirs, trace_value, main_log_
     logger.info("#####\n")
 
 # Runs the train model script
-def train_model(tc, num_its, num_tri_its, hmmdef, subdirs, trace_value, main_log_handler):
+def train_model(tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
     name_ext = get_name_ext(tc, num_its, num_tri_its, hmmdef, trace_value=trace_value)
     # log_dir = os.path.join(LOG_ROOT, subdirs)
     # make_dir(log_dir)
@@ -807,10 +838,7 @@ def clear_results_files(ip, tc, num_its, num_tri_its, hmmdef, subdirs):
     
     logger.info("#####\n")
 
-if __name__ == "__main__":
-    args = parse_args()
-    _check_args()
-
+def main():
     # Buffering logger initialized at import so early messages are buffered until
     # per-context file handlers are attached and setup_logger is called.
     logger.info("##### Args #####")
@@ -854,73 +882,93 @@ if __name__ == "__main__":
             # Attach a grid-search-level log file for this hyperparam setting
             name_ext = get_name_ext(tc, num_its, num_tri_its, hmmdef, trace_value=trace_value)
             grid_log = get_log_file(subdirs, name_ext, mode="grid_search")
+            print(f"{grid_log=}")
 
             # Reconfigure logging to write to files in the log directory for this subdirs.
             # This ensures further logging goes to file backends (and flushes buffered logs).
-            main_log_handler = setup_logger(grid_log, flush_buffer=True, log_level=logging.INFO)
-            try:
-                edit_options(
+            global main_log_handler
+            log_level = logging.DEBUG if args.debug else logging.INFO
+            main_log_handler = setup_logger(grid_log, flush=True, log_level=log_level)
+
+            edit_options(
+                ip,
+                tc,
+                num_its,
+                num_tri_its,
+                hmmdef,
+                subdirs,
+                ngram,
+                trace_value=trace_value,
+            )
+
+            if args.clear_hresults:
+                clear_results_files(
                     ip,
                     tc,
                     num_its,
                     num_tri_its,
                     hmmdef,
                     subdirs,
-                    ngram,
-                    trace_value=trace_value,
                 )
-  
-                if args.clear_hresults:
-                    clear_results_files(
-                        ip,
-                        tc,
-                        num_its,
-                        num_tri_its,
-                        hmmdef,
-                        subdirs,
-                    )
 
-                if args.test_model:
-                    test_model(
-                        tc,
-                        num_its,
-                        num_tri_its,
-                        hmmdef,
-                        subdirs,
-                        trace_value,
-                        main_log_handler,
-                    )
-                else:
-                    train_model(
-                        tc,
-                        num_its,
-                        num_tri_its,
-                        hmmdef,
-                        subdirs,
-                        trace_value,
-                        main_log_handler,
-                    )
-                    
-                    save_model(
-                        tc,
-                        num_its,
-                        num_tri_its,
-                        hmmdef,
-                        subdirs,
-                    )
-
-                if args.results_csv is not None:
-                    add_results_to_csv(
-                        ip,
-                        tc,
-                        num_its,
-                        num_tri_its,
-                        hmmdef,
-                        subdirs,
-                    )
+            if args.test_model:
+                test_model(
+                    tc,
+                    num_its,
+                    num_tri_its,
+                    hmmdef,
+                    subdirs,
+                    trace_value,
+                )
+            else:
+                train_model(
+                    tc,
+                    num_its,
+                    num_tri_its,
+                    hmmdef,
+                    subdirs,
+                    trace_value,
+                )
                 
-                logger.info("")
-            finally:
-                root_logger.removeHandler(main_log_handler)
-                main_log_handler.close()
+                save_model(
+                    tc,
+                    num_its,
+                    num_tri_its,
+                    hmmdef,
+                    subdirs,
+                )
+
+            if args.results_csv is not None:
+                add_results_to_csv(
+                    ip,
+                    tc,
+                    num_its,
+                    num_tri_its,
+                    hmmdef,
+                    subdirs,
+                )
+            
+            logger.info("")
+
+if __name__ == "__main__":
+    args = parse_args()
+    _check_args()
+    set_buffer_handler_level(new_level=logging.DEBUG if args.debug else logging.INFO)
+
+    main_log_handler = None
+    try:
+        main()
+    finally:
+        if main_log_handler is None:
+            log_dir = os.path.join(LOG_ROOT, "premature")
+            make_dir(log_dir)
+            
+            now_str = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+            log_file = os.path.join(log_dir, ".".join(["grid_search", now_str, "txt"]))
+            log_level = logging.DEBUG if args.debug else logging.INFO
+            
+            main_log_handler = setup_logger(log_file, flush=True, log_level=log_level)
+        
+        root_logger.removeHandler(main_log_handler)
+        main_log_handler.close()
 

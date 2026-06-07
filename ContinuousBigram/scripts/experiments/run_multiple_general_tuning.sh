@@ -8,7 +8,7 @@ ROOT="${SCRIPT_DIR}/../.."
 set_vars $1
 
 typeset -a seeds=(1248)
-typeset -a data_groups=(general pt-split)
+typeset -a data_groups=(general)
 
 ############################## TRAIN MULTIPLE DIM20;PCA10 ##############################
 for data_group in ${data_groups[@]}; do
@@ -49,6 +49,17 @@ for data_group in ${data_groups[@]}; do
             --results_csv ${ROOT}/results/${output_dir}/results_${dataset}.csv \
             --num_its 1000 --num_tri_its 1000 \
             --clear_hresults --prepare_data --cross_word
+    done
+    done
+
+    for dataset in ${datasets[@]}; do
+    for seed in "${seeds[@]}"; do
+        ${ROOT}/scripts/grid_search.py \
+            --data_files ${ROOT}/data/${dataset}/dim20/thr0/train/${data_group}/sd${seed}/data/ \
+            --hmmdefs 6state-pca20-gmm4-skip \
+            --results_csv ${ROOT}/results/${output_dir}/results_${dataset}.csv \
+            --num_its 1000 --num_tri_its 1000 \
+            --clear_hresults --prepare_data
     done
     done
 done

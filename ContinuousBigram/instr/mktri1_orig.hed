@@ -1,4 +1,4 @@
-CL commands/commands_tri_internal
+CL /data/hmm_modeling/fingerspelling/ContinuousBigram/commands/supplemental_gen_drop-na_lininterp0/dim20/thr0/all/commands_tri_internal
 TI T_sil {(*-sil+*,sil+*,*-sil).transP}
 TI T_a {(*-a+*,a+*,*-a).transP}
 TI T_b {(*-b+*,b+*,*-b).transP}
@@ -26,3 +26,4 @@ TI T_w {(*-w+*,w+*,*-w).transP}
 TI T_x {(*-x+*,x+*,*-x).transP}
 TI T_y {(*-y+*,y+*,*-y).transP}
 TI T_z {(*-z+*,z+*,*-z).transP}
+TI T_sp {(*-_+*,_+*,*-_).transP}

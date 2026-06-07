@@ -145,7 +145,7 @@ DICTFILE_WORD_SKSP=${DICTFILE_ROOT}/dict_tri2word_sksp
 
 ###### USE FOR CROSS WORD TRILETTER ######
 DICTFILE_CROSS=${DICTFILE_ROOT}/dict_tri2letter_cross
-DICTFILE_CROSS_WORD=${DICTFILE_ROOT}/dict_tri2word_cross
+DICTFILE_WORD_CROSS=${DICTFILE_ROOT}/dict_tri2word_cross
 
 ###### USE FOR SINGLE LETTER ######
 # DICTFILE=${PRJ}/dict/dict_letter2letter
