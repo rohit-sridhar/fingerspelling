@@ -228,12 +228,12 @@ WORD_SKSP=yes
 WORD_SKSP_PHRASE=yes
 LM_DIR=${PRJ}/lang_models
 
-HEDFILE1=${PRJ}/instr/mktri1_silsp.hed
-HEDFILE2=${PRJ}/instr/mktri2_tc.6state-pca20-gmm2.hed
+FILE_UNIQ_STR=tmp
+HEDFILE1=${PRJ}/instr/mktri1_silsp.${FILE_UNIQ_STR}.hed
+HEDFILE2=${PRJ}/instr/mktri2_tc.${FILE_UNIQ_STR}.hed
 
-LEDFILE_UNIQ=tmp
-LEDFILE_WORD=${PRJ}/instr/mkcmd_word.${LEDFILE_UNIQ}.led
-LEDFILE_LETTER=${PRJ}/instr/mkcmd_letter.${LEDFILE_UNIQ}.led
+LEDFILE_WORD=${PRJ}/instr/mkcmd_word.${FILE_UNIQ_STR}.led
+LEDFILE_LETTER=${PRJ}/instr/mkcmd_letter.${FILE_UNIQ_STR}.led
 LEDFILE_TRI_INTERNAL=${PRJ}/instr/mktri_internal.led
 LEDFILE_TRI_CROSS=${PRJ}/instr/mktri_cross.led
 

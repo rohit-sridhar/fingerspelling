@@ -27,6 +27,8 @@ def test_check_args_valid_absolute(monkeypatch):
     # Arrange: provide args that satisfy check_data_loc (end with /data and start with ROOT/data)
     # and stub out get_subdirectories to a predictable value
     monkeypatch.setattr(md, "get_subdirectories_joined", lambda x: os.path.join("subA", "subB"))
+    # Pretend the filesystem paths exist for the purpose of this unit test
+    monkeypatch.setattr(os.path, 'exists', lambda p: True)
 
     md.args = SimpleNamespace(
         method="duplication",

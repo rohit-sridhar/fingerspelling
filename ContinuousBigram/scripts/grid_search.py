@@ -8,6 +8,7 @@ import sys
 import subprocess
 import shutil
 import logging
+import traceback
 from logging.handlers import MemoryHandler
 
 from datetime import datetime
@@ -314,8 +315,9 @@ def get_hresults_prj_filepaths(name_ext, subdirs, ip):
 
     return (letter_results_file, word_results_file)
 
-# get ledfile name (uniq for each hyperparam/data setting)
-def get_ledfile_info(subdirs):
+# get [hed/led]file uniq name (uniq for each hyperparam/data setting)
+# can be used to make uniq config files per model train session.
+def get_file_uniq_info(subdirs):
     subdir_arr = subdirs.split(os.path.sep)
     new_subdirs = '_'.join(subdir_arr)
     return new_subdirs
@@ -349,15 +351,24 @@ def get_vector_dim(subdirs):
 
 # Returns appropriate values for all bool args. Does not
 # do this for triletter (handled separately)
-def get_bool_arg_info():
+def get_bool_arg_info(subdirs):
     custom_silsp = "yes" if not(args.no_custom_silsp) else "no"
     multi_process = "yes" if not(args.no_multi_process) else "no"
-    hedfile1 = "${PRJ}/instr/mktri1_silsp.hed" if not(args.no_custom_silsp) else "${PRJ}/instr/mktri1_orig.hed"
+    # hedfile1 = "${PRJ}/instr/mktri1_silsp.hed" if not(args.no_custom_silsp) else "${PRJ}/instr/mktri1_orig.hed"
+
+    file_uniq_info = get_file_uniq_info(subdirs)
+    if args.no_custom_silsp:
+        hedfile1_orig = f"${{PRJ}}/instr/mktri1_orig.hed"
+        hedfile1 = f"${{PRJ}}/instr/mktri1_orig.{file_uniq_info}.hed"
+    else:
+        hedfile1_orig = f"${{PRJ}}/instr/mktri1_silsp.hed"
+        hedfile1 = f"${{PRJ}}/instr/mktri1_silsp.{file_uniq_info}.hed"
+
     cross_word = "yes" if args.cross_word else "no"
     whole_word = "yes" if args.whole_word else "no"
     use_phrase = "yes" if args.use_phrase else "no"
 
-    return custom_silsp, multi_process, hedfile1, cross_word, whole_word, use_phrase
+    return custom_silsp, multi_process, hedfile1, hedfile1_orig, cross_word, whole_word, use_phrase
 
 def get_machine_info():
     return os.cpu_count()
@@ -417,29 +428,31 @@ def make_triletter_changes(subdirs):
 def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_value=None):
     name_ext = get_name_ext(tc, num_its, num_tri_its, hmmdef) # We leave trace_value out in this call.
     letter_results_file, word_results_file = get_hresults_prj_filepaths(name_ext, subdirs, ip)
-
-    custom_silsp, multi_process, hedfile1, cross_word, whole_word, use_phrase = get_bool_arg_info()
+    
+    custom_silsp, multi_process, hedfile1, hedfile1_orig, cross_word, whole_word, use_phrase = get_bool_arg_info(subdirs)
     if args.full_cov:
         hedfile2 = f"${{PRJ}}/instr/mktri2_fc.hed"
     else:
-        hedfile2 = f"${{PRJ}}/instr/mktri2_tc.{hmmdef}.hed"
+        file_uniq_info = get_file_uniq_info(subdirs)
+        hedfile2 = f"${{PRJ}}/instr/mktri2_tc.{file_uniq_info}.hed"
+        hedfile2_orig = f"${{PRJ}}/instr/mktri2_tc.hed"
     num_threads = get_machine_info()
-
+    
     ip_search = IP_VARNAME + r"\s*=\s*-?[0-9]+(\.[0-9]+)*"
     ip_repl = IP_VARNAME + f"={ip}"
-
+    
     tc_search = "^TC [0-9]+"
     tc_repl = f"TC {tc}"
-
+    
     num_its_search = NUM_ITS_VARNAME + r"\s*=\s*[0-9]+"
     num_its_repl = NUM_ITS_VARNAME + f"={num_its}"
-
+    
     num_tri_its_search = NUM_TRI_ITS_VARNAME + r"\s*=\s*[0-9]+"
     num_tri_its_repl = NUM_TRI_ITS_VARNAME + f"={num_tri_its}"
-
+    
     hmmdef_search = HMMDEF_VARNAME + r"\s*=\s*\$HMM_TOPOLOGY_DIR\/.+"
     hmmdef_repl = HMMDEF_VARNAME + f"=$HMM_TOPOLOGY_DIR/{hmmdef}"
-
+    
     models_relative = os.path.join(os.path.basename(MODELS_ROOT), subdirs, hmmdef)
     models_root_search = MODELS_ROOT_VARNAME + r"\s*=\s*\$\{PRJ\}\/models.*"
     models_root_repl = MODELS_ROOT_VARNAME + os.path.join("=${PRJ}", models_relative)
@@ -451,8 +464,8 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     hedfile1_search = HEDFILE1_VARNAME + r"\s*=\s*\$\{PRJ\}\/instr\/mktri1_.*\.hed"
     hedfile1_repl = HEDFILE1_VARNAME + f"={hedfile1}"
     
-    hedfile2_search = HEDFILE2_VARNAME + r"\s*=\s*\$\{PRJ\}\/instr\/mktri2_.*\.hed"
-    hedfile2_repl = HEDFILE2_VARNAME + f"={hedfile2}"
+    # hedfile2_search = HEDFILE2_VARNAME + r"\s*=\s*\$\{PRJ\}\/instr\/mktri2_.*\.hed"
+    # hedfile2_repl = HEDFILE2_VARNAME + f"={hedfile2}"
     
     custom_silsp_search = CUSTOM_SILSP_VARNAME + r"\s*=\s*(yes|no)"
     custom_silsp_repl = CUSTOM_SILSP_VARNAME + f"={custom_silsp}"
@@ -468,16 +481,20 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     
     # whole_word_search = WHOLE_WORD_VARNAME + r"\s*=\s*(yes|no)"
     # whole_word_repl = WHOLE_WORD_VARNAME + f"={whole_word}"
-
+    
     # use_phrase_search = USE_PHRASE_VARNAME + r"\s*=\s*(yes|no)"
     # use_phrase_repl = USE_PHRASE_VARNAME + f"={use_phrase}"
-
+    
     hedfile1_tokens_root_search, hedfile1_tokens_root_repl = get_hedfile1_info(subdirs)
+    hedfile1_orig_local_file = hedfile1_orig.replace("${PRJ}", ROOT)
     hedfile1_local_file = hedfile1.replace("${PRJ}", ROOT)
-
+    shutil.copyfile(hedfile1_orig_local_file, hedfile1_local_file)
+    
     hedfile2_tokens_root_search, hedfile2_tokens_root_repl = get_hedfile2_info(subdirs)
+    hedfile2_orig_local_file = hedfile2_orig.replace("${PRJ}", ROOT)
     hedfile2_local_file = hedfile2.replace("${PRJ}", ROOT)
-
+    shutil.copyfile(hedfile2_orig_local_file, hedfile2_local_file)
+    
     letter_results_search = LOG_LETTER_VARNAME + r"\s*=\s*\$\{PRJ\}\/.*hresults\.log_letter.*"
     letter_results_repl = LOG_LETTER_VARNAME + f"={letter_results_file}"
     
@@ -502,7 +519,7 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     edit_file(letter_results_search, letter_results_repl, options_file)
     edit_file(word_results_search, word_results_repl, options_file)
     edit_file(hedfile1_search, hedfile1_repl, options_file)
-    edit_file(hedfile2_search, hedfile2_repl, options_file)
+    # edit_file(hedfile2_search, hedfile2_repl, options_file)
     edit_file(custom_silsp_search, custom_silsp_repl, options_file)
     edit_file(multi_process_search, multi_process_repl, options_file)
     edit_file(cross_word_search, cross_word_repl, options_file)
@@ -538,7 +555,7 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
 
 def edit_htk_root_file_options(subdirs):
     options_file = get_options_file(subdirs)
-    led_file_info = get_ledfile_info(subdirs)
+    file_uniq_info = get_file_uniq_info(subdirs)
     vector_dim = get_vector_dim(subdirs)
     
     # Handle triletter changes separately
@@ -556,8 +573,8 @@ def edit_htk_root_file_options(subdirs):
     ext_dir_search = EXT_DIR_VARNAME + r"\s*=\s*\$\{PRJ\}\/ext.*"
     ext_dir_repl = EXT_DIR_VARNAME + os.path.join("=${PRJ}", ext_relative, subdirs)
     
-    ledfile_uniq_search = LEDFILE_UNIQ_VARNAME + r"\s*=\s*.+"
-    ledfile_uniq_repl = LEDFILE_UNIQ_VARNAME + f"={led_file_info}"
+    file_uniq_search = FILE_UNIQ_STR_VARNAME + r"\s*=\s*.+"
+    file_uniq_repl = FILE_UNIQ_STR_VARNAME + f"={file_uniq_info}"
 
     hmmsil_search = HMMSIL_VARNAME + r"\s*=\s*\$HMM_TOPOLOGY_DIR\/3state-pca.+"
     hmmsil_repl = HMMSIL_VARNAME + f"=$HMM_TOPOLOGY_DIR/3state-pca{vector_dim}-sil-skip-loop"
@@ -576,7 +593,7 @@ def edit_htk_root_file_options(subdirs):
     edit_file(mlf_root_search, mlf_root_repl, options_file)
     edit_file(outputfile_root_search, outputfile_root_repl, options_file)
     edit_file(ext_dir_search, ext_dir_repl, options_file)
-    edit_file(ledfile_uniq_search, ledfile_uniq_repl, options_file)
+    edit_file(file_uniq_search, file_uniq_repl, options_file)
     edit_file(hmmsil_search, hmmsil_repl, options_file)
     edit_file(hmmsp_search, hmmsp_repl, options_file)
     edit_file(vector_length_search, vector_length_repl, options_file)
@@ -588,7 +605,7 @@ def edit_htk_root_file_options(subdirs):
     run_subprocess(["grep", "^" + MLF_ROOT_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + OUTPUTFILE_ROOT_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + EXT_DIR_VARNAME + r"\s*=\s*", options_file], logger=logger)
-    run_subprocess(["grep", "^" + LEDFILE_UNIQ_VARNAME + r"\s*=\s*", options_file], logger=logger)
+    run_subprocess(["grep", "^" + FILE_UNIQ_STR_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + HMMSIL_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + HMMSP_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + VECTOR_LENGTH_VARNAME + r"\s*=\s*", options_file], logger=logger)
@@ -653,7 +670,7 @@ def train_model(tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
     log_file = get_log_file(subdirs, name_ext, mode="train")
 
     # attach a per-train file handler so training output goes to its own file
-    train_handler = setup_logger(log_file, log_level=logging.INFO)
+    train_handler = setup_logger(log_file, log_level=logging.INFO, mode="w")
     logger.info("##### Running train.sh script #####")
     logger.info(f"Log file: {log_file}\n")
     main_log_handler.setLevel(logging.ERROR)
@@ -670,6 +687,10 @@ def train_model(tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
     train_handler.close()
 
 def get_results(results_file, letter_results=True):
+    if not os.path.exists(results_file):
+        logger.error(f"{results_file} does not exist. check train logs for errors.")
+        return None
+
     with open(results_file, "r") as f:
         results_lines = f.readlines()
     
@@ -707,7 +728,10 @@ def add_results_to_csv(ip, tc, num_its, num_tri_its, hmmdef, subdirs):
     letter_results = get_results(letter_results_file, letter_results=True)
     word_results = get_results(word_results_file, letter_results=False)
     
-    results = [letter_results_file]
+    # prepend timestamp in format YYYY-MM-DD HH:MM:SS
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    results = [now_str, letter_results_file]
     if letter_results is not None:
         results += letter_results
     else:
@@ -726,12 +750,12 @@ def add_results_to_csv(ip, tc, num_its, num_tri_its, hmmdef, subdirs):
             )
             csvwriter.writerow(results)
     else:
-        with open(args.results_csv, 'w') as f:
+        with open(args.results_csv, 'w', newline='') as f:
             csvwriter = csv.writer(
                 f, delimiter='|',
                 quotechar='\\', quoting=csv.QUOTE_MINIMAL
             )
-            csvwriter.writerow(['letter_results_file','letter_corr', 'letter_acc', 'word_corr', 'word_acc', 'sent_corr'])
+            csvwriter.writerow(['date_time','letter_results_file','letter_corr', 'letter_acc', 'word_corr', 'word_acc', 'sent_corr'])
             csvwriter.writerow(results)
 
 # Gets the model path (in which each iteration is stored). The directory is
@@ -763,7 +787,7 @@ def save_model(tc, num_its, num_tri_its, hmmdef, subdirs):
     if os.path.exists(curr_model_path):
         shutil.copy(curr_model_path, new_model_path)
     else:
-        logger.error("Model wasn't created or is missing. Check the log file")
+        logger.error("Model wasn't created or is missing. Check the training log file for errors.")
 
 # Prepare data using scripts/prepare_files.sh. Not in use currently.
 def prepare_data(data_file, label_file, subdirs):
@@ -838,6 +862,17 @@ def clear_results_files(ip, tc, num_its, num_tri_its, hmmdef, subdirs):
     
     logger.info("#####\n")
 
+def cleanup():
+    logger.info(f"Running clean up function")
+    # clean up hedfile2 files (uniq per model training session)
+    for hedfile2 in Path(INSTR_ROOT).glob("mktri2_*.*.hed"):
+        logger.info(f"Cleaning up (removing): {hedfile2}")
+        os.remove(hedfile2)
+
+    for hedfile1 in Path(INSTR_ROOT).glob("mktri1_*.*.hed"):
+        logger.info(f"Cleaning up (removing): {hedfile1}")
+    logger.info("Exiting script ...")
+
 def main():
     # Buffering logger initialized at import so early messages are buffered until
     # per-context file handlers are attached and setup_logger is called.
@@ -911,32 +946,37 @@ def main():
                     subdirs,
                 )
 
-            if args.test_model:
-                test_model(
-                    tc,
-                    num_its,
-                    num_tri_its,
-                    hmmdef,
-                    subdirs,
-                    trace_value,
-                )
-            else:
-                train_model(
-                    tc,
-                    num_its,
-                    num_tri_its,
-                    hmmdef,
-                    subdirs,
-                    trace_value,
-                )
-                
-                save_model(
-                    tc,
-                    num_its,
-                    num_tri_its,
-                    hmmdef,
-                    subdirs,
-                )
+            try:
+                if args.test_model:
+                    test_model(
+                        tc,
+                        num_its,
+                        num_tri_its,
+                        hmmdef,
+                        subdirs,
+                        trace_value,
+                    )
+                else:
+                    train_model(
+                        tc,
+                        num_its,
+                        num_tri_its,
+                        hmmdef,
+                        subdirs,
+                        trace_value,
+                    )
+                    
+                    save_model(
+                        tc,
+                        num_its,
+                        num_tri_its,
+                        hmmdef,
+                        subdirs,
+                    )
+            except Exception as e:
+                logger.error(f"An unexpected exception {e} occurred during training or testing.")
+                logger.error(f"{traceback.format_exc()}")
+                cleanup()
 
             if args.results_csv is not None:
                 add_results_to_csv(
@@ -948,7 +988,7 @@ def main():
                     subdirs,
                 )
             
-            logger.info("")
+            cleanup()
 
 if __name__ == "__main__":
     args = parse_args()

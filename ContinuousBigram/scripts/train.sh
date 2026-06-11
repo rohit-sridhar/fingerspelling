@@ -594,13 +594,13 @@ if [[ $TRILETTER = "yes" ]] || [[ $TRILETTER = "1" ]]; then
         wait "${pid[@]}"
         
         ${HTKBIN}HERest -v $MIN_VARIANCE -p 0 \
-            -A -T $TRACE_LEVEL	-s $STATS \
+            -A -T $TRACE_LEVEL -s $STATS \
             $HMM_LOAD_OPT $HMM_TRAINING.$hmm_count/$HMM_MACRO \
             -M $HMM_TRAINING.$next_dir -I $MLF_LOCATION \
             ${TOKENS} $HMM_TRAINING.$next_dir/HER*.acc
     else
         ${HTKBIN}HERest -v $MIN_VARIANCE \
-            -A -T $TRACE_LEVEL -S $TRAINING	-s $STATS \
+            -A -T $TRACE_LEVEL -S $TRAINING -s $STATS \
             $HMM_LOAD_OPT $HMM_TRAINING.$hmm_count/$HMM_MACRO \
             -M $HMM_TRAINING.$next_dir -I $MLF_LOCATION ${TOKENS}
     fi
@@ -793,15 +793,15 @@ if [[ $MULTI_PROCESS = "yes" ]]; then
     
     if [[ $WORD_LEVEL = "yes" ]] || [[ $WORD_LEVEL = "1" ]]; then
         output_mlfs_word=`find ${EXT_DIR} -type f -wholename "$OUTPUT_MLF_WORD.*"`
-    	${HTKBIN}HResults -A -e "???" $ENTER -e "???" $EXIT -e "???" $SP -T $TRACE_LEVEL -t -I $MLF_LOCATION_WORD \
+        ${HTKBIN}HResults -A -e "???" $ENTER -e "???" $EXIT -e "???" $SP -T $TRACE_LEVEL -t -I $MLF_LOCATION_WORD \
             $TOKENS_WORD $output_mlfs_word >> $LOG_RESULTS_WORD
     fi
 else
     ${HTKBIN}HResults -A -e "???" $ENTER -e "???" $EXIT -T $TRACE_LEVEL -t -I $MLF_LOCATION_ORIGINAL \
-     	-p $TOKENS_ORIGINAL $OUTPUT_MLF >> $LOG_RESULTS	
+        -p $TOKENS_ORIGINAL $OUTPUT_MLF >> $LOG_RESULTS
     
     if [[ $WORD_LEVEL = "yes" ]] || [[ $WORD_LEVEL = "1" ]]; then
-    	${HTKBIN}HResults -A -e "???" $ENTER -e "???" $EXIT -e "???" $SP -T $TRACE_LEVEL -t -I $MLF_LOCATION_WORD \
+        ${HTKBIN}HResults -A -e "???" $ENTER -e "???" $EXIT -e "???" $SP -T $TRACE_LEVEL -t -I $MLF_LOCATION_WORD \
             $TOKENS_WORD $OUTPUT_MLF_WORD >> $LOG_RESULTS_WORD
     fi
 fi

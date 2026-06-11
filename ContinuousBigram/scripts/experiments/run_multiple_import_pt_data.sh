@@ -11,7 +11,7 @@ echo ""
 echo "STARTING IMPORT"
 echo ""
 
-participants=(ab12)
+# participants=(ab12)
 # ############################## IMPORT MULTIPLE (TRAIN,VAL,TEST) ##############################
 # 
 # for dataset in ${datasets[@]}; do

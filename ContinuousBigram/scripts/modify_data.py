@@ -195,7 +195,6 @@ def _check_args():
 
 
 ############### DATA DUPLICATION FUNCTIONS ###############
-
 def duplicate_frames(datafile, label_file, new_datafile, new_label_file, multiplier, dupe_all):
     with open(datafile, 'r') as df:
         frames = df.readlines()
@@ -242,7 +241,6 @@ def threshold_duplicate_frames(datafile, label_file, new_datafile, new_label_fil
     
 
 ############### INTERPOLATION FUNCTIONS ###############
-
 def to_numpy(frame):
     frame = frame.split("  ")
     frame = np.array([float(landmark) for landmark in frame])
@@ -281,7 +279,6 @@ def interpolate_frames(datafile, label_file, new_datafile, new_label_file, num_i
     os.link(label_file, new_label_file)
 
 ############### FPL THRESHOLD FUNCTIONS ###############
-
 def fpl_threshold_files(datafile, label_file, new_datafile, new_label_file, threshold):
     with open(datafile, 'r') as df:
         frames = df.readlines()
@@ -294,7 +291,6 @@ def fpl_threshold_files(datafile, label_file, new_datafile, new_label_file, thre
         os.link(label_file, new_label_file)
 
 ############### NEG FPL THRESHOLD FUNCTIONS ###############
-
 def neg_fpl_threshold_files(datafile, label_file, new_datafile, new_label_file, threshold):
     with open(datafile, 'r') as df:
         frames = df.readlines()
@@ -307,7 +303,6 @@ def neg_fpl_threshold_files(datafile, label_file, new_datafile, new_label_file, 
         os.link(label_file, new_label_file)
 
 ############### DIM SELECT FUNCTIONS ###############
-
 def _select_from_frame(frame, dims):
     frame = frame.strip().split('  ')
     new_frame = []
@@ -395,7 +390,7 @@ def import_data(new_data_loc, new_label_loc):
     
     # dataset = "_".join(new_data_loc.split(os.path.sep)[1:3])
     dataset = "_".join(get_subdirectories_split(new_data_loc)[:2])
-
+    
     data_file_dict = load_json_file(DATA_FILE_DICT_FILE)
     data_path = data_file_dict[dataset]["data_path"]
     label_path = data_file_dict[dataset]["label_path"]
@@ -419,7 +414,11 @@ def import_data(new_data_loc, new_label_loc):
             landmarks = get_landmarks(df, seq_id)
             phrase = [f"{ENTER}\n"]
             for c in df.loc[seq_id].phrase:
-                c = c if c != " " else SPACE
+                # c = c if c != " " else SPACE
+                if c == " ":
+                    c = SPACE
+                elif not c.isalpha():
+                    c = str(ord(c))
                 phrase += [f"{c}\n"]
             phrase += [f"{EXIT}\n"]
             # phrase = get_labels(df, seq_id, idx_char_map, supplemental)
@@ -492,7 +491,7 @@ if __name__ == "__main__":
         
         label_file = os.path.join(label_loc, f + '.lab')
         new_label_file = os.path.join(new_label_loc, f + '.lab')
-
+        
         if args.method == "duplication":
             duplicate_frames(datafile, label_file, new_datafile, new_label_file, args.multiplier, args.dupe_all)
         if args.method == "threshold_duplication":
