@@ -45,6 +45,7 @@ fi
 # done
 # done
 
+seeds=(3248 4248 5248)
 ############################## TRAIN MULTIPLE (PCA10) ##############################
 for dataset in ${datasets[@]}; do
 for threshold in ${thresholds[@]}; do
