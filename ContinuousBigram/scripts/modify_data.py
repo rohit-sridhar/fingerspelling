@@ -1,5 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
+import logging
 import argparse
 import os
 import sys
@@ -13,8 +14,6 @@ import pandas as pd
 from tqdm import tqdm
 from math import ceil
 from utils import *
-
-global args
 
 ############### GENERAL HELPER FUNCTIONS ###############
 
@@ -118,6 +117,12 @@ def parse_args():
     )
 
     parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="Run in debug mode (verbose logging)."
+    )
+
+    parser.add_argument(
         "--seed",
         type=int,
         default=7268,
@@ -147,16 +152,24 @@ def parse_args():
 # Checks args and makes modifications.
 def _check_args():
     data_loc, label_loc, new_data_loc, new_label_loc = None, None, None, None
+    
+    if args.method == "import":
+        args.import_data_loc = os.path.abspath(args.import_data_loc)
+        if not os.path.exists(args.import_data_loc):
+            raise ValueError("must pass an existing import data location.")
 
     if args.method in DATA_LOC_REQUIRED_METHODS:
         data_loc = os.path.abspath(args.data_loc)
-        if not valid_data_loc(data_loc):
-            raise ValueError("must pass data subfolder in DATA_ROOT that ends with /data.")
+        if not valid_data_loc(data_loc) or not os.path.exists(data_loc):
+            raise ValueError("must pass data subfolder that exists in DATA_ROOT and ends with /data.")
         
         subdirs = get_subdirectories_joined(data_loc)
         data_loc = os.path.join(DATA_ROOT, subdirs, "data")
         label_loc = os.path.join(LABELS_ROOT, subdirs, "label")
 
+        if not os.path.exists(label_loc):
+            raise ValueError("label loc (derived from data loc arg) must exist in LABELS_ROOT.")
+    
     if args.method in NEW_DATA_LOC_REQUIRED_METHODS:
         new_data_loc = os.path.abspath(args.new_data_loc)
         if not valid_data_loc(new_data_loc):
@@ -182,7 +195,6 @@ def _check_args():
 
 
 ############### DATA DUPLICATION FUNCTIONS ###############
-
 def duplicate_frames(datafile, label_file, new_datafile, new_label_file, multiplier, dupe_all):
     with open(datafile, 'r') as df:
         frames = df.readlines()
@@ -229,7 +241,6 @@ def threshold_duplicate_frames(datafile, label_file, new_datafile, new_label_fil
     
 
 ############### INTERPOLATION FUNCTIONS ###############
-
 def to_numpy(frame):
     frame = frame.split("  ")
     frame = np.array([float(landmark) for landmark in frame])
@@ -268,7 +279,6 @@ def interpolate_frames(datafile, label_file, new_datafile, new_label_file, num_i
     os.link(label_file, new_label_file)
 
 ############### FPL THRESHOLD FUNCTIONS ###############
-
 def fpl_threshold_files(datafile, label_file, new_datafile, new_label_file, threshold):
     with open(datafile, 'r') as df:
         frames = df.readlines()
@@ -281,7 +291,6 @@ def fpl_threshold_files(datafile, label_file, new_datafile, new_label_file, thre
         os.link(label_file, new_label_file)
 
 ############### NEG FPL THRESHOLD FUNCTIONS ###############
-
 def neg_fpl_threshold_files(datafile, label_file, new_datafile, new_label_file, threshold):
     with open(datafile, 'r') as df:
         frames = df.readlines()
@@ -294,7 +303,6 @@ def neg_fpl_threshold_files(datafile, label_file, new_datafile, new_label_file, 
         os.link(label_file, new_label_file)
 
 ############### DIM SELECT FUNCTIONS ###############
-
 def _select_from_frame(frame, dims):
     frame = frame.strip().split('  ')
     new_frame = []
@@ -382,7 +390,7 @@ def import_data(new_data_loc, new_label_loc):
     
     # dataset = "_".join(new_data_loc.split(os.path.sep)[1:3])
     dataset = "_".join(get_subdirectories_split(new_data_loc)[:2])
-
+    
     data_file_dict = load_json_file(DATA_FILE_DICT_FILE)
     data_path = data_file_dict[dataset]["data_path"]
     label_path = data_file_dict[dataset]["label_path"]
@@ -396,14 +404,21 @@ def import_data(new_data_loc, new_label_loc):
         datafile = os.path.join(data_path, str(seq_id))
         label_file = os.path.join(label_path, str(seq_id) + ".lab")
         
+        logger.debug(datafile)
         if os.path.exists(datafile) and os.path.exists(label_file):
+            logger.debug(f"{datafile} and {label_file} exist.")
             os.link(datafile, new_datafile)
             os.link(label_file, new_label_file)
         else:
+            logger.debug(f"either {datafile} or {label_file} don't exist.")
             landmarks = get_landmarks(df, seq_id)
             phrase = [f"{ENTER}\n"]
             for c in df.loc[seq_id].phrase:
-                c = c if c != " " else SPACE
+                # c = c if c != " " else SPACE
+                if c == " ":
+                    c = SPACE
+                elif not c.isalpha():
+                    c = str(ord(c))
                 phrase += [f"{c}\n"]
             phrase += [f"{EXIT}\n"]
             # phrase = get_labels(df, seq_id, idx_char_map, supplemental)
@@ -446,15 +461,20 @@ def data_aug_interpolation(curr_seq_id, datafile, label_file, new_data_loc, new_
     return data_aug_map
 
 if __name__ == "__main__":
+    global args
     args = parse_args()
-    print(args)
+    logger.info(args)
+    random.seed(args.seed)
 
     data_loc, new_data_loc, label_loc, new_label_loc = _check_args()
-    random.seed(args.seed)
+    subdirs = get_subdirectories_joined(new_data_loc)
+
+    log_file = get_log_file(subdirs, "", "modify_data")
+    setup_logger(log_file, flush=True, log_level=logging.DEBUG if args.debug else logging.INFO)
 
     if args.method == "import":
         import_data(new_data_loc, new_label_loc)
-        sys.exit()
+        sys.exit(0)
 
     if args.method == "match_triletters":
         commands_triletters = read_triletters_from_commands()
@@ -471,7 +491,7 @@ if __name__ == "__main__":
         
         label_file = os.path.join(label_loc, f + '.lab')
         new_label_file = os.path.join(new_label_loc, f + '.lab')
-
+        
         if args.method == "duplication":
             duplicate_frames(datafile, label_file, new_datafile, new_label_file, args.multiplier, args.dupe_all)
         if args.method == "threshold_duplication":

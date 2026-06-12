@@ -1,11 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import os
 import argparse
 
 from tqdm import tqdm
-
-global args
 
 def parse_args():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -49,6 +47,7 @@ def parse_args():
     return parser.parse_args()
 
 def check_args():
+    global args
     if args.new_label_loc is None:
         args.new_label_loc = args.old_label_loc
 

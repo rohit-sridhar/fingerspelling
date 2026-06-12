@@ -40,7 +40,7 @@ if [[ ! -f "${EXT_DIR}/done" ]]; then
     echo ""
     rm -rf ${EXT_DIR}/*
     mkdir ${EXT_DIR}/data/
-    find ${label_loc} -name "*.lab" -type f | xargs cp -t ${EXT_DIR}/data/
+    find ${label_loc} -name "*.lab" -type f | xargs cp -lt ${EXT_DIR}/data/
     echo "#####"
     echo ""
     echo "##### Generating ext files .... #####"

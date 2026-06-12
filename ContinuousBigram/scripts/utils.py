@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import os
 import sys
 import json
@@ -24,6 +26,7 @@ GRAMMAR_ROOT = os.path.join(ROOT, "grammar")
 MLF_ROOT = os.path.join(ROOT, "mlf")
 DICT_ROOT = os.path.join(ROOT, "dict")
 TOKENS_ROOT = os.path.join(ROOT, "commands")
+INSTR_ROOT = os.path.join(ROOT, "instr")
 EXT_ROOT = os.path.join(ROOT, "ext")
 
 # Scripts root is used to make the options file so use abs path.
@@ -67,7 +70,7 @@ GRAMMAR_LETTER_VARNAME = "GRAMMARFILE"
 GRAMMAR_WORD_VARNAME = "GRAMMARFILE_WORD"
 HEDFILE1_VARNAME = "HEDFILE1"
 HEDFILE2_VARNAME = "HEDFILE2"
-LEDFILE_UNIQ_VARNAME = "LEDFILE_UNIQ"
+FILE_UNIQ_STR_VARNAME = "FILE_UNIQ_STR"
 CROSS_WORD_VARNAME = "CROSS_WORD"
 CUSTOM_SILSP_VARNAME = "CUSTOM_SILSP"
 MULTI_PROCESS_VARNAME = "MULTI_PROCESS"
@@ -102,20 +105,41 @@ SPACE = '_'
 ENTER = 'sil0'
 EXIT = 'sil1'
 
-TOKEN_MAP = {
-    "0": "{ZERO}",
-    "1": "{ONE}",
-    "2": "{TWO}",
-    "3": "{THREE}",
-    "4": "{FOUR}",
-    "5": "{FIVE}",
-    "6": "{SIX}",
-    "7": "{SEVEN}",
-    "8": "{EIGHT}",
-    "9": "{NINE}",
-    "+": "{PLUS}",
-    "-": "{MINUS}",
-}
+# {" ":0,"!":1,"#":2,"$":3,"%":4,"&":5,"'":6,"(":7,")":8,"*":9,"+":10,",":11,"-":12,".":13,"\/":14,"0":15,"1":16,"2":17,"3":18,"4":19,"5":20,"6":21,"7":22,"8":23,"9":24,":":25,";":26,"=":27,"?":28,"@":29,"[":30,"_":31,"a":32,"b":33,"c":34,"d":35,"e":36,"f":37,"g":38,"h":39,"i":40,"j":41,"k":42,"l":43,"m":44,"n":45,"o":46,"p":47,"q":48,"r":49,"s":50,"t":51,"u":52,"v":53,"w":54,"x":55,"y":56,"z":57,"~":58,"<":59,">": 60,"P": 61}
+# SPECIAL_TOKEN_MAP = {
+#     "!": "{EXCL}",
+#     "#": "{HASH}",
+#     "$": "{DOLLAR}",
+#     "%": "{PCT}",
+#     "&": "{AMPSND}",
+#     "'": "{SQUOTE}",
+#     "(": "{LPAREN}",
+#     ")": "{RPAREN}",
+#     "*": "{AST}",
+#     "+": "{PLUS}",
+#     ",": "{COMMA}",
+#     "-": "{HYPHEN}",
+#     ".": "{DOT}",
+#     "\/" "{FSLASH}",
+#     "0": "{ZERO}",
+#     "1": "{ONE}",
+#     "2": "{TWO}",
+#     "3": "{THREE}",
+#     "4": "{FOUR}",
+#     "5": "{FIVE}",
+#     "6": "{SIX}",
+#     "7": "{SEVEN}",
+#     "8": "{EIGHT}",
+#     "9": "{NINE}",
+#     ":": "{COLON}",
+#     ";": "{SEMICOLON}",
+#     "=": "{EQUAL}",
+#     "?": "{QMARK}",
+#     "@": "{AT}",
+#     "[": "{LBRACKET}",
+#     "_": "{UNDERSCORE}",
+#     "-"
+# }
 
 MODIFY_DATA_METHODS = [
     "duplication",
@@ -267,6 +291,7 @@ def get_subdirectories_joined(filepath):
 
     subdir_list = get_subdirectories_split(filepath)
     subdirs = os.path.join(*(subdir_list))
+    logger.debug(f"{subdirs=}")
     return subdirs
 
 def get_test_data_file(subdirs):
@@ -348,6 +373,20 @@ def get_next_seq_id(data_aug_map):
     return str(next_seq_id)
 
 ##### Logging utils #####
+def get_log_file(subdirs, name_ext, mode):
+    """Return a log file path. Ensures the log directory exists.
+
+    mode must be one of: "train", "test", "grid_search", "prepare_data". Raises ValueError otherwise.
+    """
+    if mode not in ("train", "test", "grid_search", "prepare_data", "modify_data"):
+        raise ValueError("mode must be one of 'train', 'test', 'grid_search', 'modify_data' or 'prepare_data'")
+
+    log_dir = os.path.join(LOG_ROOT, subdirs)
+    make_dir(log_dir)
+
+    return os.path.join(log_dir, f"{mode}.log_" + name_ext)
+
+
 def log_stream(stream, log_level_function):
     """Reads a stream line-by-line and sends it to a specific logging function."""
     with stream:
@@ -377,7 +416,7 @@ def init_buffering_logger(capacity=10000, flush_level=logging.ERROR):
         return
 
     mem = MemoryHandler(capacity=capacity, flushLevel=flush_level, target=None)
-    mem.setLevel(logging.INFO)
+    mem.setLevel(logging.DEBUG)
     root_logger.addHandler(mem)
     _BUFFER_HANDLER = mem
 
@@ -385,7 +424,7 @@ def init_buffering_logger(capacity=10000, flush_level=logging.ERROR):
 # Initialize buffering at import so early log calls are not lost
 init_buffering_logger()
 
-def _attach_file_handler(log_file, level=logging.DEBUG, mode='w'):
+def _attach_file_handler(log_file, level=logging.DEBUG, mode="a"):
     """Attach a FileHandler to the given logger (or module logger) that writes to log_file.
 
     Returns the handler so callers can remove/close it when done.
@@ -398,27 +437,9 @@ def _attach_file_handler(log_file, level=logging.DEBUG, mode='w'):
     root_logger.addHandler(fh)
     return fh
 
-
-# set up the logger for any script
-# def setup_logger(log_file, module_logger, flush_buffer=False, log_level=logging.INFO):
-def setup_logger(log_file, flush_buffer=False, log_level=logging.INFO):
-    """Configure logging to a file and flush any buffered logs.
-
-    log_file must be a valid file path. logger should be a module logger.
-    log_level should be an int logging level. Buffered logs (from init_buffering_logger)
-    will be flushed to an existing FileHandler on the module logger if present;
-    otherwise they will be flushed to the new root FileHandler created here.
-    """
-    log_file = Path(log_file)
-    log_file.parent.mkdir(parents=True, exist_ok=True)
-
-    # Reuse attach helper to create and attach a FileHandler to the root logger
-    # fh = _attach_file_handler(log_file, module_logger, level=log_level)
-    fh = _attach_file_handler(log_file, level=log_level)
-
-    # If a buffer handler exists flush it into fh.
+def flush_buffer(fh):
     global _BUFFER_HANDLER
-    if flush_buffer and _BUFFER_HANDLER is not None:
+    if _BUFFER_HANDLER is not None:
         try:
             target = fh
 
@@ -435,6 +456,28 @@ def setup_logger(log_file, flush_buffer=False, log_level=logging.INFO):
             pass
 
         _BUFFER_HANDLER = None
+
+# set up the logger for any script
+# def setup_logger(log_file, module_logger, flush=False, log_level=logging.INFO):
+def setup_logger(log_file, flush=False, log_level=logging.INFO, mode="a"):
+    """Configure logging to a file and flush any buffered logs.
+
+    log_file must be a valid file path. logger should be a module logger.
+    log_level should be an int logging level. Buffered logs (from init_buffering_logger)
+    will be flushed to an existing FileHandler on the module logger if present;
+    otherwise they will be flushed to the new root FileHandler created here.
+
+    """
+    log_file = Path(log_file)
+    log_file.parent.mkdir(parents=True, exist_ok=True)
+
+    # Reuse attach helper to create and attach a FileHandler to the root logger
+    # fh = _attach_file_handler(log_file, module_logger, level=log_level)
+    fh = _attach_file_handler(log_file, level=log_level, mode=mode)
+
+    # If a buffer handler exists flush it into fh.
+    if flush:
+        flush_buffer(fh)
 
     return fh
 

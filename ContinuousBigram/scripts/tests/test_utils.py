@@ -1,4 +1,7 @@
+#!/usr/bin/env python3
+
 from pathlib import Path
+import logging
 import sys
 import os
 
@@ -8,6 +11,7 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 import utils as ut
+logger = logging.getLogger("__main__")
 
 def test_get_subdirectories_absolute():
     # absolute path with multiple subdirectories
@@ -35,48 +39,53 @@ def test_get_subdirectories_absolute():
 
 
 def test_setup_logger_creates_file_and_sets_info(tmp_path):
-    import logging
+    from pathlib import Path
 
     # Clear any existing handlers so logging.basicConfig will configure a file handler
     for h in logging.root.handlers:
         logging.root.removeHandler(h)
 
     # Call the moved setup_logger (utils is imported as ut at module level)
-    import logging
-    ut.setup_logger(log_dir=tmp_path, log_level=logging.INFO)
+    log_file = Path(tmp_path / "log.txt")
+    fh = ut.setup_logger(str(log_file), flush=True, log_level=logging.INFO)
+    logger.setLevel(logging.INFO)
 
     # Emit a log record to ensure the file is created
-    logger = logging.getLogger("test_setup_logger")
+    # logger = logging.getLogger("test_setup_logger")
+    # logger.addHandler(fh)
     logger.info("setup logger test info")
 
     # Ensure records are flushed to disk
+    fh.flush()
     logging.shutdown()
 
-    log_file = tmp_path / "log.txt"
     assert log_file.exists(), f"Expected log file at {log_file}"
 
     content = log_file.read_text()
     assert "setup logger test info" in content
-    # Root level should be INFO when debug=False
-    assert logging.getLogger().level == logging.INFO
+    # Ensure the handler level matches requested level
+    assert fh.level == logging.INFO
 
 
 def test_setup_logger_debug_sets_debug_level(tmp_path):
-    import logging
-
     for h in logging.root.handlers:
         logging.root.removeHandler(h)
 
-    ut.setup_logger(log_dir=tmp_path, log_level=logging.DEBUG)
-    logger = logging.getLogger("test_setup_logger_debug")
+    log_file_path = str(tmp_path / "log.txt")
+    fh = ut.setup_logger(log_file_path, flush=True, log_level=logging.DEBUG)
+    logger.setLevel(logging.DEBUG)
+    # logger = logging.getLogger("test_setup_logger_debug")
+    # logger.addHandler(fh)
     logger.debug("debug message")
+
+    fh.flush()
     logging.shutdown()
 
     log_file = tmp_path / "log.txt"
     assert log_file.exists()
     content = log_file.read_text()
     assert "debug message" in content
-    assert logging.getLogger().level == logging.DEBUG
+    assert fh.level == logging.DEBUG
 
 
 def test_buffer_handler_attached(tmp_path):

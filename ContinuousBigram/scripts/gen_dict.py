@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import argparse
 import sys
@@ -10,8 +10,6 @@ from utils import *
 from pathlib import Path
 
 WRITTEN = set()
-global args
-
 logger = logging.getLogger(__name__)
 
 #################### GENERAL HELPERS ####################

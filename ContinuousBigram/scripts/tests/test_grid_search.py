@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from pathlib import Path
 import sys
 import os
@@ -11,6 +13,7 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 import grid_search as gs
+import utils as ut
 
 # Prevent filesystem side-effects from make_dir
 original_make_dir = gs.make_dir
@@ -37,7 +40,9 @@ def test_get_name_ext_various_flags():
         no_custom_silsp=True,
         cross_word=False,
         no_triletter=True,
-        custom_ext="myext"
+        custom_ext="myext",
+        full_cov=False,
+        debug=False
     )
 
     name = gs.get_name_ext(tc=5, num_its=10, num_tri_its=2, hmmdef="hmmX", trace_value=3)
@@ -51,7 +56,7 @@ def test_get_name_ext_various_flags():
 
 def test_get_hresults_filepaths_with_modelname_replace():
     # Case where model_name already contains an ip token
-    gs.args = SimpleNamespace(test_model_path="./models/foo/newMacros_pos10ip_extra")
+    gs.args = SimpleNamespace(test_model_path="./models/foo/newMacros_pos10ip_extra", full_cov=False)
     letter, word = gs.get_hresults_prj_filepaths("extdummy", subdirs=str(Path("a") / "b"), ip=20)
     # Should replace pos10ip with pos20ip in the resulting filename
 
@@ -66,7 +71,7 @@ def test_get_hresults_filepaths_with_modelname_replace():
 
 def test_get_hresults_filepaths_with_modelname_insert():
     # Case where model_name does NOT contain an ip token -> should insert one
-    gs.args = SimpleNamespace(test_model_path="./models/foo/newMacros_extra")
+    gs.args = SimpleNamespace(test_model_path="./models/foo/newMacros_extra", full_cov=False)
     letter, word = gs.get_hresults_prj_filepaths("extdummy", subdirs=str(Path("a") / "b"), ip=-5)
 
     # inserted neg5ip token should appear
@@ -92,7 +97,9 @@ def test_save_model_copies(tmp_path, monkeypatch):
         no_custom_silsp=True,
         cross_word=False,
         no_triletter=True,
-        custom_ext="myext"
+        custom_ext="myext",
+        full_cov=False,
+        debug=False
     )
 
     subdirs = "test_subdir"
@@ -127,7 +134,7 @@ def test_attach_file_handler_writes_file(tmp_path):
     # Ensure logger will emit INFO messages
     gs.logger.setLevel(logging.INFO)
     # Attach handler
-    handler = gs._attach_file_handler(str(log_path), level=logging.INFO, mode='w')
+    handler = ut._attach_file_handler(str(log_path), level=logging.INFO, mode='w')
     try:
         gs.logger.info("attach handler test")
         # ensure logs flushed
@@ -158,8 +165,8 @@ def test_nested_handlers_writes_to_multiple_files(tmp_path):
     file_info = tmp_path / "info.log"
     file_debug = tmp_path / "debug.log"
 
-    info_handler = gs._attach_file_handler(str(file_info), level=logging.INFO, mode='w')
-    debug_handler = gs._attach_file_handler(str(file_debug), level=logging.DEBUG, mode='w')
+    info_handler = ut._attach_file_handler(str(file_info), level=logging.INFO, mode='w')
+    debug_handler = ut._attach_file_handler(str(file_debug), level=logging.DEBUG, mode='w')
 
     try:
         gs.logger.info("info message")
@@ -190,3 +197,53 @@ def test_nested_handlers_writes_to_multiple_files(tmp_path):
             except Exception:
                 pass
             h.close()
+
+
+def test_add_results_to_csv_writes_timestamp(tmp_path, monkeypatch):
+    # Arrange: create fake letter and word results files with expected content
+    letter_file = tmp_path / "letter_results.log"
+    word_file = tmp_path / "word_results.log"
+
+    letter_file.write_text("HEADER\nWORD: Corr=12.34 Acc=56.78\n")
+    word_file.write_text("HEADER\nWORD: Corr=21.0 Acc=31.0\nSENT: Correct=41.0\n")
+
+    # Monkeypatch helpers so add_results_to_csv reads the temp files
+    monkeypatch.setattr(gs, "get_hresults_prj_filepaths", lambda name_ext, subdirs, ip: (str(letter_file), str(word_file)))
+    monkeypatch.setattr(gs, "swap_prj_to_root", lambda p: p)
+
+    # Provide results_csv path and other expected args attributes
+    gs.args = SimpleNamespace(
+        results_csv=str(tmp_path / "results.csv"),
+        test_model_path=None,
+        no_custom_silsp=False,
+        cross_word=False,
+        full_cov=False,
+        no_triletter=False,
+        custom_ext=None,
+        debug=False
+    )
+
+    # Act
+    gs.add_results_to_csv(ip=0, tc=1, num_its=1, num_tri_its=1, hmmdef="hmmX", subdirs="sd")
+
+    # Assert: results CSV created and contains date_time header and values
+    csv_path = tmp_path / "results.csv"
+    assert csv_path.exists()
+
+    lines = csv_path.read_text().splitlines()
+    # Header and one result row
+    assert lines[0].split("|")[0] == 'date_time'
+    assert len(lines) >= 2
+
+    cols = lines[1].split("|")
+    # columns: date_time, letter_results_file, letter_corr, letter_acc, word_corr, word_acc, sent_corr
+    assert len(cols) >= 7
+
+    import re
+    assert re.match(r'^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$', cols[0])
+    # Check numeric values were written as strings matching the results
+    assert cols[2] == '12.34'
+    assert cols[3] == '56.78'
+    assert cols[4] == '21.0'
+    assert cols[5] == '31.0'
+    assert cols[6] == '41.0'
