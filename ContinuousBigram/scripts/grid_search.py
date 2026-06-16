@@ -873,7 +873,7 @@ def clear_results_files(ip, tc, num_its, num_tri_its, hmmdef, subdirs):
 def cleanup():
     logger.info(f"Running clean up function")
     # clean up hedfile2 files (uniq per model training session)
-    for hedfile2 in Path(INSTR_ROOT).glob("mktri2_*.*.hed"):
+    for hedfile2 in Path(INSTR_ROOT).glob("mktri2_*.*.*.hed"):
         logger.info(f"Cleaning up (removing): {hedfile2}")
         os.remove(hedfile2)
 
