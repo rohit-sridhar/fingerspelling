@@ -9,6 +9,7 @@ import subprocess
 import shutil
 import logging
 import traceback
+import hashlib
 from logging.handlers import MemoryHandler
 
 from datetime import datetime
@@ -319,8 +320,9 @@ def get_hresults_prj_filepaths(name_ext, subdirs, ip):
 # can be used to make uniq config files per model train session.
 def get_file_uniq_info(subdirs):
     subdir_arr = subdirs.split(os.path.sep)
-    new_subdirs = '_'.join(subdir_arr)
-    return new_subdirs
+    new_subdirs = '_'.join(subdir_arr).encode("utf-8")
+    file_uniq_info = hashlib.sha256(new_subdirs).hexdigest()[:8]
+    return file_uniq_info
 
 # get hedfile search/repl info
 def get_hedfile1_info(subdirs):
@@ -430,12 +432,13 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     letter_results_file, word_results_file = get_hresults_prj_filepaths(name_ext, subdirs, ip)
     
     custom_silsp, multi_process, hedfile1, hedfile1_orig, cross_word, whole_word, use_phrase = get_bool_arg_info(subdirs)
+    n_states = hmmdef[:hmmdef.find("-")]
     if args.full_cov:
         hedfile2 = f"${{PRJ}}/instr/mktri2_fc.hed"
     else:
         file_uniq_info = get_file_uniq_info(subdirs)
-        hedfile2 = f"${{PRJ}}/instr/mktri2_tc.{file_uniq_info}.hed"
-        hedfile2_orig = f"${{PRJ}}/instr/mktri2_tc.hed"
+        hedfile2 = f"${{PRJ}}/instr/mktri2_tc.{n_states}.{file_uniq_info}.hed"
+        hedfile2_orig = f"${{PRJ}}/instr/mktri2_tc.{n_states}.hed"
     num_threads = get_machine_info()
     
     ip_search = IP_VARNAME + r"\s*=\s*-?[0-9]+(\.[0-9]+)*"
@@ -452,6 +455,9 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     
     hmmdef_search = HMMDEF_VARNAME + r"\s*=\s*\$HMM_TOPOLOGY_DIR\/.+"
     hmmdef_repl = HMMDEF_VARNAME + f"=$HMM_TOPOLOGY_DIR/{hmmdef}"
+
+    n_states_search = N_STATES_VARNAME + r"\s*=\s*.+"
+    n_states_repl = N_STATES_VARNAME + f"={n_states}"
     
     models_relative = os.path.join(os.path.basename(MODELS_ROOT), subdirs, hmmdef)
     models_root_search = MODELS_ROOT_VARNAME + r"\s*=\s*\$\{PRJ\}\/models.*"
@@ -515,6 +521,7 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     edit_file(num_its_search, num_its_repl, options_file)
     edit_file(num_tri_its_search, num_tri_its_repl, options_file)
     edit_file(hmmdef_search, hmmdef_repl, options_file)
+    edit_file(n_states_search, n_states_repl, options_file)
     edit_file(models_root_search, models_root_repl, options_file)
     edit_file(letter_results_search, letter_results_repl, options_file)
     edit_file(word_results_search, word_results_repl, options_file)
@@ -536,6 +543,7 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     run_subprocess(["grep", "^" + NUM_ITS_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + NUM_TRI_ITS_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + HMMDEF_VARNAME + r"\s*=\s*", options_file], logger=logger)
+    run_subprocess(["grep", "^" + N_STATES_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + MODELS_ROOT_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + LOG_LETTER_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + LOG_WORD_VARNAME + r"\s*=\s*", options_file], logger=logger)
@@ -871,6 +879,7 @@ def cleanup():
 
     for hedfile1 in Path(INSTR_ROOT).glob("mktri1_*.*.hed"):
         logger.info(f"Cleaning up (removing): {hedfile1}")
+        os.remove(hedfile1)
     logger.info("Exiting script ...")
 
 def main():

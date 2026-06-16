@@ -229,8 +229,9 @@ WORD_SKSP_PHRASE=yes
 LM_DIR=${PRJ}/lang_models
 
 FILE_UNIQ_STR=tmp
+N_STATES=1state
 HEDFILE1=${PRJ}/instr/mktri1_silsp.${FILE_UNIQ_STR}.hed
-HEDFILE2=${PRJ}/instr/mktri2_tc.${FILE_UNIQ_STR}.hed
+HEDFILE2=${PRJ}/instr/mktri2_tc.${N_STATES}.${FILE_UNIQ_STR}.hed
 
 LEDFILE_WORD=${PRJ}/instr/mkcmd_word.${FILE_UNIQ_STR}.led
 LEDFILE_LETTER=${PRJ}/instr/mkcmd_letter.${FILE_UNIQ_STR}.led
