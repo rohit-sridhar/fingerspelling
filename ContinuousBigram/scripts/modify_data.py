@@ -26,7 +26,7 @@ def required_by_set(argname, list_to_search):
         method_idx = 0  # If --help is passed, this prevents an error
     return sys.argv[method_idx] in list_to_search
 
-def parse_args():
+def _parse_args():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     
     parser.add_argument(
@@ -128,6 +128,20 @@ def parse_args():
         default=7268,
         required=required_by_set("--method", {"sample"}),
         help="Seed for randomization (only for sample method)."
+    )
+
+    parser.add_argument(
+        "--bar_position",
+        type=int,
+        default=0,
+        help="bar position for tqdm status"
+    )
+
+    parser.add_argument(
+        "--bar_description",
+        type=str,
+        default="",
+        help="description fot tqdm bar"
     )
 
     parser.add_argument(
@@ -397,7 +411,7 @@ def import_data(new_data_loc, new_label_loc):
     supplemental = is_supplemental(new_data_loc)
     
     # idx_char_map = get_idx_char_map(supplemental)
-    for seq_id in tqdm(dl_seq_ids):
+    for seq_id in tqdm(dl_seq_ids, position=args.bar_position, desc=args.bar_description):
         new_datafile = os.path.join(new_data_loc, str(seq_id))
         new_label_file = os.path.join(new_label_loc, str(seq_id) + ".lab")
         
@@ -463,7 +477,7 @@ def data_aug_interpolation(curr_seq_id, datafile, label_file, new_data_loc, new_
 
 if __name__ == "__main__":
     global args
-    args = parse_args()
+    args = _parse_args()
     logger.info(args)
     random.seed(args.seed)
 
@@ -486,7 +500,7 @@ if __name__ == "__main__":
 
     files = os.listdir(data_loc)
 
-    for f in tqdm(files):
+    for f in tqdm(files, position=args.bar_position, desc=args.bar_description):
         datafile = os.path.join(data_loc, f)
         new_datafile = os.path.join(new_data_loc, f)
         

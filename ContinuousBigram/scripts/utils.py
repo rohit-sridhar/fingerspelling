@@ -7,6 +7,7 @@ import shutil
 import subprocess
 import threading
 import logging
+import signal
 from logging.handlers import MemoryHandler
 from pathlib import Path
 from glob import glob
@@ -15,8 +16,16 @@ logger = logging.getLogger(__name__)
 root_logger = logging.getLogger()
 _BUFFER_HANDLER = None
 
-ROOT = "/data/hmm_modeling/fingerspelling/ContinuousBigram"
+# process ending signals to catch
+KILL_SIGNALS = [
+    signal.SIGTERM,
+    signal.SIGINT,
+    signal.SIGQUIT,
+    signal.SIGHUP,
+]
 
+# Important root dirs
+ROOT = "/data/hmm_modeling/fingerspelling/ContinuousBigram"
 LOG_ROOT = os.path.join(ROOT, "logs")
 OUTPUT_ROOT = os.path.join(ROOT, "output")
 RESULTS_ROOT = os.path.join(ROOT, "results")
@@ -59,6 +68,7 @@ MODELS_ROOT_VARNAME = "HMM_TEMP_DIR"
 IP_VARNAME = "INSERT_PENALTY"
 NUM_ITS_VARNAME = "NUM_HMM_DIR"
 NUM_TRI_ITS_VARNAME = "TRI_ITERATIONS"
+N_STATES_VARNAME = "N_STATES"
 HMMDEF_VARNAME = "HMM_LOCATION"
 HMMSIL_VARNAME = "HMM_SIL"
 HMMSP_VARNAME = "HMM_SP"
