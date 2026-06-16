@@ -561,6 +561,18 @@ def edit_htk_root_file_options(subdirs):
     # Handle triletter changes separately
     make_triletter_changes(subdirs)
 
+    grammarfile_relative = os.path.basename(GRAMMAR_ROOT)
+    grammarfile_root_search = GRAMMARFILE_ROOT_VARNAME + r"\s*=\s*\$\{PRJ\}\/grammar\/.*"
+    grammarfile_root_repl = GRAMMARFILE_ROOT_VARNAME + os.path.join("=${PRJ}", grammarfile_relative, subdirs)
+
+    dictfile_relative = os.path.basename(DICT_ROOT)
+    dictfile_root_search = DICTFILE_ROOT_VARNAME + r"\s*=\s*\$\{PRJ\}\/dict\/.*"
+    dictfile_root_repl = DICTFILE_ROOT_VARNAME + os.path.join("=${PRJ}", dictfile_relative, subdirs)
+
+    tokens_relative = os.path.basename(TOKENS_ROOT)
+    tokens_root_search = TOKENS_ROOT_VARNAME + r"\s*=\s*\$\{PRJ\}\/commands\/.*"
+    tokens_root_repl = TOKENS_ROOT_VARNAME + os.path.join("=${PRJ}", tokens_relative, subdirs)
+
     mlf_relative = os.path.basename(MLF_ROOT)
     mlf_root_search = MLF_ROOT_VARNAME + r"\s*=\s*\$\{PRJ\}\/mlf.*"
     mlf_root_repl = MLF_ROOT_VARNAME + os.path.join("=${PRJ}", mlf_relative, subdirs)
@@ -587,9 +599,9 @@ def edit_htk_root_file_options(subdirs):
     vector_length_search = VECTOR_LENGTH_VARNAME + r"\s*=\s*[0-9]+"
     vector_length_repl = VECTOR_LENGTH_VARNAME + f"={vector_dim}"
 
-    # edit_file(grammarfile_root_search, grammarfile_root_repl, options_file)
-    # edit_file(dictfile_root_search, dictfile_root_repl, options_file)
-    # edit_file(tokens_root_search, tokens_root_repl, options_file)
+    edit_file(grammarfile_root_search, grammarfile_root_repl, options_file)
+    edit_file(dictfile_root_search, dictfile_root_repl, options_file)
+    edit_file(tokens_root_search, tokens_root_repl, options_file)
     edit_file(mlf_root_search, mlf_root_repl, options_file)
     edit_file(outputfile_root_search, outputfile_root_repl, options_file)
     edit_file(ext_dir_search, ext_dir_repl, options_file)
@@ -862,7 +874,20 @@ def clear_results_files(ip, tc, num_its, num_tri_its, hmmdef, subdirs):
     
     logger.info("#####\n")
 
-def cleanup():
+def cleanup(main_log_handler):
+    if main_log_handler is None:
+        log_dir = os.path.join(LOG_ROOT, "premature")
+        make_dir(log_dir)
+        
+        now_str = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        log_file = os.path.join(log_dir, ".".join(["grid_search", now_str, "txt"]))
+        log_level = logging.DEBUG if args.debug else logging.INFO
+        
+        main_log_handler = setup_logger(log_file, flush=True, log_level=log_level)
+    
+    root_logger.removeHandler(main_log_handler)
+    main_log_handler.close()
+
     logger.info(f"Running clean up function")
     # clean up hedfile2 files (uniq per model training session)
     for hedfile2 in Path(INSTR_ROOT).glob("mktri2_*.*.hed"):
@@ -874,6 +899,8 @@ def cleanup():
     logger.info("Exiting script ...")
 
 def main():
+    global main_log_handler
+
     # Buffering logger initialized at import so early messages are buffered until
     # per-context file handlers are attached and setup_logger is called.
     logger.info("##### Args #####")
@@ -903,6 +930,7 @@ def main():
 
             # Exit here after prepare_files and gen_grammar finish
             if args.prepare_data_only:
+                cleanup(main_log_handler)
                 exit(0)
 
         for arg_tup in arg_iter:
@@ -921,7 +949,6 @@ def main():
 
             # Reconfigure logging to write to files in the log directory for this subdirs.
             # This ensures further logging goes to file backends (and flushes buffered logs).
-            global main_log_handler
             log_level = logging.DEBUG if args.debug else logging.INFO
             main_log_handler = setup_logger(grid_log, flush=True, log_level=log_level)
 
@@ -976,7 +1003,7 @@ def main():
             except Exception as e:
                 logger.error(f"An unexpected exception {e} occurred during training or testing.")
                 logger.error(f"{traceback.format_exc()}")
-                cleanup()
+                cleanup(main_log_handler)
 
             if args.results_csv is not None:
                 add_results_to_csv(
@@ -988,7 +1015,7 @@ def main():
                     subdirs,
                 )
             
-            cleanup()
+            cleanup(main_log_handler)
 
 if __name__ == "__main__":
     args = parse_args()
@@ -999,16 +1026,5 @@ if __name__ == "__main__":
     try:
         main()
     finally:
-        if main_log_handler is None:
-            log_dir = os.path.join(LOG_ROOT, "premature")
-            make_dir(log_dir)
-            
-            now_str = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-            log_file = os.path.join(log_dir, ".".join(["grid_search", now_str, "txt"]))
-            log_level = logging.DEBUG if args.debug else logging.INFO
-            
-            main_log_handler = setup_logger(log_file, flush=True, log_level=log_level)
-        
-        root_logger.removeHandler(main_log_handler)
-        main_log_handler.close()
+        cleanup(main_log_handler)
 

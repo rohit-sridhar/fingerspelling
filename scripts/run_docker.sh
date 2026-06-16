@@ -30,7 +30,7 @@ local_image="rohit_hmm_fingerspelling"
 PROJECTS_ROOT="${PROJECTS_ROOT:-/data}"
 LOCAL_HTK_IMAGE="${LOCAL_HTK_IMAGE:-rohit_hmm_fingerspelling}"
 
-fingerspelling_path="${FINGERSPELLING_PATH:-${PROJECTS_ROOT}/hmm_modeling/fingerspelling}"
+fingerspelling_path="${FINGERSPELLING_PATH:-${PROJECTS_ROOT}/hmm_modeling/fingerspelling_main_dataset}"
 fs_transformers_path="${FS_TRANSFORMERS_PATH:-${PROJECTS_ROOT}/deep_learning/fs_transformers}"
 fingerspelling_video_path="${FINGERSPELLING_VIDEO_PATH:-${PROJECTS_ROOT}/sign_language_videos/fingerspelling_videos}"
 islr_mputils_out_path="${ISLR_MPUTILS_OUT_PATH:-${PROJECTS_ROOT}/deep_learning/ISLR-ML/mputils/out}"

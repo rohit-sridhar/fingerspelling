@@ -418,7 +418,8 @@ def import_data(new_data_loc, new_label_loc):
                 if c == " ":
                     c = SPACE
                 elif not c.isalpha():
-                    c = str(ord(c))
+                    ord_c = str(ord(c))
+                    c = f"c{ord_c}"
                 phrase += [f"{c}\n"]
             phrase += [f"{EXIT}\n"]
             # phrase = get_labels(df, seq_id, idx_char_map, supplemental)

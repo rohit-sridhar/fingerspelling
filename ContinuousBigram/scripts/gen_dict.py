@@ -244,6 +244,7 @@ def add_uniletter_word_to_dict(word):
 def ingest_label_file(label_filepath):
     tokens = collect_tokens(label_filepath)
     logger.debug(f"{label_filepath=}")
+    logger.debug(f"{tokens}")
     phrase = SPACE.join(tokens)
     if args.dict_type == "cross_letter":
         logger.debug(f"{phrase=}")

@@ -191,8 +191,6 @@ ContinuousBigram/lang_models
 ContinuousBigram/trainsets
 ContinuousBigram/testsets
 ContinuousBigram/results
-ContinuousBigram/all-extfiles
-ContinuousBigram/datafiles
 ContinuousBigram/mlf
 ContinuousBigram/dict
 ContinuousBigram/grammar
@@ -204,6 +202,7 @@ ContinuousBigram/scripts/segmentation/dataset
 # Only ignore the old bigram files
 ContinuousBigram/scripts/make_bigram.old*
 ContinuousBigram/scripts/supplemental*
+ContinuousBigram/scripts/main_train*
 
 # Ignore custom tmp instr files
 ContinuousBigram/instr/*/
