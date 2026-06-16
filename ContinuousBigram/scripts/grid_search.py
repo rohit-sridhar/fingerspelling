@@ -10,6 +10,7 @@ import shutil
 import logging
 import traceback
 import hashlib
+import signal
 from logging.handlers import MemoryHandler
 
 from datetime import datetime
@@ -28,7 +29,7 @@ logger = logging.getLogger(__name__)
 # Modify edit_options to print out the modification
 # Modify get_name_ext to print out the appropriate extension
 
-def parse_args():
+def _parse_args():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     
     parser.add_argument(
@@ -870,7 +871,14 @@ def clear_results_files(ip, tc, num_its, num_tri_its, hmmdef, subdirs):
     
     logger.info("#####\n")
 
-def cleanup():
+# set up signal handler to run clean up on exit
+def _register_signals():
+    for sig in KILL_SIGNALS:
+        signal.signal(sig, _cleanup)
+        logger.info(f"registered {sig} to _cleanup fxn")
+
+# Clean up script that removes temp files. Run when exiting program
+def _cleanup():
     logger.info(f"Running clean up function")
     # clean up hedfile2 files (uniq per model training session)
     for hedfile2 in Path(INSTR_ROOT).glob("mktri2_*.*.*.hed"):
@@ -985,7 +993,7 @@ def main():
             except Exception as e:
                 logger.error(f"An unexpected exception {e} occurred during training or testing.")
                 logger.error(f"{traceback.format_exc()}")
-                cleanup()
+                raise
 
             if args.results_csv is not None:
                 add_results_to_csv(
@@ -997,10 +1005,11 @@ def main():
                     subdirs,
                 )
             
-            cleanup()
+            _cleanup()
 
 if __name__ == "__main__":
-    args = parse_args()
+    _register_signals()
+    args = _parse_args()
     _check_args()
     set_buffer_handler_level(new_level=logging.DEBUG if args.debug else logging.INFO)
 
@@ -1020,4 +1029,5 @@ if __name__ == "__main__":
         
         root_logger.removeHandler(main_log_handler)
         main_log_handler.close()
+        _cleanup()
 

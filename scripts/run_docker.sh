@@ -98,8 +98,9 @@ case "$cmd" in
             echo "Specify container name for rm"
             usage
         fi
-
-        docker rm -f "$container"
+        
+        docker stop "${container}"
+        # docker rm "${container}"
         ;;
     *)
         usage
