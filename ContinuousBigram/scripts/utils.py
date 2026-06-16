@@ -469,7 +469,7 @@ def flush_buffer(fh):
 
 # set up the logger for any script
 # def setup_logger(log_file, module_logger, flush=False, log_level=logging.INFO):
-def setup_logger(log_file, flush=False, log_level=logging.INFO, mode="a"):
+def setup_logger(log_file, flush=False, log_level=logging.INFO, mode="w"):
     """Configure logging to a file and flush any buffered logs.
 
     log_file must be a valid file path. logger should be a module logger.
