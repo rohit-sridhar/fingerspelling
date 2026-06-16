@@ -25,7 +25,7 @@ for data_group in ${data_groups[@]}; do
     for seed in "${seeds[@]}"; do
         ${ROOT}/scripts/grid_search.py \
             --data_files ${ROOT}/data/${dataset}/dim20/thr0/train/${data_group}/sd${seed}/data/ \
-            --hmmdefs 6state-pca20-gmm4-skip 6state-pca20-gmm4 \
+            --hmmdefs 6state-pca20-gmm4-skip 6state-pca20-gmm4-skip1 6state-pca20-gmm4 \
             --results_csv ${ROOT}/results/${output_dir}/results_${dataset}.csv \
             --num_its 1000 --num_tri_its 1000 \
             --clear_hresults --prepare_data
@@ -36,7 +36,7 @@ for data_group in ${data_groups[@]}; do
     for seed in "${seeds[@]}"; do
         ${ROOT}/scripts/grid_search.py \
             --data_files ${ROOT}/data/${dataset}/pca10/thr0/train/${data_group}/sd${seed}/data/ \
-            --hmmdefs 6state-pca10-gmm4-skip 6state-pca10-gmm4 \
+            --hmmdefs 6state-pca10-gmm4-skip 6state-pca10-gmm4-skip1 6state-pca10-gmm4 \
             --results_csv ${ROOT}/results/${output_dir}/results_${dataset}.csv \
             --num_its 1000 --num_tri_its 1000 \
             --clear_hresults --prepare_data
