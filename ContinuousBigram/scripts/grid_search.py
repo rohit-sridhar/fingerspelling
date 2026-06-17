@@ -657,7 +657,11 @@ def test_model(tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
 
     # attach a per-test file handler so test output goes to its own file
     # Use utils.attach_file_handler via wildcard import from utils
-    test_handler = setup_logger(log_file, log_level=logging.INFO)
+    test_handler = setup_logger(
+        log_file,
+        log_level=logging.INFO,
+        mode="w"
+    )
     logger.info("##### Running test.sh #####")
     logger.info(f"Log file: {log_file}\n")
     main_log_handler.setLevel(logging.ERROR)
@@ -691,7 +695,11 @@ def train_model(tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
     log_file = get_log_file(subdirs, name_ext, mode="train")
 
     # attach a per-train file handler so training output goes to its own file
-    train_handler = setup_logger(log_file, log_level=logging.INFO, mode="w")
+    train_handler = setup_logger(
+        log_file,
+        log_level=logging.INFO,
+        mode="w"
+    )
     logger.info("##### Running train.sh script #####")
     logger.info(f"Log file: {log_file}\n")
     main_log_handler.setLevel(logging.ERROR)
@@ -820,7 +828,11 @@ def prepare_data(data_file, label_file, subdirs):
     name_ext = ""
     log_file = get_log_file(subdirs, name_ext, mode="prepare_data")
 
-    prep_handler = setup_logger(log_file, log_level=logging.INFO)
+    prep_handler = setup_logger(
+        log_file,
+        log_level=logging.INFO,
+        mode="w"
+    )
     logger.info("##### Run prepare data #####")
     logger.info(f"Log file: {log_file}\n")
     set_buffer_handler_level(logging.ERROR)
@@ -954,7 +966,12 @@ def main():
             # Reconfigure logging to write to files in the log directory for this subdirs.
             # This ensures further logging goes to file backends (and flushes buffered logs).
             log_level = logging.DEBUG if args.debug else logging.INFO
-            main_log_handler = setup_logger(grid_log, flush=True, log_level=log_level)
+            main_log_handler = setup_logger(
+                grid_log,
+                flush=True,
+                log_level=log_level,
+                mode="w"
+            )
 
             edit_options(
                 ip,
@@ -1039,7 +1056,12 @@ if __name__ == "__main__":
             log_file = os.path.join(log_dir, ".".join(["grid_search", now_str, "txt"]))
             log_level = logging.DEBUG if args.debug else logging.INFO
             
-            main_log_handler = setup_logger(log_file, flush=True, log_level=log_level)
+            main_log_handler = setup_logger(
+                log_file,
+                flush=True,
+                log_level=log_level,
+                mode="w"
+            )
         
         root_logger.removeHandler(main_log_handler)
         main_log_handler.close()

@@ -485,7 +485,12 @@ if __name__ == "__main__":
     subdirs = get_subdirectories_joined(new_data_loc)
 
     log_file = get_log_file(subdirs, "", "modify_data")
-    setup_logger(log_file, flush=True, log_level=logging.DEBUG if args.debug else logging.INFO)
+    setup_logger(
+        log_file,
+        flush=True,
+        log_level=logging.DEBUG if args.debug else logging.INFO,
+        mode="w"
+    )
 
     if args.method == "import":
         import_data(new_data_loc, new_label_loc)

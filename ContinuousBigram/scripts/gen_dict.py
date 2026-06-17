@@ -276,7 +276,8 @@ if __name__ == "__main__":
     setup_logger(
         args.dict_loc.parent / "log.txt",
         logger,
-        log_level=logging.DEBUG if args.debug else logging.INFO
+        log_level=logging.DEBUG if args.debug else logging.INFO,
+        mode="w"
     )
     logger.info(args)
     
