@@ -12,6 +12,7 @@ from logging.handlers import MemoryHandler
 from pathlib import Path
 from glob import glob
 
+# Logger globals
 logger = logging.getLogger(__name__)
 root_logger = logging.getLogger()
 _BUFFER_HANDLER = None
@@ -148,7 +149,7 @@ EXIT = 'sil1'
 #     "@": "{AT}",
 #     "[": "{LBRACKET}",
 #     "_": "{UNDERSCORE}",
-#     "-"
+#     -
 # }
 
 MODIFY_DATA_METHODS = [
@@ -212,7 +213,10 @@ NEW_DATA_LOC_REQUIRED_METHODS = {
 #     "whole_word"
 # }
 
-########## Utils functions for python scripts ##########
+########################################################################
+# Subprocess utilities
+########################################################################
+
 def run_subprocess(cmd, logger=None):
     """Run a subprocess and route its output to the provided logger.
 
@@ -245,20 +249,19 @@ def run_subprocess(cmd, logger=None):
     else:
         logger.error(output_msg)
 
-    # else:
-    #     result = subprocess.run(cmd, capture_output=True, text=True)
-    #     if result.returncode == 0:
-    #         if result.stdout:
-    #             logger.info(result.stdout)
-    #     else:
-    #         # include stdout for context when showing errors
-    #         out = (result.stdout or '') + (result.stderr or '')
-    #         logger.error(out)
-    #     return result.returncode
 
-##### SUBDIRECTORY UTILS #####
+def log_stream(stream, log_level_function):
+    """Reads a stream line-by-line and sends it to a specific logging function."""
+    with stream:
+        for line in stream:
+            log_level_function(line.rstrip("\r\n"))
+
+########################################################################
+# Path and subdirectory utilities
+########################################################################
+
 # swaps an absolute path's prefix ${PRJ} with
-# ROOT (defined above). 
+# ROOT (defined above).
 def swap_prj_to_root(path_with_prj):
     return os.path.join(ROOT, *path_with_prj.split(os.path.sep)[1:])
 
@@ -273,19 +276,6 @@ def valid_data_loc(data_loc):
     return data_loc is not None and \
         data_loc.endswith("/data") and \
         data_loc.startswith(f"{DATA_ROOT}")
-
-# Makes a dir if it doesn't exist. If it does exist, makes dir based
-# on arg rmdir
-def make_dir(dir_loc, rmdir=False):
-    if os.path.exists(dir_loc) and rmdir:
-        shutil.rmtree(dir_loc)
-        os.makedirs(dir_loc)
-        logger.info(f"Deleted {dir_loc} and recreated it since it exists and rmdir is True.")
-    elif not(os.path.exists(dir_loc)):
-        os.makedirs(dir_loc)
-        logger.info(f"Created {dir_loc}")
-    else:
-        logger.info(f"Did not create {dir_loc} since it exists and rmdir is False.")
 
 # The functions below get the subdirectories for a given data directory.
 # It expects an absolute path as input.
@@ -307,12 +297,34 @@ def get_subdirectories_joined(filepath):
 def get_test_data_file(subdirs):
     return os.path.join(OUTPUT_ROOT, subdirs, "testing-extfiles0")
 
-##### OPTIONS FILE UTILS #####
+########################################################################
+# Directory utilities
+########################################################################
+
+# Makes a dir if it doesn't exist. If it does exist, makes dir based
+# on arg rmdir
+def make_dir(dir_loc, rmdir=False):
+    if os.path.exists(dir_loc) and rmdir:
+        shutil.rmtree(dir_loc)
+        os.makedirs(dir_loc)
+        logger.info(f"Deleted {dir_loc} and recreated it since it exists and rmdir is True.")
+    elif not(os.path.exists(dir_loc)):
+        os.makedirs(dir_loc)
+        logger.info(f"Created {dir_loc}")
+    else:
+        logger.info(f"Did not create {dir_loc} since it exists and rmdir is False.")
+
+########################################################################
+# Options file utilities
+########################################################################
+
 # Get the options file
 def get_options_file(subdirs):
     return os.path.join(SCRIPTS_ROOT, subdirs, "options.sh")
 
-##### LABELS UTILS #####
+########################################################################
+# Labels utilities
+########################################################################
 
 # Get label files in label dir
 def get_label_files(label_dir):
@@ -329,6 +341,7 @@ def collect_tokens(label_path):
     labels = [l.strip() for l in labels]
     labels = ''.join(labels[1:-1]).split(SPACE)
     return labels
+
 
 def get_triletters(tokens):
     triletters = []
@@ -347,22 +360,22 @@ def get_triletters(tokens):
     
     return triletters
 
-##### Load JSON Char Maps #####
+########################################################################
+# JSON utilities
+########################################################################
+
 def load_json_file(filename):
     with open(filename, "r") as f:
         json_data = json.load(f)
     return json_data
 
-# TODO replace function below and use above.
-# def get_char_idx_map(supplemental=True):
-#     with open(map_file, "r") as f:
-#         char_idx_map = json.load(f)
-# 
-#     return char_idx_map
+########################################################################
+# Data augmentation utilities
+########################################################################
 
-##### DATA AUGMENTATION UTILS #####
 def get_data_aug_entry(start_seq, augmentation, end_seq):
     return " ".join([start_seq, "(" + augmentation + ")", end_seq])
+
 
 def get_next_seq_id(data_aug_map):
     seq_ids = list(data_aug_map.keys())
@@ -382,7 +395,10 @@ def get_next_seq_id(data_aug_map):
     
     return str(next_seq_id)
 
-##### Logging utils #####
+########################################################################
+# Logging utilities
+########################################################################
+
 def get_log_file(subdirs, name_ext, mode):
     """Return a log file path. Ensures the log directory exists.
 
@@ -397,15 +413,10 @@ def get_log_file(subdirs, name_ext, mode):
     return os.path.join(log_dir, f"{mode}.log_" + name_ext)
 
 
-def log_stream(stream, log_level_function):
-    """Reads a stream line-by-line and sends it to a specific logging function."""
-    with stream:
-        for line in stream:
-            log_level_function(line.rstrip("\r\n"))
-
 def set_buffer_handler_level(new_level=logging.INFO):
     if _BUFFER_HANDLER is not None and _BUFFER_HANDLER in root_logger.handlers:
         _BUFFER_HANDLER.setLevel(new_level)
+
 
 def init_buffering_logger(capacity=10000, flush_level=logging.ERROR):
     """Attach a MemoryHandler to the root logger to buffer logs until file handlers are configured.
@@ -434,6 +445,7 @@ def init_buffering_logger(capacity=10000, flush_level=logging.ERROR):
 # Initialize buffering at import so early log calls are not lost
 init_buffering_logger()
 
+
 def _attach_file_handler(log_file, level=logging.DEBUG, mode="a"):
     """Attach a FileHandler to the given logger (or module logger) that writes to log_file.
 
@@ -446,6 +458,7 @@ def _attach_file_handler(log_file, level=logging.DEBUG, mode="a"):
 
     root_logger.addHandler(fh)
     return fh
+
 
 def flush_buffer(fh):
     global _BUFFER_HANDLER
@@ -466,6 +479,7 @@ def flush_buffer(fh):
             pass
 
         _BUFFER_HANDLER = None
+
 
 # set up the logger for any script
 # def setup_logger(log_file, module_logger, flush=False, log_level=logging.INFO):
@@ -490,4 +504,3 @@ def setup_logger(log_file, flush=False, log_level=logging.INFO, mode="w"):
         flush_buffer(fh)
 
     return fh
-
