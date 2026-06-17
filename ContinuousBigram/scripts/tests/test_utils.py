@@ -102,3 +102,36 @@ def test_buffer_handler_attached(tmp_path):
     assert getattr(ut, '_BUFFER_HANDLER', None) is not None
     assert isinstance(ut._BUFFER_HANDLER, MemoryHandler)
     assert ut._BUFFER_HANDLER in logging.getLogger().handlers
+
+
+def test_alphabet_parser_empty_init():
+    # AlphabetParser initialized with no charset should have an empty trie
+    ap = ut.AlphabetParser()
+    assert isinstance(ap.trie, dict)
+    assert ap.trie == {}
+
+
+def test_alphabet_parser_add_tokens_and_structure():
+    # Add single- and multi-character tokens and verify trie structure
+    ap = ut.AlphabetParser(['a', 'ab', 'abc', 'b'])
+
+    # Root should contain 'a' and 'b'
+    assert 'a' in ap.trie
+    assert 'b' in ap.trie
+
+    # 'a' should have child 'b' (for 'ab') and that child should have 'c' (for 'abc')
+    assert 'b' in ap.trie['a']
+    assert 'c' in ap.trie['a']['b']
+
+    # 'b' at root (single-char token) should exist and be a dict (possibly empty)
+    assert isinstance(ap.trie['b'], dict)
+
+
+def test_alphabet_parser_ignores_empty_string():
+    # Empty string should not create entries in the trie
+    ap = ut.AlphabetParser(['x'])
+    ap.add_charset({''})
+    # empty string should not be added as a key at the root
+    assert '' not in ap.trie
+    # existing entries remain intact
+    assert 'x' in ap.trie

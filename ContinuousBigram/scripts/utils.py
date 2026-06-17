@@ -504,3 +504,27 @@ def setup_logger(log_file, flush=False, log_level=logging.INFO, mode="w"):
         flush_buffer(fh)
 
     return fh
+
+########################################################################
+# Alphabet Parser
+# The alphabet parser class uses a Trie to track an alphabet of characters.
+# Character is a bit of a misnomer since they can be longer than len 1.
+# !!Will not accept empty strings as part of alphabet!!
+########################################################################
+
+class AlphabetParser:
+    def __init__(self, charset=[]):
+        self.trie = {}
+        self.add_charset(set(charset))
+
+    def _add_to_trie(self, char):
+        level = self.trie
+        for tok in char:
+            if tok not in level:
+                level[tok] = {}
+            level = level[tok]
+
+    def add_charset(self, charset):
+        for char in charset:
+            self._add_to_trie(char)
+
