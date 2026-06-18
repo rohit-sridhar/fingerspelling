@@ -902,7 +902,7 @@ def _cleanup():
         os.remove(hedfile1)
     logger.info("Exiting script ...")
 
-def main():
+def _main():
     # Buffering logger initialized at import so early messages are buffered until
     # per-context file handlers are attached and setup_logger is called.
     logger.info("##### Args #####")
@@ -935,52 +935,53 @@ def main():
                 exit(0)
 
         for arg_tup in arg_iter:
-            ip = arg_tup[0]
-            hmmdef = arg_tup[1]
-            tc = arg_tup[2]
-            num_its = arg_tup[3]
-            num_tri_its = arg_tup[4]
-            trace_value = arg_tup[5]
-            ngram = arg_tup[6]
+            # wrap entire loop in try and continue if training on one model fails
+            try:
+                ip = arg_tup[0]
+                hmmdef = arg_tup[1]
+                tc = arg_tup[2]
+                num_its = arg_tup[3]
+                num_tri_its = arg_tup[4]
+                trace_value = arg_tup[5]
+                ngram = arg_tup[6]
 
-            # Attach a grid-search-level log file for this hyperparam setting
-            name_ext = get_name_ext(tc, num_its, num_tri_its, hmmdef, trace_value=trace_value)
-            grid_log = get_log_file(subdirs, name_ext, mode="grid_search")
-            print(f"{grid_log=}")
+                # Attach a grid-search-level log file for this hyperparam setting
+                name_ext = get_name_ext(tc, num_its, num_tri_its, hmmdef, trace_value=trace_value)
+                grid_log = get_log_file(subdirs, name_ext, mode="grid_search")
+                print(f"{grid_log=}")
 
-            # Reconfigure logging to write to files in the log directory for this subdirs.
-            # This ensures further logging goes to file backends (and flushes buffered logs).
-            global main_log_handler
-            log_level = logging.DEBUG if args.debug else logging.INFO
-            main_log_handler = setup_logger(
-                grid_log,
-                flush=True,
-                log_level=log_level,
-                mode="w"
-            )
+                # Reconfigure logging to write to files in the log directory for this subdirs.
+                # This ensures further logging goes to file backends (and flushes buffered logs).
+                global main_log_handler
+                log_level = logging.DEBUG if args.debug else logging.INFO
+                main_log_handler = setup_logger(
+                    grid_log,
+                    flush=True,
+                    log_level=log_level,
+                    mode="w"
+                )
 
-            edit_options(
-                ip,
-                tc,
-                num_its,
-                num_tri_its,
-                hmmdef,
-                subdirs,
-                ngram,
-                trace_value=trace_value,
-            )
-
-            if args.clear_hresults:
-                clear_results_files(
+                edit_options(
                     ip,
                     tc,
                     num_its,
                     num_tri_its,
                     hmmdef,
                     subdirs,
+                    ngram,
+                    trace_value=trace_value,
                 )
 
-            try:
+                if args.clear_hresults:
+                    clear_results_files(
+                        ip,
+                        tc,
+                        num_its,
+                        num_tri_its,
+                        hmmdef,
+                        subdirs,
+                    )
+
                 if args.test_model:
                     test_model(
                         tc,
@@ -1007,22 +1008,21 @@ def main():
                         hmmdef,
                         subdirs,
                     )
+
+                if args.results_csv is not None:
+                    add_results_to_csv(
+                        ip,
+                        tc,
+                        num_its,
+                        num_tri_its,
+                        hmmdef,
+                        subdirs,
+                    )
             except Exception as e:
                 logger.error(f"An unexpected exception {e} occurred during training or testing.")
                 logger.error(f"{traceback.format_exc()}")
-                raise
-
-            if args.results_csv is not None:
-                add_results_to_csv(
-                    ip,
-                    tc,
-                    num_its,
-                    num_tri_its,
-                    hmmdef,
-                    subdirs,
-                )
+                continue
             
-            _cleanup()
 
 if __name__ == "__main__":
     _register_signals()
@@ -1032,7 +1032,8 @@ if __name__ == "__main__":
 
     main_log_handler = None
     try:
-        main()
+        _main()
+        _cleanup()
     finally:
         if main_log_handler is None:
             log_dir = os.path.join(LOG_ROOT, "premature")
