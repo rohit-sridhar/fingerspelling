@@ -220,8 +220,11 @@ def _check_args():
     for i in range(len(args.data_files)):
         args.data_files[i] = os.path.abspath(args.data_files[i])
 
-        if not valid_data_loc(args.data_files[i]) or not os.path.exists(args.data_files[i]):
-            raise ValueError("Data files must start with DATA_ROOT and exist with /data (last subdir).")
+        if not os.path.exists(args.data_files[i]):
+            raise ValueError("Data file directory must exist.")
+
+        if not valid_data_loc(args.data_files[i]):
+            raise ValueError("Data files must start with DATA_ROOT and end with /data (last subdir).")
 
     if args.test_model_path is not None:
         # if args.test_model_path.startswith("."):

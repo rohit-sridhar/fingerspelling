@@ -5,33 +5,34 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 ROOT="${SCRIPT_DIR}/../.."
 
 . ${SCRIPT_DIR}/utils.sh
-set_vars $1
+set_vars $@
 
 # echo ""
 # echo "STARTING IMPORT OF ${datasets[@]}"
 # echo ""
 # 
-# ############################## IMPORT ALL (DIM20) ##############################
-# 
-# for dataset in ${datasets[@]}; do
-#     ${ROOT}/scripts/modify_data.py \
-#         --import_data_loc ${TORCH_ROOT}/data/data_${dataset}_rh.pq.all \
-#         --new_data_loc ${ROOT}/data/${dataset}/dim20/thr0/all/data \
-#         --method import
-# done
-# 
-############################## PREP ALL (DIM20) ##############################
-
-echo ""
-echo "STARTING DATA PREPARATION OF ${datasets[@]}"
-echo ""
+############################## IMPORT ALL (DIM20) ##############################
 
 for dataset in ${datasets[@]}; do
-    ${ROOT}/scripts/grid_search.py \
-        --data_files ${ROOT}/data/${dataset}/dim20/thr0/all/data \
-        --prepare_data_only --prepare_data_all
+    ${ROOT}/scripts/modify_data.py \
+        --import_data_loc ${TORCH_ROOT}/data/data_${dataset}_rh.pq.all \
+        --new_data_loc ${ROOT}/data/${dataset}/dim20/thr0/all/data \
+        --bar_position 0 --bar_description "main_train (all)" \
+        --method import ${debug}
 done
 
+# ############################## PREP ALL (DIM20) ##############################
+# 
+# echo ""
+# echo "STARTING DATA PREPARATION OF ${datasets[@]}"
+# echo ""
+# 
+# for dataset in ${datasets[@]}; do
+#     ${ROOT}/scripts/grid_search.py \
+#         --data_files ${ROOT}/data/${dataset}/dim20/thr0/all/data \
+#         --prepare_data_only --prepare_data_all ${debug}
+# done
+# 
 #########################################################################################################################################################################################
 ################################################################################ !!! OLD IMPORTS !!! ####################################################################################
 #########################################################################################################################################################################################

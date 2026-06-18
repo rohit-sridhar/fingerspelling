@@ -5,7 +5,7 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 ROOT="${SCRIPT_DIR}/../.."
 
 . ${SCRIPT_DIR}/utils.sh
-set_vars $1
+set_vars $@
 
 base_dataset=supplemental_gen
 output_dir="general_results/tot/${base_dataset}"

@@ -174,8 +174,11 @@ def _check_args():
 
     if args.method in DATA_LOC_REQUIRED_METHODS:
         data_loc = os.path.abspath(args.data_loc)
-        if not valid_data_loc(data_loc) or not os.path.exists(data_loc):
-            raise ValueError("must pass data subfolder that exists in DATA_ROOT and ends with /data.")
+        if not os.path.exists(data_loc):
+            raise ValueError("data subfolder must exist in ContinuousBigram dir.")
+
+        if not valid_data_loc(data_loc):
+            raise ValueError("must pass data subfolder that starts with DATA_ROOT and ends with /data (last subdir).")
         
         subdirs = get_subdirectories_joined(data_loc)
         data_loc = os.path.join(DATA_ROOT, subdirs, "data")
@@ -428,6 +431,7 @@ def import_data(new_data_loc, new_label_loc):
             landmarks = get_landmarks(df, seq_id)
             phrase = [f"{ENTER}\n"]
             for c in df.loc[seq_id].phrase:
+                logger.debug(f"Raw char: {c}")
                 # c = c if c != " " else SPACE
                 if c == " ":
                     c = SPACE
@@ -435,6 +439,7 @@ def import_data(new_data_loc, new_label_loc):
                     ord_c = str(ord(c))
                     c = f"c{ord_c}"
                 phrase += [f"{c}\n"]
+                logger.debug(f"Processed char: {c}")
             phrase += [f"{EXIT}\n"]
             # phrase = get_labels(df, seq_id, idx_char_map, supplemental)
             

@@ -5,7 +5,7 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 ROOT="${SCRIPT_DIR}/../.."
 
 . ${SCRIPT_DIR}/utils.sh
-set_vars $1
+set_vars $@
 
 # typeset -a data_groups=(general pt-split)
 typeset -a data_groups=(general)
@@ -28,7 +28,7 @@ for data_group in ${data_groups[@]}; do
             --hmmdefs 6state-pca20-gmm4-skip 6state-pca20-gmm4-skip1 6state-pca20-gmm4 \
             --results_csv ${ROOT}/results/${output_dir}/results_${dataset}.csv \
             --num_its 1000 --num_tri_its 1000 \
-            --clear_hresults --prepare_data
+            --clear_hresults --prepare_data ${debug}
     done
     done
     
@@ -39,7 +39,7 @@ for data_group in ${data_groups[@]}; do
             --hmmdefs 6state-pca10-gmm4-skip 6state-pca10-gmm4-skip1 6state-pca10-gmm4 \
             --results_csv ${ROOT}/results/${output_dir}/results_${dataset}.csv \
             --num_its 1000 --num_tri_its 1000 \
-            --clear_hresults --prepare_data
+            --clear_hresults --prepare_data ${debug}
     done
     done
 

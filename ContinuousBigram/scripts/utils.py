@@ -455,6 +455,7 @@ def _attach_file_handler(log_file, level=logging.DEBUG, mode="a"):
     formatter = logging.Formatter("%(asctime)s - %(funcName)s - %(filename)s - %(levelname)s - %(message)s", datefmt="%Y-%m-%d | %H:%M:%S")
     fh.setFormatter(formatter)
     fh.setLevel(level)
+    fh.addFilter(lambda record: record.levelno >= level)
 
     root_logger.addHandler(fh)
     return fh

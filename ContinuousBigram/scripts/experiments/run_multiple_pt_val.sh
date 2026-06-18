@@ -9,7 +9,7 @@ set -euo pipefail
 
 ROOT=/data/hmm_modeling/fingerspelling/ContinuousBigram
 . ${ROOT}/scripts/experiments/utils.sh
-set_vars $1
+set_vars $@
 
 ##### USE BELOW AFTER TESTING ON INITIAL SAMPLE
 datasets=(${base_dataset}_drop-na_lininterp0)

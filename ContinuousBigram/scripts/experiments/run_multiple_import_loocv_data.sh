@@ -9,7 +9,7 @@ set -euo pipefail
 
 ROOT=/data/hmm_modeling/fingerspelling/ContinuousBigram
 . ${ROOT}/scripts/experiments/utils.sh
-set_vars $1
+set_vars $@
 
 ##### For trial 
 # typeset -a all_participants=(ab12 3d12 f066 d3ab 1f86)
