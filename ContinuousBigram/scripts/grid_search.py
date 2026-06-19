@@ -120,11 +120,11 @@ def _parse_args():
         help="Ngrams to use with HLM modeling tools. If Ngram=0, doesn't use HLM tools. CURRENTLY NOT IN USE."
     )
     
-    parser.add_argument(
-        "--no_custom_silsp",
-        action='store_true',
-        help="If true, won't use custom sil/sp models. custom sil/sp is used by default."
-    )
+    # parser.add_argument(
+    #     "--no_custom_silsp",
+    #     action='store_true',
+    #     help="If true, won't use custom sil/sp models. custom sil/sp is used by default."
+    # )
 
     parser.add_argument(
         "--full_cov",
@@ -251,8 +251,8 @@ def get_name_ext(tc, num_its, num_tri_its, hmmdef, trace_value=None):
     else:
         name_ext += "_".join([f"{hmmdef}", f"{num_its}its", f"{num_tri_its}tri-its", f"tc{tc}"])
 
-    if args.no_custom_silsp:
-        name_ext += "_no-silsp"
+    # if args.no_custom_silsp:
+    #     name_ext += "_no-silsp"
     
     if args.cross_word:
         name_ext += "_cross"
@@ -319,11 +319,23 @@ def get_hresults_prj_filepaths(name_ext, subdirs, ip):
 
 # get [hed/led]file uniq name (uniq for each hyperparam/data setting)
 # can be used to make uniq config files per model train session.
-def get_file_uniq_info(subdirs):
+def get_file_uniq_str(subdirs):
     subdir_arr = subdirs.split(os.path.sep)
     new_subdirs = '_'.join(subdir_arr).encode("utf-8")
-    file_uniq_info = hashlib.sha256(new_subdirs).hexdigest()[:8]
-    return file_uniq_info
+
+    file_uniq_str = hashlib.sha256(new_subdirs).hexdigest()[:8]
+    global file_uniq_strs
+    file_uniq_strs.add(file_uniq_str)
+
+    return file_uniq_str
+
+def get_hedfile1_names(subdirs):
+    file_uniq_str = get_file_uniq_str(subdirs)
+
+    hedfile1 = f"${{PRJ}}/instr/mktri1_silsp.{file_uniq_str}.hed"
+    hedfile1_orig = f"${{PRJ}}/instr/mktri1_silsp.hed"
+
+    return hedfile1, hedfile1_orig
 
 # get hedfile search/repl info
 def get_hedfile1_info(subdirs):
@@ -340,6 +352,17 @@ def get_hedfile1_info(subdirs):
 
     return hedfile1_tokens_root_search, hedfile1_tokens_root_repl
 
+def get_hedfile2_names(subdirs, n_states):
+    if args.full_cov:
+        raise ValueError("error making hedfile2 name. cannot use full covariance matrix yet.")
+        # hedfile2 = f"${{PRJ}}/instr/mktri2_fc.hed"
+    else:
+        file_uniq_str = get_file_uniq_str(subdirs)
+        hedfile2 = f"${{PRJ}}/instr/mktri2_tc.{n_states}.{file_uniq_str}.hed"
+        hedfile2_orig = f"${{PRJ}}/instr/mktri2_tc.{n_states}.hed"
+
+    return hedfile2, hedfile2_orig
+
 def get_hedfile2_info(subdirs):
     hedfile2_tokens_root_search = r"^RO 100.0 .*\/stats$"
     stats_file = os.path.join(OUTPUT_ROOT, subdirs, "stats")
@@ -355,23 +378,22 @@ def get_vector_dim(subdirs):
 # Returns appropriate values for all bool args. Does not
 # do this for triletter (handled separately)
 def get_bool_arg_info(subdirs):
-    custom_silsp = "yes" if not(args.no_custom_silsp) else "no"
+    # custom_silsp = "yes" if not(args.no_custom_silsp) else "no"
     multi_process = "yes" if not(args.no_multi_process) else "no"
     # hedfile1 = "${PRJ}/instr/mktri1_silsp.hed" if not(args.no_custom_silsp) else "${PRJ}/instr/mktri1_orig.hed"
 
-    file_uniq_info = get_file_uniq_info(subdirs)
-    if args.no_custom_silsp:
-        hedfile1_orig = f"${{PRJ}}/instr/mktri1_orig.hed"
-        hedfile1 = f"${{PRJ}}/instr/mktri1_orig.{file_uniq_info}.hed"
-    else:
-        hedfile1_orig = f"${{PRJ}}/instr/mktri1_silsp.hed"
-        hedfile1 = f"${{PRJ}}/instr/mktri1_silsp.{file_uniq_info}.hed"
+    # file_uniq_str = get_file_uniq_str(subdirs)
+    # if args.no_custom_silsp:
+    #     hedfile1_orig = f"${{PRJ}}/instr/mktri1_orig.hed"
+    #     hedfile1 = f"${{PRJ}}/instr/mktri1_orig.{file_uniq_str}.hed"
+    # else:
 
     cross_word = "yes" if args.cross_word else "no"
     whole_word = "yes" if args.whole_word else "no"
     use_phrase = "yes" if args.use_phrase else "no"
 
-    return custom_silsp, multi_process, hedfile1, hedfile1_orig, cross_word, whole_word, use_phrase
+    # return custom_silsp, multi_process, hedfile1, hedfile1_orig, cross_word, whole_word, use_phrase
+    return multi_process, cross_word, whole_word, use_phrase
 
 def get_machine_info():
     return os.cpu_count()
@@ -432,14 +454,12 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     name_ext = get_name_ext(tc, num_its, num_tri_its, hmmdef) # We leave trace_value out in this call.
     letter_results_file, word_results_file = get_hresults_prj_filepaths(name_ext, subdirs, ip)
     
-    custom_silsp, multi_process, hedfile1, hedfile1_orig, cross_word, whole_word, use_phrase = get_bool_arg_info(subdirs)
+    # custom_silsp, multi_process, hedfile1, hedfile1_orig, cross_word, whole_word, use_phrase = get_bool_arg_info(subdirs)
+    multi_process, cross_word, whole_word, use_phrase = get_bool_arg_info(subdirs)
     n_states = hmmdef[:hmmdef.find("-")]
-    if args.full_cov:
-        hedfile2 = f"${{PRJ}}/instr/mktri2_fc.hed"
-    else:
-        file_uniq_info = get_file_uniq_info(subdirs)
-        hedfile2 = f"${{PRJ}}/instr/mktri2_tc.{n_states}.{file_uniq_info}.hed"
-        hedfile2_orig = f"${{PRJ}}/instr/mktri2_tc.{n_states}.hed"
+    hedfile1, hedfile1_orig = get_hedfile1_names(subdirs)
+    hedfile2, hedfile2_orig = get_hedfile2_names(subdirs, n_states)
+
     num_threads = get_machine_info()
     
     ip_search = IP_VARNAME + r"\s*=\s*-?[0-9]+(\.[0-9]+)*"
@@ -468,14 +488,14 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     models_dir = get_model_path(subdirs, hmmdef)
     make_dir(models_dir)
     
-    hedfile1_search = HEDFILE1_VARNAME + r"\s*=\s*\$\{PRJ\}\/instr\/mktri1_.*\.hed"
-    hedfile1_repl = HEDFILE1_VARNAME + f"={hedfile1}"
+    # hedfile1_search = HEDFILE1_VARNAME + r"\s*=\s*\$\{PRJ\}\/instr\/mktri1_.*\.hed"
+    # hedfile1_repl = HEDFILE1_VARNAME + f"={hedfile1}"
     
     # hedfile2_search = HEDFILE2_VARNAME + r"\s*=\s*\$\{PRJ\}\/instr\/mktri2_.*\.hed"
     # hedfile2_repl = HEDFILE2_VARNAME + f"={hedfile2}"
     
-    custom_silsp_search = CUSTOM_SILSP_VARNAME + r"\s*=\s*(yes|no)"
-    custom_silsp_repl = CUSTOM_SILSP_VARNAME + f"={custom_silsp}"
+    # custom_silsp_search = CUSTOM_SILSP_VARNAME + r"\s*=\s*(yes|no)"
+    # custom_silsp_repl = CUSTOM_SILSP_VARNAME + f"={custom_silsp}"
     
     multi_process_search = MULTI_PROCESS_VARNAME + r"\s*=\s*(yes|no)"
     multi_process_repl = MULTI_PROCESS_VARNAME + f"={multi_process}"
@@ -526,9 +546,9 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     edit_file(models_root_search, models_root_repl, options_file)
     edit_file(letter_results_search, letter_results_repl, options_file)
     edit_file(word_results_search, word_results_repl, options_file)
-    edit_file(hedfile1_search, hedfile1_repl, options_file)
+    # edit_file(hedfile1_search, hedfile1_repl, options_file)
     # edit_file(hedfile2_search, hedfile2_repl, options_file)
-    edit_file(custom_silsp_search, custom_silsp_repl, options_file)
+    # edit_file(custom_silsp_search, custom_silsp_repl, options_file)
     edit_file(multi_process_search, multi_process_repl, options_file)
     edit_file(cross_word_search, cross_word_repl, options_file)
     # edit_file(ngram_word_search, ngram_word_repl, options_file)
@@ -550,7 +570,7 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     run_subprocess(["grep", "^" + LOG_WORD_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + HEDFILE1_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + HEDFILE2_VARNAME + r"\s*=\s*", options_file], logger=logger)
-    run_subprocess(["grep", "^" + CUSTOM_SILSP_VARNAME + r"\s*=\s*", options_file], logger=logger)
+    # run_subprocess(["grep", "^" + CUSTOM_SILSP_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + MULTI_PROCESS_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + CROSS_WORD_VARNAME + r"\s*=\s*", options_file], logger=logger)
     # run_subprocess(["grep", "^" + NGRAM_WORD_VARNAME + r"\s*=\s*", options_file], logger=logger)
@@ -564,7 +584,7 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
 
 def edit_htk_root_file_options(subdirs):
     options_file = get_options_file(subdirs)
-    file_uniq_info = get_file_uniq_info(subdirs)
+    file_uniq_str = get_file_uniq_str(subdirs)
     vector_dim = get_vector_dim(subdirs)
     
     # Handle triletter changes separately
@@ -583,7 +603,7 @@ def edit_htk_root_file_options(subdirs):
     ext_dir_repl = EXT_DIR_VARNAME + os.path.join("=${PRJ}", ext_relative, subdirs)
     
     file_uniq_search = FILE_UNIQ_STR_VARNAME + r"\s*=\s*.+"
-    file_uniq_repl = FILE_UNIQ_STR_VARNAME + f"={file_uniq_info}"
+    file_uniq_repl = FILE_UNIQ_STR_VARNAME + f"={file_uniq_str}"
 
     hmmsil_search = HMMSIL_VARNAME + r"\s*=\s*\$HMM_TOPOLOGY_DIR\/3state-pca.+"
     hmmsil_repl = HMMSIL_VARNAME + f"=$HMM_TOPOLOGY_DIR/3state-pca{vector_dim}-sil-skip-loop"
@@ -892,14 +912,15 @@ def _register_signals():
 # Clean up script that removes temp files. Run when exiting program
 def _cleanup():
     logger.info(f"Running clean up function")
-    # clean up hedfile2 files (uniq per model training session)
-    for hedfile2 in Path(INSTR_ROOT).glob("mktri2_*.*.*.hed"):
-        logger.info(f"Cleaning up (removing): {hedfile2}")
-        os.remove(hedfile2)
+    for file_uniq_str in file_uniq_strs:
+        # clean up hedfile2 files (uniq per model training session)
+        for hedfile2 in Path(INSTR_ROOT).glob(f"mktri2_*.*.{file_uniq_str}.hed"):
+            logger.info(f"Cleaning up (removing): {hedfile2}")
+            os.remove(hedfile2)
 
-    for hedfile1 in Path(INSTR_ROOT).glob("mktri1_*.*.hed"):
-        logger.info(f"Cleaning up (removing): {hedfile1}")
-        os.remove(hedfile1)
+        for hedfile1 in Path(INSTR_ROOT).glob(f"mktri1_*.{file_uniq_str}.hed"):
+            logger.info(f"Cleaning up (removing): {hedfile1}")
+            os.remove(hedfile1)
     logger.info("Exiting script ...")
 
 def _main():
@@ -932,7 +953,8 @@ def _main():
 
             # Exit here after prepare_files and gen_grammar finish
             if args.prepare_data_only:
-                exit(0)
+                _cleanup()
+                sys.exit(0)
 
         for arg_tup in arg_iter:
             # wrap entire loop in try and continue if training on one model fails
@@ -1030,6 +1052,7 @@ if __name__ == "__main__":
     _check_args()
     set_buffer_handler_level(new_level=logging.DEBUG if args.debug else logging.INFO)
 
+    file_uniq_strs = set()
     main_log_handler = None
     try:
         _main()
