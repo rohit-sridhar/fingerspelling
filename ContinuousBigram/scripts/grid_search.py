@@ -906,8 +906,12 @@ def clear_results_files(ip, tc, num_its, num_tri_its, hmmdef, subdirs):
 # set up signal handler to run clean up on exit
 def _register_signals():
     for sig in KILL_SIGNALS:
-        signal.signal(sig, _cleanup)
+        signal.signal(sig, _catch_signal_and_cleanup)
         logger.info(f"registered {sig} to _cleanup fxn")
+
+def _catch_signal_and_cleanup(sig):
+    logger.info(f"Caught signal {sig}")
+    _cleanup()
 
 # Clean up script that removes temp files. Run when exiting program
 def _cleanup():
@@ -921,7 +925,113 @@ def _cleanup():
         for hedfile1 in Path(INSTR_ROOT).glob(f"mktri1_*.{file_uniq_str}.hed"):
             logger.info(f"Cleaning up (removing): {hedfile1}")
             os.remove(hedfile1)
-    logger.info("Exiting script ...")
+    logger.info("Exiting iter ...")
+    _close_main_log_handler()
+
+def _close_main_log_handler():
+    global main_log_handler
+
+    if main_log_handler is None:
+        log_dir = os.path.join(LOG_ROOT, "premature")
+        make_dir(log_dir)
+        
+        now_str = datetime.now().strftime("%Y-%m-%d_%H-%M")
+        log_file = os.path.join(log_dir, ".".join(["grid_search", now_str, "txt"]))
+        log_level = logging.DEBUG if args.debug else logging.INFO
+        
+        main_log_handler = setup_logger(
+            log_file,
+            flush=True,
+            log_level=log_level,
+            mode="a"
+        )
+
+    root_logger.removeHandler(main_log_handler)
+    main_log_handler.close()
+    main_log_handler = None
+
+def train_on_tup(arg_tup, subdirs):
+    ip = arg_tup[0]
+    hmmdef = arg_tup[1]
+    tc = arg_tup[2]
+    num_its = arg_tup[3]
+    num_tri_its = arg_tup[4]
+    trace_value = arg_tup[5]
+    ngram = arg_tup[6]
+
+    # Attach a grid-search-level log file for this hyperparam setting
+    name_ext = get_name_ext(tc, num_its, num_tri_its, hmmdef, trace_value=trace_value)
+    grid_log = get_log_file(subdirs, name_ext, mode="grid_search")
+    print(f"{grid_log=}", flush=True)
+
+    # Reconfigure logging to write to files in the log directory for this subdirs.
+    # This ensures further logging goes to file backends (and flushes buffered logs).
+    global main_log_handler
+    log_level = logging.DEBUG if args.debug else logging.INFO
+    main_log_handler = setup_logger(
+        grid_log,
+        flush=True,
+        log_level=log_level,
+        mode="w"
+    )
+
+    edit_options(
+        ip,
+        tc,
+        num_its,
+        num_tri_its,
+        hmmdef,
+        subdirs,
+        ngram,
+        trace_value=trace_value,
+    )
+
+    if args.clear_hresults:
+        clear_results_files(
+            ip,
+            tc,
+            num_its,
+            num_tri_its,
+            hmmdef,
+            subdirs,
+        )
+
+    if args.test_model:
+        test_model(
+            tc,
+            num_its,
+            num_tri_its,
+            hmmdef,
+            subdirs,
+            trace_value,
+        )
+    else:
+        train_model(
+            tc,
+            num_its,
+            num_tri_its,
+            hmmdef,
+            subdirs,
+            trace_value,
+        )
+        
+        save_model(
+            tc,
+            num_its,
+            num_tri_its,
+            hmmdef,
+            subdirs,
+        )
+
+    if args.results_csv is not None:
+        add_results_to_csv(
+            ip,
+            tc,
+            num_its,
+            num_tri_its,
+            hmmdef,
+            subdirs,
+        )
 
 def _main():
     # Buffering logger initialized at import so early messages are buffered until
@@ -941,110 +1051,38 @@ def _main():
     )
     
     for data_file in args.data_files:
-        # TODO Write prepare files function
-        subdirs = get_subdirectories_joined(data_file)
-        label_file = os.path.join(LABELS_ROOT, subdirs, 'label')
-        
-        _make_options_file(subdirs)
-        edit_htk_root_file_options(subdirs)
-
-        if args.prepare_data or args.prepare_data_only:
-            prepare_data(data_file, label_file, subdirs)
-
-            # Exit here after prepare_files and gen_grammar finish
-            if args.prepare_data_only:
-                _cleanup()
-                sys.exit(0)
-
-        for arg_tup in arg_iter:
-            # wrap entire loop in try and continue if training on one model fails
-            try:
-                ip = arg_tup[0]
-                hmmdef = arg_tup[1]
-                tc = arg_tup[2]
-                num_its = arg_tup[3]
-                num_tri_its = arg_tup[4]
-                trace_value = arg_tup[5]
-                ngram = arg_tup[6]
-
-                # Attach a grid-search-level log file for this hyperparam setting
-                name_ext = get_name_ext(tc, num_its, num_tri_its, hmmdef, trace_value=trace_value)
-                grid_log = get_log_file(subdirs, name_ext, mode="grid_search")
-                print(f"{grid_log=}")
-
-                # Reconfigure logging to write to files in the log directory for this subdirs.
-                # This ensures further logging goes to file backends (and flushes buffered logs).
-                global main_log_handler
-                log_level = logging.DEBUG if args.debug else logging.INFO
-                main_log_handler = setup_logger(
-                    grid_log,
-                    flush=True,
-                    log_level=log_level,
-                    mode="w"
-                )
-
-                edit_options(
-                    ip,
-                    tc,
-                    num_its,
-                    num_tri_its,
-                    hmmdef,
-                    subdirs,
-                    ngram,
-                    trace_value=trace_value,
-                )
-
-                if args.clear_hresults:
-                    clear_results_files(
-                        ip,
-                        tc,
-                        num_its,
-                        num_tri_its,
-                        hmmdef,
-                        subdirs,
-                    )
-
-                if args.test_model:
-                    test_model(
-                        tc,
-                        num_its,
-                        num_tri_its,
-                        hmmdef,
-                        subdirs,
-                        trace_value,
-                    )
-                else:
-                    train_model(
-                        tc,
-                        num_its,
-                        num_tri_its,
-                        hmmdef,
-                        subdirs,
-                        trace_value,
-                    )
-                    
-                    save_model(
-                        tc,
-                        num_its,
-                        num_tri_its,
-                        hmmdef,
-                        subdirs,
-                    )
-
-                if args.results_csv is not None:
-                    add_results_to_csv(
-                        ip,
-                        tc,
-                        num_its,
-                        num_tri_its,
-                        hmmdef,
-                        subdirs,
-                    )
-            except Exception as e:
-                logger.error(f"An unexpected exception {e} occurred during training or testing.")
-                logger.error(f"{traceback.format_exc()}")
-                continue
+        try:
+            subdirs = get_subdirectories_joined(data_file)
+            label_file = os.path.join(LABELS_ROOT, subdirs, 'label')
             
+            _make_options_file(subdirs)
+            edit_htk_root_file_options(subdirs)
+
+            if args.prepare_data or args.prepare_data_only:
+                prepare_data(data_file, label_file, subdirs)
+
+                # Exit here after prepare_files and gen_grammar finish
+                if args.prepare_data_only:
+                    _cleanup()
+                    sys.exit(0)
+
+            for arg_tup in arg_iter:
+                # wrap entire loop in try and continue if training on one model fails
+                try:
+                    train_on_tup(arg_tup, subdirs)
+                except Exception as e:
+                    logger.error(f"Could not train on {arg_tup=}.")
+                    logger.error(f"An unexpected exception {e} occurred during training or testing.")
+                    logger.error(f"{traceback.format_exc()}")
+                finally:
+                    # cleanup will delete tmp hedfiles 1 and 2 and close the log handler (for this iter)
+                    _cleanup()
+        except Exception as e:
+            logger.error(f"Could not train on {data_file=}.")
+            logger.error(f"An unexpected exception {e} occurred during training or testing.")
+            logger.error(f"{traceback.format_exc()}")
+        finally:
+            _cleanup()
 
 if __name__ == "__main__":
     _register_signals()
@@ -1054,26 +1092,5 @@ if __name__ == "__main__":
 
     file_uniq_strs = set()
     main_log_handler = None
-    try:
-        _main()
-        _cleanup()
-    finally:
-        if main_log_handler is None:
-            log_dir = os.path.join(LOG_ROOT, "premature")
-            make_dir(log_dir)
-            
-            now_str = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-            log_file = os.path.join(log_dir, ".".join(["grid_search", now_str, "txt"]))
-            log_level = logging.DEBUG if args.debug else logging.INFO
-            
-            main_log_handler = setup_logger(
-                log_file,
-                flush=True,
-                log_level=log_level,
-                mode="w"
-            )
-        
-        root_logger.removeHandler(main_log_handler)
-        main_log_handler.close()
-        _cleanup()
+    _main()
 
