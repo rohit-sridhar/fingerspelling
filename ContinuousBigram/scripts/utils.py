@@ -334,13 +334,13 @@ def get_label_files(label_dir):
 
 # Get tokens from a given label file. Does not
 # include the SPACE or SIL character.
-def collect_tokens(label_path):
+def collect_letters_and_tokens(label_path):
     with open(label_path, 'r') as f:
         labels = f.readlines()
     
-    labels = [l.strip() for l in labels]
-    labels = ''.join(labels[1:-1]).split(SPACE)
-    return labels
+    letters = [l.strip() for l in labels][1:-1]
+    tokens  = ''.join(letters).split(SPACE)
+    return letters, tokens
 
 
 def get_triletters(tokens):
@@ -514,18 +514,38 @@ def setup_logger(log_file, flush=False, log_level=logging.INFO, mode="w"):
 ########################################################################
 
 class AlphabetParser:
-    def __init__(self, charset=[]):
+    def __init__(self, letterset=[]):
         self.trie = {}
-        self.add_charset(set(charset))
+        self.add_letterset(set(letterset))
 
-    def _add_to_trie(self, char):
+    def _add_to_trie(self, letter):
         level = self.trie
-        for tok in char:
+        for tok in letter:
             if tok not in level:
                 level[tok] = {}
             level = level[tok]
 
-    def add_charset(self, charset):
-        for char in charset:
-            self._add_to_trie(char)
+    def add_letterset(self, letterset):
+        for letter in letterset:
+            self._add_to_trie(letter)
+    
+    def parse_string(self, string):
+        letters = []
+        i = 0
+        while True:
+            letter = ""
+            level = self.trie
+            if string[i] not in level:
+                raise ValueError("Error. Trying to parse string with out of alphabet letters.")
+
+            while i < len(string) and string[i] in level:
+                letter += string[i]
+                level = level[string[i]]
+                i += 1
+            
+            letters.append(letter)
+            if i == len(string):
+                break
+        
+        return letters
 

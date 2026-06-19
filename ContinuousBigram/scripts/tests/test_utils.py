@@ -130,8 +130,34 @@ def test_alphabet_parser_add_tokens_and_structure():
 def test_alphabet_parser_ignores_empty_string():
     # Empty string should not create entries in the trie
     ap = ut.AlphabetParser(['x'])
-    ap.add_charset({''})
+    # use the correct method name to add a set of letters
+    ap.add_letterset({''})
     # empty string should not be added as a key at the root
     assert '' not in ap.trie
     # existing entries remain intact
     assert 'x' in ap.trie
+
+
+def test_parse_string_simple_letters():
+    # single-character alphabet should split into each character
+    ap = ut.AlphabetParser(['a', 'b', 'c'])
+    result = ap.parse_string('abc')
+    assert result == ['a', 'b', 'c']
+
+
+def test_parse_string_with_multichar_tokens():
+    # multi-character tokens should be parsed greedily according to trie
+    ap = ut.AlphabetParser(['a', 'ab', 'abc', 'x'])
+    result = ap.parse_string('abcx')
+    # implementation consumes the longest matching path in the trie, so 'abc' + 'x'
+    assert result == ['abc', 'x']
+
+
+def test_parse_string_raises_on_unknown_character():
+    ap = ut.AlphabetParser(['a', 'b'])
+    try:
+        ap.parse_string('ac')
+        raised = False
+    except ValueError:
+        raised = True
+    assert raised, "Expected ValueError when parsing string with characters outside the alphabet"

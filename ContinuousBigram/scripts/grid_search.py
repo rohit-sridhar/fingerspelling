@@ -328,18 +328,24 @@ def get_file_uniq_info(subdirs):
     file_uniq_info = hashlib.sha256(new_subdirs).hexdigest()[:8]
     return file_uniq_info
 
-# get hedfile search/repl info
-def get_hedfile1_info(subdirs):
+def get_root_path(root_dir, subdirs):
     dataset = "_".join(subdirs.split(os.path.sep)[:2])
     data_file_dict = load_json_file(DATA_FILE_DICT_FILE)
-    tokens_path = data_file_dict[dataset]["label_path"].replace("label", "commands")
-    tokens_path = os.path.split(tokens_path)[0]
+
+    root_path = data_file_dict[dataset]["label_path"].replace("label", root_dir)
+    root_path = os.path.split(root_path)[0]
+
+    return root_path
+
+# get hedfile search/repl info
+def get_hedfile1_info(subdirs):
+    tokens_root_path = get_root_path("commands", subdirs)
 
     hedfile1_tokens_root_search = r"^CL .*\/commands_tri_(internal|cross)(\.all)?$"
     if args.cross_word:
-        hedfile1_tokens_root_repl = f"CL {tokens_path}/commands_tri_cross"
+        hedfile1_tokens_root_repl = f"CL {tokens_root_path}/commands_tri_cross"
     else:
-        hedfile1_tokens_root_repl = f"CL {tokens_path}/commands_tri_internal"
+        hedfile1_tokens_root_repl = f"CL {tokens_root_path}/commands_tri_internal"
 
     return hedfile1_tokens_root_search, hedfile1_tokens_root_repl
 
@@ -573,29 +579,32 @@ def edit_htk_root_file_options(subdirs):
     # Handle triletter changes separately
     make_triletter_changes(subdirs)
 
-    grammarfile_relative = os.path.basename(GRAMMAR_ROOT)
+    grammarfile_relative = get_root_path("grammar", subdirs)
+    grammarfile_relative = os.path.relpath(grammarfile_relative, GRAMMAR_ROOT)
     grammarfile_root_search = GRAMMARFILE_ROOT_VARNAME + r"\s*=\s*\$\{PRJ\}\/grammar\/.*"
-    grammarfile_root_repl = GRAMMARFILE_ROOT_VARNAME + os.path.join("=${PRJ}", grammarfile_relative, subdirs)
+    grammarfile_root_repl = GRAMMARFILE_ROOT_VARNAME + os.path.join("=${PRJ}", grammarfile_relative)
 
-    dictfile_relative = os.path.basename(DICT_ROOT)
+    dictfile_relative = get_root_path("dict", subdirs)
+    dictfile_relative = os.path.relpath(dictfile_relative, DICT_ROOT)
     dictfile_root_search = DICTFILE_ROOT_VARNAME + r"\s*=\s*\$\{PRJ\}\/dict\/.*"
-    dictfile_root_repl = DICTFILE_ROOT_VARNAME + os.path.join("=${PRJ}", dictfile_relative, subdirs)
+    dictfile_root_repl = DICTFILE_ROOT_VARNAME + os.path.join("=${PRJ}", dictfile_relative)
 
-    tokens_relative = os.path.basename(TOKENS_ROOT)
+    tokens_relative = get_root_path("commands", subdirs)
+    tokens_relative = os.path.relpath(tokens_relative, DICT_ROOT)
     tokens_root_search = TOKENS_ROOT_VARNAME + r"\s*=\s*\$\{PRJ\}\/commands\/.*"
-    tokens_root_repl = TOKENS_ROOT_VARNAME + os.path.join("=${PRJ}", tokens_relative, subdirs)
+    tokens_root_repl = TOKENS_ROOT_VARNAME + os.path.join("=${PRJ}", tokens_relative)
 
-    mlf_relative = os.path.basename(MLF_ROOT)
+    mlf_base = os.path.basename(MLF_ROOT)
     mlf_root_search = MLF_ROOT_VARNAME + r"\s*=\s*\$\{PRJ\}\/mlf.*"
-    mlf_root_repl = MLF_ROOT_VARNAME + os.path.join("=${PRJ}", mlf_relative, subdirs)
+    mlf_root_repl = MLF_ROOT_VARNAME + os.path.join("=${PRJ}", mlf_base, subdirs)
 
-    output_relative = os.path.basename(OUTPUT_ROOT)
+    output_base = os.path.basename(OUTPUT_ROOT)
     outputfile_root_search = OUTPUTFILE_ROOT_VARNAME + r"\s*=\s*\$\{PRJ\}\/output.*"
-    outputfile_root_repl = OUTPUTFILE_ROOT_VARNAME + os.path.join("=${PRJ}", output_relative, subdirs)
+    outputfile_root_repl = OUTPUTFILE_ROOT_VARNAME + os.path.join("=${PRJ}", output_base, subdirs)
 
-    ext_relative = os.path.basename(EXT_ROOT)
+    ext_base = os.path.basename(EXT_ROOT)
     ext_dir_search = EXT_DIR_VARNAME + r"\s*=\s*\$\{PRJ\}\/ext.*"
-    ext_dir_repl = EXT_DIR_VARNAME + os.path.join("=${PRJ}", ext_relative, subdirs)
+    ext_dir_repl = EXT_DIR_VARNAME + os.path.join("=${PRJ}", ext_base, subdirs)
     
     file_uniq_search = FILE_UNIQ_STR_VARNAME + r"\s*=\s*.+"
     file_uniq_repl = FILE_UNIQ_STR_VARNAME + f"={file_uniq_info}"
@@ -635,9 +644,9 @@ def edit_htk_root_file_options(subdirs):
     run_subprocess(["grep", "^" + VECTOR_LENGTH_VARNAME + r"\s*=\s*", options_file], logger=logger)
     logger.info("#####\n")
     
-    grammar_dir = os.path.join(GRAMMAR_ROOT, subdirs)
-    dict_dir = os.path.join(DICT_ROOT, subdirs)
-    tokens_dir = os.path.join(TOKENS_ROOT, subdirs)
+    grammar_dir = os.path.join(GRAMMAR_ROOT, grammarfile_relative)
+    dict_dir = os.path.join(DICT_ROOT, dictfile_relative)
+    tokens_dir = os.path.join(TOKENS_ROOT, tokens_relative)
     mlf_dir = os.path.join(MLF_ROOT, subdirs)
     outputfile_dir = os.path.join(OUTPUT_ROOT, subdirs)
     ext_dir = os.path.join(EXT_ROOT, subdirs)
@@ -947,8 +956,8 @@ def _main():
 
             # Exit here after prepare_files and gen_grammar finish
             if args.prepare_data_only:
-                cleanup(main_log_handler)
-                exit(0)
+                _cleanup()
+                sys.exit(0)
 
         for arg_tup in arg_iter:
             # wrap entire loop in try and continue if training on one model fails
