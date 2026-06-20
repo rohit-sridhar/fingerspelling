@@ -910,6 +910,7 @@ def _register_signals():
         logger.info(f"registered {sig} to _cleanup fxn")
 
 def _catch_signal_and_cleanup(sig):
+    print(f"{sig=}", flush=True)
     logger.info(f"Caught signal {sig}")
     _cleanup()
 

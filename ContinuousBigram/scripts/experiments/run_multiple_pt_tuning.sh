@@ -15,7 +15,6 @@ if [ ! -d "${output_dir}" ]; then
 fi
 
 # --hmmdefs 6state-pca20-gmm2 5state-pca20-gmm2 4state-pca20-gmm2 \
-participants=(ab12)
 ############################## TRAIN MULTIPLE (DIM20) ##############################
 for dataset in ${datasets[@]}; do
 for threshold in ${thresholds[@]}; do
