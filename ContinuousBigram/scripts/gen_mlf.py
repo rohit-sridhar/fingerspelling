@@ -178,8 +178,8 @@ def get_word_labels(labels):
             word = ""
         else:
             token = label.strip()
-            # if token.isdigit() or token == "+" or token == "-":
-            #     token = TOKEN_MAP[token]
+            if token.isdigit() or token == "+" or token == "-":
+                token = TOKEN_MAP[token]
             word += token
     
     return word_labels

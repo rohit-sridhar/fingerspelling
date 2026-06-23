@@ -9,6 +9,15 @@ typeset -a datasets=()
 typeset -a participants=()
 typeset -a thresholds=(0)
 
+# function cleanup {
+#     echo "Caught terminating signal, terminating child processes..."
+#     kill $(jobs -p) 2>/dev/null
+#     wait
+#     exit 1
+# }
+# 
+# trap cleanup SIGTERM SIGINT SIGQUIT SIGHUP
+
 function set_vars {
     base_dataset=${1:-}
     datasets=(${base_dataset}_drop-na_lininterp0)

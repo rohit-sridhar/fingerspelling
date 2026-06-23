@@ -40,7 +40,7 @@ if [[ ! -f "${EXT_DIR}/done" ]]; then
     echo ""
     rm -rf ${EXT_DIR}/*
     mkdir ${EXT_DIR}/data/
-    find ${label_loc} -name "*.lab" -type f | xargs cp -lt ${EXT_DIR}/data/
+    find ${label_loc} -name "*.lab" -type f | xargs cp -lt  ${EXT_DIR}/data/
     echo "#####"
     echo ""
     echo "##### Generating ext files .... #####"
@@ -94,6 +94,7 @@ fi
 
 if [[ ! -f "${DICTFILE_ROOT}/done" ]]; then
     echo "##### Generating dict (tri2letter/tri2word) files .... #####"
+    echo ${SCRIPTS_DIR}/gen_dict.py --label_loc ${label_loc} --dict_type tri_letter --dict_loc ${DICTFILE}
     ${SCRIPTS_DIR}/gen_dict.py --label_loc ${label_loc} --dict_type tri_letter --dict_loc ${DICTFILE}
     # ${SCRIPTS_DIR}/gen_dict.py --label_loc ${label_loc} --dict_type tri_letter_whole --dict_loc ${DICTFILE_WHOLE}
     ${SCRIPTS_DIR}/gen_dict.py --label_loc ${label_loc} --dict_type cross_letter --dict_loc ${DICTFILE_CROSS}
@@ -151,7 +152,7 @@ if [[ ! -f "${TOKENS_ROOT}/done" ]]; then
     echo ""
 
     echo "##### Copy label files back into ext dir (HLEd may have modified them) .... #####"
-    find ${label_loc} -name "*.lab" -type f | xargs cp -t ${EXT_DIR}/data/
+    find ${label_loc} -name "*.lab" -type f | xargs cp -lt ${EXT_DIR}/data/
     echo "#####"
     echo ""
     

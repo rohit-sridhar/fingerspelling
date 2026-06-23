@@ -41,7 +41,7 @@ def dict_path(pth):
     
     pth = pth.resolve()
     if not str(pth)[len(ROOT)+1:].startswith("dict") and not str(pth.parent)[len(ROOT)+1:].endswith("dict"):
-        raise ValueError("The directory directly under ROOT and the leaf must be named \"dict\".")
+        raise argparse.ArgumentTypeError("The directory directly under ROOT and the leaf must be named \"dict\".")
 
     return pth
 
@@ -65,7 +65,7 @@ def _parse_args():
         "--dict_loc",
         type=dict_path,
         required=True,
-        help="dict location ",
+        help="dict location",
     )
     
     parser.add_argument(
