@@ -179,6 +179,7 @@ ContinuousBigramFixed/
 IsolatedBigram/
 MainPipeline/
 app_testing/
+.dockerbuild/
 
 # Don't include data or labels
 ContinuousBigram/data
