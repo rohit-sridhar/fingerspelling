@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+export AWS_EC2_METADATA_DISABLED=true
+
 TORCH_ROOT=/data/deep_learning/fs_transformers
 
 typeset -a seeds=(1248 2248 3248 4248 5248)

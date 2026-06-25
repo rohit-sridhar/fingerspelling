@@ -5,7 +5,7 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 ROOT="${SCRIPT_DIR}/../.."
 
 . ${SCRIPT_DIR}/utils.sh
-set_vars $1
+set_vars $@
 
 # typeset -a data_groups=(general pt-split)
 typeset -a data_groups=(general)

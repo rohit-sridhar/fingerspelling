@@ -446,15 +446,19 @@ def init_buffering_logger(capacity=10000, flush_level=logging.ERROR):
 init_buffering_logger()
 
 
-def _attach_file_handler(log_file, level=logging.DEBUG, mode="a"):
+def _attach_file_handler(log_file, log_level=logging.DEBUG, mode="a"):
     """Attach a FileHandler to the given logger (or module logger) that writes to log_file.
 
     Returns the handler so callers can remove/close it when done.
     """
     fh = logging.FileHandler(log_file, mode=mode)
     formatter = logging.Formatter("%(asctime)s - %(funcName)s - %(filename)s - %(levelname)s - %(message)s", datefmt="%Y-%m-%d | %H:%M:%S")
+
     fh.setFormatter(formatter)
-    fh.setLevel(level)
+    fh.setLevel(log_level)
+
+    # Only allow log_level (arg 2) logs into this file handler
+    fh.addFilter(lambda record: record.levelno == log_level)
 
     root_logger.addHandler(fh)
     return fh
@@ -497,7 +501,7 @@ def setup_logger(log_file, flush=False, log_level=logging.INFO, mode="w"):
 
     # Reuse attach helper to create and attach a FileHandler to the root logger
     # fh = _attach_file_handler(log_file, module_logger, level=log_level)
-    fh = _attach_file_handler(log_file, level=log_level, mode=mode)
+    fh = _attach_file_handler(log_file, log_level=log_level, mode=mode)
 
     # If a buffer handler exists flush it into fh.
     if flush:

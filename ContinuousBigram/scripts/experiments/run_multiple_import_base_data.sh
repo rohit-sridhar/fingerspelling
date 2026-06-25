@@ -5,22 +5,22 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 ROOT="${SCRIPT_DIR}/../.."
 
 . ${SCRIPT_DIR}/utils.sh
-set_vars $1
+set_vars $@
 
+# ############################## IMPORT ALL (DIM20) ###############################
+# 
 # echo ""
 # echo "STARTING IMPORT"
 # echo ""
-# 
-# ############################## IMPORT ALL (DIM20) ##############################
 # 
 # for dataset in ${datasets[@]}; do
 #     ${ROOT}/scripts/modify_data.py \
 #         --import_data_loc ${TORCH_ROOT}/data/data_${dataset}_rh.pq.all \
 #         --new_data_loc ${ROOT}/data/${dataset}/dim20/thr0/all/data \
-#         --method import
+#         --bar_description "importing base ${dataset}" --method import
 # done
 # 
-############################## PREP ALL (DIM20) ##############################
+############################### PREP ALL (DIM20) ################################
 
 echo ""
 echo "STARTING DATA PREPARATION"
@@ -28,11 +28,11 @@ echo ""
 
 for dataset in ${datasets[@]}; do
     ${ROOT}/scripts/grid_search.py \
-        --data_files ${ROOT}/data/${dataset}/dim20/thr0/all.new/data \
+        --data_files ${ROOT}/data/${dataset}/dim20/thr0/all/data \
         --prepare_data_only --prepare_data_all
 done
 
-# ############################## IMPORT ALL (DELPOL20) ##############################
+# ############################## IMPORT ALL (DELPOL20) ###########################
 # 
 # for dataset in ${datasets[@]}; do
 #     ${ROOT}/scripts/modify_data.py \
