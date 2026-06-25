@@ -15,7 +15,7 @@ RUN apt-get install -y \
 # RUN getlibs -p libx11-dev
 
 COPY .dockerbuild/* /
-RUN /install-tools.sh
+RUN /install_tools.sh
 
 # Install core prerequisites and add the deadsnakes PPA
 RUN apt-get install -y --no-install-recommends \

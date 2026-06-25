@@ -179,7 +179,7 @@ ContinuousBigramFixed/
 IsolatedBigram/
 MainPipeline/
 app_testing/
-.dockerbuild/
+.dockerbuild/*.tar.gz
 
 # Don't include data or labels
 ContinuousBigram/data
