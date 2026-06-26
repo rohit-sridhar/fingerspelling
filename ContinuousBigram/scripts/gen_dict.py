@@ -7,11 +7,14 @@ import os
 import string
 import logging
 
-from utils import *
+from concurrent.futures import ThreadPoolExecutor
+from threading import Lock
 from pathlib import Path
+from utils import *
 
 WRITTEN = set()
 logger = logging.getLogger(__name__)
+dictfile_lock = Lock()
 
 #################### GENERAL HELPERS ####################
 # check if path is valid and if it exists
@@ -73,6 +76,13 @@ def parse_args():
         help="New dict file"
     )
     
+    parser.add_argument(
+        "--num_threads",
+        type=int,
+        default=16,
+        help="Number of threads for concurrency. Must be > 0."
+    )
+    
     return parser.parse_args()
 
 # set up the logger for training moved to utils.setup_logger
@@ -90,7 +100,7 @@ def initialize_dict():
 
 # Write a single dictionary entry to file (triletter only)
 def write_entry_to_file(entry):
-    with open(args.dict_loc, "a") as f:
+    with dictfile_lock, open(args.dict_loc, "a") as f:
         if entry not in WRITTEN:
             f.write(entry + "\n")
             WRITTEN.add(entry)
@@ -238,7 +248,7 @@ def add_cross_word_to_dict(word, first=False, last=False):
 #################### UNILETTER WORD LEVEL FUNCTIONS ####################
 def add_uniletter_word_to_dict(word):
     spaced_word = ' '.join(word)
-    with open(args.dict_loc, "a") as f:
+    with dictfile_lock, open(args.dict_loc, "a") as f:
         f.write(f"{word} {spaced_word}\n")
 
 # Ingests the whole label file into the dict
@@ -287,6 +297,7 @@ if __name__ == "__main__":
         write_uniletter_dict()
     else:
         label_files = get_label_files(args.label_loc)
-        for label_file in label_files:
-            ingest_label_file(label_file)
+        # for label_file in label_files:
+        with ThreadPoolExecutor(max_workers=args.num_threads) as executor:
+            executor.map(ingest_label_file, label_files)
 

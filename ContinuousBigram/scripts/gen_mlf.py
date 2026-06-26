@@ -4,10 +4,14 @@ import argparse
 import os
 import re
 
+from concurrent.futures import ThreadPoolExecutor
+from threading import Lock
 from glob import glob
 from utils import *
 
-def parse_args():
+mlffile_lock = Lock()
+
+def _parse_args():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     
     parser.add_argument(
@@ -44,6 +48,13 @@ def parse_args():
         type=int,
         default=1000,
         help="Sample Period (in ms)"
+    )
+    
+    parser.add_argument(
+        "--num_threads",
+        type=int,
+        default=16,
+        help="Number of threads for concurrency. Must be > 0."
     )
     
     parser.add_argument(
@@ -95,7 +106,7 @@ def remove_spaces(labels):
 # Write to mlf file
 def write_to_mlf(label_path, labels, label_ts):
     label_lines = [' '.join((times[0], times[1], label)) for label, times in zip(labels, label_ts)]
-    with open(args.mlf_file, "a") as f:
+    with mlffile_lock, open(args.mlf_file, "a") as f:
         f.write("\"" + label_path + "\"\n")
         f.writelines(label_lines)
         f.write(".\n")
@@ -127,6 +138,25 @@ def get_whole_word_word_labels(labels):
     new_phrase = [labels[0]] + [inner_phrase] + [labels[-1]]
     return new_phrase
 
+# Get the word labels
+def get_word_labels(labels):
+    word_labels = [labels[0]]
+    word = ""
+    
+    for label in labels[1:]:
+        if label.startswith(SPACE) or label.startswith(EXIT):
+            word_labels.append(word + "\n")
+            if not(label.startswith(SPACE) and args.sksp):
+                word_labels.append(label)
+            word = ""
+        else:
+            token = label.strip()
+            if token.isdigit() or token == "+" or token == "-":
+                token = TOKEN_MAP[token]
+            word += token
+    
+    return word_labels
+
 # Get label level info
 def get_label_info(data_file):
     label_file = os.path.join(args.ext_loc, os.path.basename(data_file)) + ".lab"
@@ -157,35 +187,22 @@ def get_label_info(data_file):
 
 # Generate the letter level mlf
 def gen_mlf():
+    # local function for thread pool
+    def add_data_file_to_mlf(data_file):
+        label_path, labels, label_ts = get_label_info(data_file)
+        write_to_mlf(label_path, labels, label_ts)
+
     with open(args.datafiles_list, "r") as f:
         datafiles = f.readlines()
     
     datafiles = [data_file.strip() for data_file in datafiles]
-    for data_file in datafiles:
-        label_path, labels, label_ts = get_label_info(data_file)
-        write_to_mlf(label_path, labels, label_ts)
 
-# Get the word labels
-def get_word_labels(labels):
-    word_labels = [labels[0]]
-    word = ""
-    
-    for label in labels[1:]:
-        if label.startswith(SPACE) or label.startswith(EXIT):
-            word_labels.append(word + "\n")
-            if not(label.startswith(SPACE) and args.sksp):
-                word_labels.append(label)
-            word = ""
-        else:
-            token = label.strip()
-            if token.isdigit() or token == "+" or token == "-":
-                token = TOKEN_MAP[token]
-            word += token
-    
-    return word_labels
+    # for data_file in datafiles:
+    with ThreadPoolExecutor(max_workers=args.num_threads) as executor:
+        executor.map(add_data_file_to_mlf, datafiles)
 
 if __name__ == "__main__":
-    args = parse_args()
+    args = _parse_args()
     print(args)
 
     init_mlf_file()

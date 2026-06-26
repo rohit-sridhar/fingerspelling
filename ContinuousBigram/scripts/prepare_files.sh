@@ -55,14 +55,14 @@ find ${EXT_DIR}/data -name "*.ext" -type f | xargs readlink -f | sort -V > ${DAT
 
 if [[ ! -f "${MLF_ROOT}/done" ]]; then
     echo "##### Generating mlf letter files .... #####"
-    ${SCRIPTS_DIR}/gen_mlf.py --ext_loc ${EXT_DIR}/data/ --datafiles_list ${DATAFILES_LIST} --mlf_file ${MLF_LOCATION_ORIGINAL} --mlf_type letter
-    ${SCRIPTS_DIR}/gen_mlf.py --ext_loc ${EXT_DIR}/data/ --datafiles_list ${DATAFILES_LIST} --mlf_file ${MLF_LOCATION_ORIGINAL_SKSP} --mlf_type letter --sksp
+    ${SCRIPTS_DIR}/gen_mlf.py --ext_loc ${EXT_DIR}/data/ --datafiles_list ${DATAFILES_LIST} --mlf_file ${MLF_LOCATION_ORIGINAL} --mlf_type letter --num_threads ${THREADS}
+    ${SCRIPTS_DIR}/gen_mlf.py --ext_loc ${EXT_DIR}/data/ --datafiles_list ${DATAFILES_LIST} --mlf_file ${MLF_LOCATION_ORIGINAL_SKSP} --mlf_type letter --num_threads ${THREADS} --sksp
     echo "#####"
     echo ""
     
     echo "##### Generating mlf word files .... #####"
-    ${SCRIPTS_DIR}/gen_mlf.py --ext_loc ${EXT_DIR}/data/ --datafiles_list ${DATAFILES_LIST} --mlf_file ${MLF_LOCATION_WORD} --mlf_type word
-    ${SCRIPTS_DIR}/gen_mlf.py --ext_loc ${EXT_DIR}/data/ --datafiles_list ${DATAFILES_LIST} --mlf_file ${MLF_LOCATION_WORD_SKSP} --mlf_type word --sksp
+    ${SCRIPTS_DIR}/gen_mlf.py --ext_loc ${EXT_DIR}/data/ --datafiles_list ${DATAFILES_LIST} --mlf_file ${MLF_LOCATION_WORD} --mlf_type word --num_threads ${THREADS}
+    ${SCRIPTS_DIR}/gen_mlf.py --ext_loc ${EXT_DIR}/data/ --datafiles_list ${DATAFILES_LIST} --mlf_file ${MLF_LOCATION_WORD_SKSP} --mlf_type word --num_threads ${THREADS} --sksp
     echo "#####"
     echo ""
 
@@ -91,14 +91,14 @@ fi
 
 if [[ ! -f "${DICTFILE_ROOT}/done" ]]; then
     echo "##### Generating dict (tri2letter/tri2word) files .... #####"
-    ${SCRIPTS_DIR}/gen_dict.py --label_loc ${label_loc} --dict_type tri_letter --dict_loc ${DICTFILE}
-    # ${SCRIPTS_DIR}/gen_dict.py --label_loc ${label_loc} --dict_type tri_letter_whole --dict_loc ${DICTFILE_WHOLE}
-    ${SCRIPTS_DIR}/gen_dict.py --label_loc ${label_loc} --dict_type cross_letter --dict_loc ${DICTFILE_CROSS}
+    ${SCRIPTS_DIR}/gen_dict.py --label_loc ${label_loc} --dict_type tri_letter --dict_loc ${DICTFILE} --num_threads ${THREADS}
+    # ${SCRIPTS_DIR}/gen_dict.py --label_loc ${label_loc} --dict_type tri_letter_whole --dict_loc ${DICTFILE_WHOLE} --num_threads ${THREADS}
+    ${SCRIPTS_DIR}/gen_dict.py --label_loc ${label_loc} --dict_type cross_letter --dict_loc ${DICTFILE_CROSS} --num_threads ${THREADS}
 
-    ${SCRIPTS_DIR}/gen_dict.py --label_loc ${label_loc} --dict_type tri_word --dict_loc ${DICTFILE_WORD}
-    ${SCRIPTS_DIR}/gen_dict.py --label_loc ${label_loc} --dict_type tri_word_sksp --dict_loc ${DICTFILE_WORD_SKSP}
-    # ${SCRIPTS_DIR}/gen_dict.py --label_loc ${label_loc} --dict_type tri_word_whole --dict_loc ${DICTFILE_WORD_WHOLE}
-    ${SCRIPTS_DIR}/gen_dict.py --label_loc ${label_loc} --dict_type cross_word --dict_loc ${DICTFILE_WORD_CROSS}
+    ${SCRIPTS_DIR}/gen_dict.py --label_loc ${label_loc} --dict_type tri_word --dict_loc ${DICTFILE_WORD} --num_threads ${THREADS}
+    ${SCRIPTS_DIR}/gen_dict.py --label_loc ${label_loc} --dict_type tri_word_sksp --dict_loc ${DICTFILE_WORD_SKSP} --num_threads ${THREADS}
+    # ${SCRIPTS_DIR}/gen_dict.py --label_loc ${label_loc} --dict_type tri_word_whole --dict_loc ${DICTFILE_WORD_WHOLE} --num_threads ${THREADS}
+    ${SCRIPTS_DIR}/gen_dict.py --label_loc ${label_loc} --dict_type cross_word --dict_loc ${DICTFILE_WORD_CROSS} --num_threads ${THREADS}
     echo "#####"
     echo ""
     
