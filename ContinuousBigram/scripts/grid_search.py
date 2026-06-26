@@ -380,26 +380,20 @@ def get_vector_dim(subdirs):
 
 # Returns appropriate values for all bool args. Does not
 # do this for triletter (handled separately)
-def get_bool_arg_info(subdirs):
-    # custom_silsp = "yes" if not(args.no_custom_silsp) else "no"
+def get_bool_arg_info():
     multi_process = "yes" if not(args.no_multi_process) else "no"
-    # hedfile1 = "${PRJ}/instr/mktri1_silsp.hed" if not(args.no_custom_silsp) else "${PRJ}/instr/mktri1_orig.hed"
-
-    # file_uniq_str = get_file_uniq_str(subdirs)
-    # if args.no_custom_silsp:
-    #     hedfile1_orig = f"${{PRJ}}/instr/mktri1_orig.hed"
-    #     hedfile1 = f"${{PRJ}}/instr/mktri1_orig.{file_uniq_str}.hed"
-    # else:
-
     cross_word = "yes" if args.cross_word else "no"
     whole_word = "yes" if args.whole_word else "no"
     use_phrase = "yes" if args.use_phrase else "no"
 
-    # return custom_silsp, multi_process, hedfile1, hedfile1_orig, cross_word, whole_word, use_phrase
     return multi_process, cross_word, whole_word, use_phrase
 
-def get_machine_info():
-    return os.cpu_count()
+def get_num_threads():
+    num_threads = 0
+    try:
+        return len(os.sched_getaffinity(0))
+    finally:
+        return os.cpu_count()
 
 # Helper to edit the options file with new hyperparam (for 1 param)
 def edit_file(re_search, re_repl, file_to_edit):
@@ -458,13 +452,11 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     letter_results_file, word_results_file = get_hresults_prj_filepaths(name_ext, subdirs, ip)
     
     # custom_silsp, multi_process, hedfile1, hedfile1_orig, cross_word, whole_word, use_phrase = get_bool_arg_info(subdirs)
-    multi_process, cross_word, whole_word, use_phrase = get_bool_arg_info(subdirs)
+    _, cross_word, whole_word, use_phrase = get_bool_arg_info()
     n_states = hmmdef[:hmmdef.find("-")]
     hedfile1, hedfile1_orig = get_hedfile1_names(subdirs)
     hedfile2, hedfile2_orig = get_hedfile2_names(subdirs, n_states)
-
-    num_threads = get_machine_info()
-    
+ 
     ip_search = IP_VARNAME + r"\s*=\s*-?[0-9]+(\.[0-9]+)*"
     ip_repl = IP_VARNAME + f"={ip}"
     
@@ -491,29 +483,8 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     models_dir = get_model_path(subdirs, hmmdef)
     make_dir(models_dir)
     
-    # hedfile1_search = HEDFILE1_VARNAME + r"\s*=\s*\$\{PRJ\}\/instr\/mktri1_.*\.hed"
-    # hedfile1_repl = HEDFILE1_VARNAME + f"={hedfile1}"
-    
-    # hedfile2_search = HEDFILE2_VARNAME + r"\s*=\s*\$\{PRJ\}\/instr\/mktri2_.*\.hed"
-    # hedfile2_repl = HEDFILE2_VARNAME + f"={hedfile2}"
-    
-    # custom_silsp_search = CUSTOM_SILSP_VARNAME + r"\s*=\s*(yes|no)"
-    # custom_silsp_repl = CUSTOM_SILSP_VARNAME + f"={custom_silsp}"
-    
-    multi_process_search = MULTI_PROCESS_VARNAME + r"\s*=\s*(yes|no)"
-    multi_process_repl = MULTI_PROCESS_VARNAME + f"={multi_process}"
-    
     cross_word_search = CROSS_WORD_VARNAME + r"\s*=\s*(yes|no)"
     cross_word_repl = CROSS_WORD_VARNAME + f"={cross_word}"
-    
-    # ngram_word_search = NGRAM_WORD_VARNAME + r"\s*=\s*[0-9]"
-    # ngram_word_repl = NGRAM_WORD_VARNAME + f"={ngram}"
-    
-    # whole_word_search = WHOLE_WORD_VARNAME + r"\s*=\s*(yes|no)"
-    # whole_word_repl = WHOLE_WORD_VARNAME + f"={whole_word}"
-    
-    # use_phrase_search = USE_PHRASE_VARNAME + r"\s*=\s*(yes|no)"
-    # use_phrase_repl = USE_PHRASE_VARNAME + f"={use_phrase}"
     
     hedfile1_tokens_root_search, hedfile1_tokens_root_repl = get_hedfile1_info(subdirs)
     hedfile1_orig_local_file = hedfile1_orig.replace("${PRJ}", ROOT)
@@ -533,9 +504,6 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
 
     trace_level_search = TRACE_LEVEL_VARNAME + r"\s*=\s*[0-9]+"
     trace_level_repl = TRACE_LEVEL_VARNAME + f"={trace_value}"
-
-    threads_search = THREADS_VARNAME + r"\s*=\s*[0-9]+"
-    threads_repl = THREADS_VARNAME + f"={num_threads}"
     
     options_file = get_options_file(subdirs)
 
@@ -549,16 +517,8 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     edit_file(models_root_search, models_root_repl, options_file)
     edit_file(letter_results_search, letter_results_repl, options_file)
     edit_file(word_results_search, word_results_repl, options_file)
-    # edit_file(hedfile1_search, hedfile1_repl, options_file)
-    # edit_file(hedfile2_search, hedfile2_repl, options_file)
-    # edit_file(custom_silsp_search, custom_silsp_repl, options_file)
-    edit_file(multi_process_search, multi_process_repl, options_file)
     edit_file(cross_word_search, cross_word_repl, options_file)
-    # edit_file(ngram_word_search, ngram_word_repl, options_file)
     edit_file(trace_level_search, trace_level_repl, options_file)
-    edit_file(threads_search, threads_repl, options_file)
-    # edit_file(whole_word_search, whole_word_repl, options_file)
-    # edit_file(use_phrase_search, use_phrase_repl, options_file)
     edit_file(hedfile1_tokens_root_search, hedfile1_tokens_root_repl, hedfile1_local_file)
     edit_file(hedfile2_tokens_root_search, hedfile2_tokens_root_repl, hedfile2_local_file)
     
@@ -573,22 +533,18 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     run_subprocess(["grep", "^" + LOG_WORD_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + HEDFILE1_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + HEDFILE2_VARNAME + r"\s*=\s*", options_file], logger=logger)
-    # run_subprocess(["grep", "^" + CUSTOM_SILSP_VARNAME + r"\s*=\s*", options_file], logger=logger)
-    run_subprocess(["grep", "^" + MULTI_PROCESS_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + CROSS_WORD_VARNAME + r"\s*=\s*", options_file], logger=logger)
-    # run_subprocess(["grep", "^" + NGRAM_WORD_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + TRACE_LEVEL_VARNAME + r"\s*=\s*", options_file], logger=logger)
-    run_subprocess(["grep", "^" + THREADS_VARNAME + r"\s*=\s*", options_file], logger=logger)
-    # run_subprocess(["grep", "^" + WHOLE_WORD_VARNAME + r"\s*=\s*", options_file], logger=logger)
-    # run_subprocess(["grep", "^" + USE_PHRASE_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["head", "-n", "1", f"{hedfile1_local_file}"], logger=logger)
     run_subprocess(["head", "-n", "1", f"{hedfile2_local_file}"], logger=logger)
     logger.info("#####\n")
 
 def edit_htk_root_file_options(subdirs):
+    multi_process, _, _, _ = get_bool_arg_info()
     options_file = get_options_file(subdirs)
     file_uniq_str = get_file_uniq_str(subdirs)
     vector_dim = get_vector_dim(subdirs)
+    num_threads = get_num_threads()
     
     # Handle triletter changes separately
     make_triletter_changes(subdirs)
@@ -610,18 +566,19 @@ def edit_htk_root_file_options(subdirs):
 
     hmmsil_search = HMMSIL_VARNAME + r"\s*=\s*\$HMM_TOPOLOGY_DIR\/3state-pca.+"
     hmmsil_repl = HMMSIL_VARNAME + f"=$HMM_TOPOLOGY_DIR/3state-pca{vector_dim}-sil-skip-loop"
-    # hmmsil_repl = hmmsil_repl + "-fullcov" if args.full_cov else hmmsil_repl
 
     hmmsp_search = HMMSP_VARNAME + r"\s*=\s*\$HMM_TOPOLOGY_DIR\/1state-pca.+"
     hmmsp_repl = HMMSP_VARNAME + f"=$HMM_TOPOLOGY_DIR/1state-pca{vector_dim}-sp"
-    # hmmsp_repl = hmmsp_repl + "-fullcov" if args.full_cov else hmmsp_repl
 
     vector_length_search = VECTOR_LENGTH_VARNAME + r"\s*=\s*[0-9]+"
     vector_length_repl = VECTOR_LENGTH_VARNAME + f"={vector_dim}"
 
-    # edit_file(grammarfile_root_search, grammarfile_root_repl, options_file)
-    # edit_file(dictfile_root_search, dictfile_root_repl, options_file)
-    # edit_file(tokens_root_search, tokens_root_repl, options_file)
+    multi_process_search = MULTI_PROCESS_VARNAME + r"\s*=\s*(yes|no)"
+    multi_process_repl = MULTI_PROCESS_VARNAME + f"={multi_process}"
+    
+    threads_search = THREADS_VARNAME + r"\s*=\s*[0-9]+"
+    threads_repl = THREADS_VARNAME + f"={num_threads}"
+
     edit_file(mlf_root_search, mlf_root_repl, options_file)
     edit_file(outputfile_root_search, outputfile_root_repl, options_file)
     edit_file(ext_dir_search, ext_dir_repl, options_file)
@@ -629,6 +586,8 @@ def edit_htk_root_file_options(subdirs):
     edit_file(hmmsil_search, hmmsil_repl, options_file)
     edit_file(hmmsp_search, hmmsp_repl, options_file)
     edit_file(vector_length_search, vector_length_repl, options_file)
+    edit_file(multi_process_search, multi_process_repl, options_file)
+    edit_file(threads_search, threads_repl, options_file)
 
     logger.info("##### Set root files #####")
     run_subprocess(["grep", "^" + GRAMMARFILE_ROOT_VARNAME + r"\s*=\s*", options_file], logger=logger)
@@ -641,22 +600,28 @@ def edit_htk_root_file_options(subdirs):
     run_subprocess(["grep", "^" + HMMSIL_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + HMMSP_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + VECTOR_LENGTH_VARNAME + r"\s*=\s*", options_file], logger=logger)
+    run_subprocess(["grep", "^" + THREADS_VARNAME + r"\s*=\s*", options_file], logger=logger)
+    run_subprocess(["grep", "^" + MULTI_PROCESS_VARNAME + r"\s*=\s*", options_file], logger=logger)
     logger.info("#####\n")
     
-    grammar_dir = os.path.join(GRAMMAR_ROOT, subdirs)
-    dict_dir = os.path.join(DICT_ROOT, subdirs)
-    tokens_dir = os.path.join(TOKENS_ROOT, subdirs)
+    logger.info("##### Create HTK File Directories #####")
     mlf_dir = os.path.join(MLF_ROOT, subdirs)
     outputfile_dir = os.path.join(OUTPUT_ROOT, subdirs)
     ext_dir = os.path.join(EXT_ROOT, subdirs)
     
-    logger.info("##### Create HTK File Directories #####")
-    make_dir(grammar_dir)
-    make_dir(dict_dir)
-    make_dir(tokens_dir)
     make_dir(mlf_dir)
     make_dir(outputfile_dir)
     make_dir(ext_dir)
+
+    if args.prepare_data_all:
+        grammar_dir = os.path.join(GRAMMAR_ROOT, subdirs)
+        dict_dir = os.path.join(DICT_ROOT, subdirs)
+        tokens_dir = os.path.join(TOKENS_ROOT, subdirs)
+
+        make_dir(grammar_dir)
+        make_dir(dict_dir)
+        make_dir(tokens_dir)
+
     logger.info("#####\n")
 
 

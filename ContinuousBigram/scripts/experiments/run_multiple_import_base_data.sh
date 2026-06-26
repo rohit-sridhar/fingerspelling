@@ -29,7 +29,7 @@ echo ""
 for dataset in ${datasets[@]}; do
     ${ROOT}/scripts/grid_search.py \
         --data_files ${ROOT}/data/${dataset}/dim20/thr0/all/data \
-        --prepare_data_only --prepare_data_all
+        --prepare_data_only --prepare_data_all --no_multi_process
 done
 
 # ############################## IMPORT ALL (DELPOL20) ###########################

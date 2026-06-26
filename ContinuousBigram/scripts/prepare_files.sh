@@ -34,9 +34,6 @@ echo ""
 
 if [[ ! -f "${EXT_DIR}/done" ]]; then
     echo "##### Cleaning up ext dir .... #####"
-    echo "${OPTIONS_FILE}"
-    echo "${EXT_DIR}"
-    echo "rm -rf ${EXT_DIR}/*"
     echo ""
     rm -rf ${EXT_DIR}/*
     mkdir ${EXT_DIR}/data/

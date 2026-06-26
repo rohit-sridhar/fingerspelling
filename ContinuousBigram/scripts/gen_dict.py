@@ -80,7 +80,7 @@ def parse_args():
 
 # Initialize the tri letter dictionary with sil/enter/exit vars
 def initialize_dict():
-    with open(args.dict_loc, 'w') as f:
+    with open(args.dict_loc, "w") as f:
         if args.dict_type.startswith("cross_") or \
                 args.dict_type.endswith("_sksp") or \
                 args.dict_type.endswith("_whole"):
@@ -177,7 +177,7 @@ def add_whole_word_to_dict(phrase):
 #################### UNILETTER LEVEL FUNCTIONS ####################
 def write_uniletter_dict():
     alphabet = string.ascii_lowercase
-    with open(args.dict_loc, 'a') as f:
+    with open(args.dict_loc, "a") as f:
         for letter in alphabet:
             f.write(f"{letter} {letter}\n")
 
