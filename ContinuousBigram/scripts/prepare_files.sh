@@ -101,7 +101,7 @@ if [[ ! -f "${DICTFILE_ROOT}/done" ]]; then
     ${SCRIPTS_DIR}/gen_dict.py --label_loc ${label_loc} --dict_type tri_word --dict_loc ${DICTFILE_WORD}
     ${SCRIPTS_DIR}/gen_dict.py --label_loc ${label_loc} --dict_type tri_word_sksp --dict_loc ${DICTFILE_WORD_SKSP}
     # ${SCRIPTS_DIR}/gen_dict.py --label_loc ${label_loc} --dict_type tri_word_whole --dict_loc ${DICTFILE_WORD_WHOLE}
-    ${SCRIPTS_DIR}/gen_dict.py --label_loc ${label_loc} --dict_type cross_word --dict_loc ${DICTFILE_CROSS_WORD}
+    ${SCRIPTS_DIR}/gen_dict.py --label_loc ${label_loc} --dict_type cross_word --dict_loc ${DICTFILE_WORD_CROSS}
     echo "#####"
     echo ""
     
@@ -151,7 +151,7 @@ if [[ ! -f "${TOKENS_ROOT}/done" ]]; then
     echo ""
 
     echo "##### Copy label files back into ext dir (HLEd may have modified them) .... #####"
-    find ${label_loc} -name "*.lab" -type f | xargs cp -t ${EXT_DIR}/data/
+    find ${label_loc} -name "*.lab" -type f | xargs cp -lt ${EXT_DIR}/data/
     echo "#####"
     echo ""
     

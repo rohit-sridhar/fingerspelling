@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import datetime
 import argparse
 import sys
 import os
@@ -272,11 +273,12 @@ def ingest_label_file(label_filepath):
 
 if __name__ == "__main__":
     args = parse_args()
+    now_str = get_now_str()
     setup_logger(
-        args.dict_loc.parent / "log.txt",
+        args.dict_loc.parent / f"log_{now_str}.txt",
         logger,
         log_level=logging.DEBUG if args.debug else logging.INFO,
-        mode="w"
+        mode="a"
     )
     logger.info(args)
     

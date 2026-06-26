@@ -13,7 +13,7 @@ import hashlib
 import signal
 from logging.handlers import MemoryHandler
 
-from datetime import datetime
+# from datetime import datetime
 from itertools import product
 from utils import *
 from glob import glob
@@ -769,7 +769,8 @@ def add_results_to_csv(ip, tc, num_its, num_tri_its, hmmdef, subdirs):
     word_results = get_results(word_results_file, letter_results=False)
     
     # prepend timestamp in format YYYY-MM-DD HH:MM:SS
-    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    # now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    now_str = get_now_str()
 
     results = [now_str, letter_results_file]
     if letter_results is not None:
@@ -838,11 +839,12 @@ def prepare_data(data_file, label_file, subdirs):
 
     name_ext = ""
     log_file = get_log_file(subdirs, name_ext, mode="prepare_data")
+    log_level = logging.DEBUG if args.debug else logging.INFO
 
     prep_handler = setup_logger(
         log_file,
-        log_level=logging.INFO,
-        mode="w"
+        log_level=log_level,
+        mode="w",
     )
     logger.info("##### Run prepare data #####")
     logger.info(f"Log file: {log_file}\n")
@@ -918,7 +920,7 @@ def _catch_signal_and_cleanup(sig):
     _cleanup()
 
 # Clean up script that removes temp files. Run when exiting program
-def _cleanup():
+def _cleanup(subdirs=None):
     logger.info(f"Running clean up function")
     for file_uniq_str in file_uniq_strs:
         # clean up hedfile2 files (uniq per model training session)
@@ -930,24 +932,27 @@ def _cleanup():
             logger.info(f"Cleaning up (removing): {hedfile1}")
             os.remove(hedfile1)
     logger.info("Exiting iter ...")
-    _close_main_log_handler()
+    _close_main_log_handler(subdirs=subdirs)
 
-def _close_main_log_handler():
+def _close_main_log_handler(subdirs=None):
     global main_log_handler
 
     if main_log_handler is None:
-        log_dir = os.path.join(LOG_ROOT, "premature")
-        make_dir(log_dir)
-        
-        now_str = datetime.now().strftime("%Y-%m-%d_%H-%M")
-        log_file = os.path.join(log_dir, ".".join(["grid_search", now_str, "txt"]))
+        if subdirs is not None:
+            log_file = get_log_file(subdirs, "", mode="grid_search")
+        else:
+            # now_str = datetime.now().strftime("%Y-%m-%d_%H-%M")
+            now_str = get_now_str()
+            log_file = os.path.join(LOG_ROOT, "premature", ".".join(["grid_search", now_str, "txt"]))
+
+        make_dir(os.path.split(log_file)[0])
         log_level = logging.DEBUG if args.debug else logging.INFO
         
         main_log_handler = setup_logger(
             log_file,
             flush=True,
             log_level=log_level,
-            mode="a"
+            mode="a",
         )
 
     root_logger.removeHandler(main_log_handler)
@@ -1062,12 +1067,12 @@ def _main():
             _make_options_file(subdirs)
             edit_htk_root_file_options(subdirs)
 
-            if args.prepare_data or args.prepare_data_only:
+            if args.prepare_data or args.prepare_data_only or args.prepare_data_all:
                 prepare_data(data_file, label_file, subdirs)
 
                 # Exit here after prepare_files and gen_grammar finish
                 if args.prepare_data_only:
-                    _cleanup()
+                    _cleanup(subdirs=subdirs)
                     sys.exit(0)
 
             for arg_tup in arg_iter:
@@ -1080,13 +1085,13 @@ def _main():
                     logger.error(f"{traceback.format_exc()}")
                 finally:
                     # cleanup will delete tmp hedfiles 1 and 2 and close the log handler (for this iter)
-                    _cleanup()
+                    _cleanup(subdirs=subdirs)
         except Exception as e:
             logger.error(f"Could not train on {data_file=}.")
             logger.error(f"An unexpected exception {e} occurred during training or testing.")
             logger.error(f"{traceback.format_exc()}")
         finally:
-            _cleanup()
+            _cleanup(subdirs=subdirs)
 
 if __name__ == "__main__":
     _register_signals()

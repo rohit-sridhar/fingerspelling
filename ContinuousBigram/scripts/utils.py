@@ -8,7 +8,9 @@ import subprocess
 import threading
 import logging
 import signal
+
 from logging.handlers import MemoryHandler
+from datetime import datetime
 from pathlib import Path
 from glob import glob
 
@@ -212,6 +214,13 @@ NEW_DATA_LOC_REQUIRED_METHODS = {
 # NEW_LABEL_LOC_REQUIRED_METHODS = {
 #     "whole_word"
 # }
+
+########################################################################
+# Subprocess utilities
+########################################################################
+def get_now_str():
+    now_str = datetime.now().strftime("%Y-%m-%d_%H-%M")
+    return now_str
 
 ########################################################################
 # Subprocess utilities
@@ -458,7 +467,7 @@ def _attach_file_handler(log_file, log_level=logging.DEBUG, mode="a"):
     fh.setLevel(log_level)
 
     # Only allow log_level (arg 2) logs into this file handler
-    fh.addFilter(lambda record: record.levelno == log_level)
+    fh.addFilter(lambda record: record.levelno >= log_level)
 
     root_logger.addHandler(fh)
     return fh
