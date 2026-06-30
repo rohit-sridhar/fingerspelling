@@ -7,19 +7,20 @@ ROOT="${SCRIPT_DIR}/../.."
 . ${SCRIPT_DIR}/utils.sh
 set_vars $@
 
-# ############################## IMPORT ALL (DIM20) ###############################
-# 
-# echo ""
-# echo "STARTING IMPORT"
-# echo ""
-# 
-# for dataset in ${datasets[@]}; do
-#     ${ROOT}/scripts/modify_data.py \
-#         --import_data_loc ${TORCH_ROOT}/data/data_${dataset}_rh.pq.all \
-#         --new_data_loc ${ROOT}/data/${dataset}/dim20/thr0/all/data \
-#         --bar_description "importing base ${dataset}" --method import
-# done
-# 
+############################## IMPORT ALL (DIM20) ###############################
+
+echo ""
+echo "STARTING IMPORT"
+echo ""
+
+for dataset in ${datasets[@]}; do
+    ${ROOT}/scripts/modify_data.py \
+        --import_data_loc ${TORCH_ROOT}/data/data_${dataset}_rh.pq.all \
+        --new_data_loc ${ROOT}/data/${dataset}/dim20/thr0/all/data \
+        --bar_description "importing base ${dataset}" --method import \
+        ${debug}
+done
+
 ############################### PREP ALL (DIM20) ################################
 
 echo ""
@@ -29,7 +30,7 @@ echo ""
 for dataset in ${datasets[@]}; do
     ${ROOT}/scripts/grid_search.py \
         --data_files ${ROOT}/data/${dataset}/dim20/thr0/all/data \
-        --prepare_data_only --prepare_data_all --no_multi_process
+        --prepare_data_only --prepare_data_all ${debug}
 done
 
 # ############################## IMPORT ALL (DELPOL20) ###########################

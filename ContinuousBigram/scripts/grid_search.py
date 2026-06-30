@@ -221,10 +221,12 @@ def _check_args():
         args.data_files[i] = os.path.abspath(args.data_files[i])
 
         if not os.path.exists(args.data_files[i]):
-            raise ValueError("Data files must exist.")
+            logger.error(args.data_files[i])
+            raise ValueError(f"Data files {args.data_files[i]} must exist.")
 
         if not valid_data_loc(args.data_files[i]):
-            raise ValueError("Data files must start with DATA_ROOT and end with /data (last subdir).")
+            logger.error(args.data_files[i])
+            raise ValueError(f"Data files {args.data_files[i]} must start with DATA_ROOT and end with /data (last subdir).")
 
     if args.test_model_path is not None:
         # if args.test_model_path.startswith("."):
@@ -354,6 +356,15 @@ def get_hedfile1_info(subdirs):
         hedfile1_tokens_root_repl = f"CL {tokens_path}/commands_tri_internal"
 
     return hedfile1_tokens_root_search, hedfile1_tokens_root_repl
+
+def get_base_path(base_dir, subdirs):
+    dataset = "_".join(subdirs.split(os.path.sep)[:2])
+    data_file_dict = load_json_file(DATA_FILE_DICT_FILE)
+
+    root_path = data_file_dict[dataset]["label_path"].replace("label", base_dir)
+    root_path = os.path.split(root_path)[0]
+
+    return root_path
 
 def get_hedfile2_names(subdirs, n_states):
     if args.full_cov:
@@ -549,17 +560,32 @@ def edit_htk_root_file_options(subdirs):
     # Handle triletter changes separately
     make_triletter_changes(subdirs)
 
-    mlf_relative = os.path.basename(MLF_ROOT)
+    grammarfile_relative = get_base_path("grammar", subdirs)
+    grammarfile_relative = os.path.relpath(grammarfile_relative, ROOT)
+    grammarfile_root_search = GRAMMARFILE_ROOT_VARNAME + r"\s*=\s*\$\{PRJ\}\/grammar\/.*"
+    grammarfile_root_repl = GRAMMARFILE_ROOT_VARNAME + os.path.join("=${PRJ}", grammarfile_relative)
+
+    dictfile_relative = get_base_path("dict", subdirs)
+    dictfile_relative = os.path.relpath(dictfile_relative, ROOT)
+    dictfile_root_search = DICTFILE_ROOT_VARNAME + r"\s*=\s*\$\{PRJ\}\/dict\/.*"
+    dictfile_root_repl = DICTFILE_ROOT_VARNAME + os.path.join("=${PRJ}", dictfile_relative)
+
+    tokens_relative = get_base_path("commands", subdirs)
+    tokens_relative = os.path.relpath(tokens_relative, ROOT)
+    tokens_root_search = TOKENS_ROOT_VARNAME + r"\s*=\s*\$\{PRJ\}\/commands\/.*"
+    tokens_root_repl = TOKENS_ROOT_VARNAME + os.path.join("=${PRJ}", tokens_relative)
+
+    mlf_base = os.path.basename(MLF_ROOT)
     mlf_root_search = MLF_ROOT_VARNAME + r"\s*=\s*\$\{PRJ\}\/mlf.*"
-    mlf_root_repl = MLF_ROOT_VARNAME + os.path.join("=${PRJ}", mlf_relative, subdirs)
+    mlf_root_repl = MLF_ROOT_VARNAME + os.path.join("=${PRJ}", mlf_base, subdirs)
 
-    output_relative = os.path.basename(OUTPUT_ROOT)
+    output_base = os.path.basename(OUTPUT_ROOT)
     outputfile_root_search = OUTPUTFILE_ROOT_VARNAME + r"\s*=\s*\$\{PRJ\}\/output.*"
-    outputfile_root_repl = OUTPUTFILE_ROOT_VARNAME + os.path.join("=${PRJ}", output_relative, subdirs)
+    outputfile_root_repl = OUTPUTFILE_ROOT_VARNAME + os.path.join("=${PRJ}", output_base, subdirs)
 
-    ext_relative = os.path.basename(EXT_ROOT)
+    ext_base = os.path.basename(EXT_ROOT)
     ext_dir_search = EXT_DIR_VARNAME + r"\s*=\s*\$\{PRJ\}\/ext.*"
-    ext_dir_repl = EXT_DIR_VARNAME + os.path.join("=${PRJ}", ext_relative, subdirs)
+    ext_dir_repl = EXT_DIR_VARNAME + os.path.join("=${PRJ}", ext_base, subdirs)
     
     file_uniq_search = FILE_UNIQ_STR_VARNAME + r"\s*=\s*.+"
     file_uniq_repl = FILE_UNIQ_STR_VARNAME + f"={file_uniq_str}"
@@ -579,6 +605,9 @@ def edit_htk_root_file_options(subdirs):
     threads_search = THREADS_VARNAME + r"\s*=\s*[0-9]+"
     threads_repl = THREADS_VARNAME + f"={num_threads}"
 
+    edit_file(grammarfile_root_search, grammarfile_root_repl, options_file)
+    edit_file(dictfile_root_search, dictfile_root_repl, options_file)
+    edit_file(tokens_root_search, tokens_root_repl, options_file)
     edit_file(mlf_root_search, mlf_root_repl, options_file)
     edit_file(outputfile_root_search, outputfile_root_repl, options_file)
     edit_file(ext_dir_search, ext_dir_repl, options_file)

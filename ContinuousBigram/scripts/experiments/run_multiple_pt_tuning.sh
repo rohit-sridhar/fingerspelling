@@ -9,13 +9,22 @@ set_vars $@
 
 output_dir=${ROOT}/results/pt_results/tot/
 
-# Assumes we're in ContinuousBigram dir
 if [ ! -d "${output_dir}" ]; then
     mkdir -p "${output_dir}"
 fi
 
 # --hmmdefs 6state-pca20-gmm2 5state-pca20-gmm2 4state-pca20-gmm2 \
-participants=(ab12)
+# participants=(3f8b 13e3 494d b2d1 ab12)
+if [[ -v SLURM_ARRAY_TASK_ID ]]; then
+    if [[ ${SLURM_ARRAY_TASK_ID} -ge ${#participants[@]} ]]; then
+        echo "The SLUM ARRAY TASK ID is too large. Should be <= num participants"
+        exit 1
+    fi
+    participants=(${participants[${SLURM_ARRAY_TASK_ID}]})
+else
+    participants=${participants[@]}
+fi
+
 ############################## TRAIN MULTIPLE (DIM20) ##############################
 for dataset in ${datasets[@]}; do
 for threshold in ${thresholds[@]}; do
@@ -25,7 +34,7 @@ for participant in ${participants[@]}; do
         --data_files ${ROOT}/data/${dataset}/dim20/thr${threshold}/train/pt/${participant}/sd${seed}/data/ \
         --hmmdefs 3state-pca20-gmm2-skip 3state-pca20-gmm2-skip1 3state-pca20-gmm2 4state-pca20-gmm2-skip 4state-pca20-gmm2-skip1 4state-pca20-gmm2 5state-pca20-gmm2-skip 5state-pca20-gmm2-skip1 5state-pca20-gmm2 \
         --results_csv ${output_dir}/results_pt${participant}_sd${seed}_tuning.csv \
-        --prepare_data --clear_hresults ${debug}
+        --prepare_data_only --prepare_data --clear_hresults ${debug}
 done
 done
 done
@@ -37,7 +46,7 @@ done
 # for participant in ${participants[@]}; do
 #     ${ROOT}/scripts/grid_search.py \
 #         --data_files ${ROOT}/data/${dataset}/dim20/thr${threshold}/train/pt/${participant}/sd${seed}/data/ \
-#         --hmmdefs 4state-pca20-gmm2-skip \
+#         --hmmdefs 3state-pca20-gmm2-skip 3state-pca20-gmm2-skip1 3state-pca20-gmm2 4state-pca20-gmm2-skip 4state-pca20-gmm2-skip1 4state-pca20-gmm2 5state-pca20-gmm2-skip 5state-pca20-gmm2-skip1 5state-pca20-gmm2 \
 #         --results_csv ${output_dir}/results_pt${participant}_sd${seed}_tuning.csv \
 #         --prepare_data --clear_hresults --cross_word ${debug}
 # done

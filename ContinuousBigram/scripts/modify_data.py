@@ -400,7 +400,11 @@ def get_landmarks(df, seq_id):
 
 def import_data(new_data_loc, new_label_loc):
     df = pd.read_parquet(args.import_data_loc)
-    dl_seq_ids = df.index.to_list()
+    df_seq_ids = df.index.to_list()
+    if args.debug:
+        logger.debug("Sampling 500 data points")
+        random.shuffle(df_seq_ids)
+        df_seq_ids = df_seq_ids[:500]
     
     # dataset = "_".join(new_data_loc.split(os.path.sep)[1:3])
     dataset = "_".join(get_subdirectories_split(new_data_loc)[:2])
@@ -411,7 +415,7 @@ def import_data(new_data_loc, new_label_loc):
     supplemental = is_supplemental(new_data_loc)
     
     # idx_char_map = get_idx_char_map(supplemental)
-    for seq_id in tqdm(dl_seq_ids, position=args.bar_position, desc=args.bar_description):
+    for seq_id in tqdm(df_seq_ids, position=args.bar_position, desc=args.bar_description):
         new_datafile = os.path.join(new_data_loc, str(seq_id))
         new_label_file = os.path.join(new_label_loc, str(seq_id) + ".lab")
         
@@ -435,6 +439,7 @@ def import_data(new_data_loc, new_label_loc):
                     c = str(ord(c))
                 phrase += [f"{c}\n"]
             phrase += [f"{EXIT}\n"]
+            logger.debug(f"{phrase=}")
             # phrase = get_labels(df, seq_id, idx_char_map, supplemental)
             
             with open(new_datafile, 'w') as f:

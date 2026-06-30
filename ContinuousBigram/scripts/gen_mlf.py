@@ -9,6 +9,7 @@ from threading import Lock
 from glob import glob
 from utils import *
 
+logger = logging.getLogger(__name__)
 mlffile_lock = Lock()
 
 def _parse_args():
@@ -30,7 +31,7 @@ def _parse_args():
     
     parser.add_argument(
         "--mlf_file",
-        type=str,
+        type=Path,
         required=True,
         help="Location for new mlf file."
     )
@@ -69,6 +70,12 @@ def _parse_args():
         help="Boolean indicating whether to produce the sksp variant (spaces are included in words)."
     )
     
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="Run in debug mode (verbose)."
+    )
+
     return parser.parse_args()
 
 # Initialize the MLF File
@@ -167,6 +174,7 @@ def get_label_info(data_file):
     with open(data_file, "r") as f:
         num_lines = len(f.readlines())
     
+    logger.debug(f"{labels=}")
     num_labels = len(labels)
     if args.mlf_type == "letter" and args.sksp:
         labels.insert(-1, SPACE + "\n")
@@ -178,6 +186,7 @@ def get_label_info(data_file):
             labels = get_whole_word_word_labels(labels)
         else:
             labels = get_word_labels(labels)
+    logger.debug(f"{labels=}")
     
     total_duration = args.sample_period * num_lines 
     label_path = os.path.abspath(label_file)
@@ -194,17 +203,23 @@ def gen_mlf():
 
     with open(args.datafiles_list, "r") as f:
         datafiles = f.readlines()
-    
     datafiles = [data_file.strip() for data_file in datafiles]
 
-    # for data_file in datafiles:
+    logger.debug(f"Length of datafiles: {len(datafiles)}")
     with ThreadPoolExecutor(max_workers=args.num_threads) as executor:
         executor.map(add_data_file_to_mlf, datafiles)
 
 if __name__ == "__main__":
     args = _parse_args()
-    print(args)
-
+    now_str = get_now_str()
+    setup_logger(
+        args.mlf_file.parent / f"log_{now_str}.txt",
+        logger,
+        log_level=logging.DEBUG if args.debug else logging.INFO,
+        mode="a",
+    )
+    logger.info(args)
+    
     init_mlf_file()
     gen_mlf()
-
+    

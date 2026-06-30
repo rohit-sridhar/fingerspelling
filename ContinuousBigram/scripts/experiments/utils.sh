@@ -20,7 +20,8 @@ typeset -a thresholds=(0)
 # 
 # trap cleanup SIGTERM SIGINT SIGQUIT SIGHUP
 
-function set_vars {
+#################### set vars for all experimental shell scripts ####################
+function set_participants {
     base_dataset=${1:-}
     datasets=(${base_dataset}_drop-na_lininterp0)
     if [[ ${base_dataset} == "supplemental_gen" ]]; then
@@ -32,12 +33,28 @@ function set_vars {
         exit 1
     fi
 
-    debug=${2:-}
+    if [[ -v SLURM_ARRAY_TASK_ID ]]; then
+        if [[ ${SLURM_ARRAY_TASK_ID} -ge ${#participants[@]} ]]; then
+            echo "The SLUM ARRAY TASK ID is too large. Should be <= num participants"
+            exit 1
+        fi
+        participants=(${participants[${SLURM_ARRAY_TASK_ID}]})
+    fi
+}
+
+function set_debug {
+    debug=${1:-}
     if [[ ${debug} == "debug" ]]; then
         debug="--debug"
     fi
 }
 
+function set_vars {
+    set_participants ${1:-}
+    set_debug ${2:-}
+}
+
+#################### functions for grp tuning/import ####################
 function get_seeded_random {
   seed="$1"
   openssl enc -aes-256-ctr -pass pass:"$seed" -nosalt \

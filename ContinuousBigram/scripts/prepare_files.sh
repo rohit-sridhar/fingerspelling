@@ -73,7 +73,7 @@ if [[ ! -f "${MLF_ROOT}/done" ]]; then
 
     echo "#####"
     echo ""
-     
+    
     echo "1" > ${MLF_ROOT}/done
 else
     echo "##### MLF files exist. Skipping generation #####"
@@ -114,26 +114,12 @@ if [[ ! -f "${TOKENS_ROOT}/done" ]]; then
     touch ${LEDFILE_WORD}
     touch ${LEDFILE_LETTER}
 
-    HLEd -n ${TOKENS_ORIGINAL} ${LEDFILE_LETTER} ${MLF_LOCATION_ORIGINAL}
-    # HLEd -n ${TOKENS_ORIGINAL_WHOLE} ${LEDFILE_LETTER} ${MLF_LOCATION_ORIGINAL_WHOLE}
-
-    HLEd -n ${TOKENS} ${LEDFILE_TRI_INTERNAL} ${MLF_LOCATION_ORIGINAL}
-    HLEd -n ${TOKENS} ${LEDFILE_TRI_INTERNAL} ${MLF_LOCATION_ORIGINAL_SKSP}
-    HLEd -n ${TOKENS_CROSS} ${LEDFILE_TRI_CROSS} ${MLF_LOCATION_ORIGINAL}
-
-    HLEd -n ${TOKENS_WORD} ${LEDFILE_WORD} ${MLF_LOCATION_WORD}
-    HLEd -n ${TOKENS_WORD_SKSP} ${LEDFILE_WORD} ${MLF_LOCATION_WORD_SKSP}
-    # HLEd -n ${TOKENS_WORD_WHOLE} ${LEDFILE_WORD} ${MLF_LOCATION_WORD_WHOLE}
-
-    # The first two HLEd commands below output to the same tokens file because
-    # mlf sksp/non sksp letter files both contain spaces. Even the non sksp MLF
-    # file contains spaces since spaces are only removed on the word level. In this case,
-    # instead it is better to add a space to the end of the final word in the phrase
-    # as well.
-    ##### This was moved to the mlf creation location
-    # HLEd -n ${TOKENS} -i ${MLF_LOCATION} instr/mktri_internal.led ${MLF_LOCATION_ORIGINAL}
-    # HLEd -n ${TOKENS} -i ${MLF_LOCATION_SKSP} instr/mktri_internal.led ${MLF_LOCATION_ORIGINAL_SKSP}
-    # HLEd -n ${TOKENS_WHOLE} -i ${MLF_LOCATION_WHOLE} instr/mktri_internal.led ${MLF_LOCATION_ORIGINAL_WHOLE}
+    HLEd -i /dev/null -n ${TOKENS_ORIGINAL} ${LEDFILE_LETTER} ${MLF_LOCATION_ORIGINAL}
+    HLEd -i /dev/null -n ${TOKENS} ${LEDFILE_TRI_INTERNAL} ${MLF_LOCATION_ORIGINAL}
+    HLEd -i /dev/null -n ${TOKENS} ${LEDFILE_TRI_INTERNAL} ${MLF_LOCATION_ORIGINAL_SKSP}
+    HLEd -i /dev/null -n ${TOKENS_CROSS} ${LEDFILE_TRI_CROSS} ${MLF_LOCATION_ORIGINAL}
+    HLEd -i /dev/null -n ${TOKENS_WORD} ${LEDFILE_WORD} ${MLF_LOCATION_WORD}
+    HLEd -i /dev/null -n ${TOKENS_WORD_SKSP} ${LEDFILE_WORD} ${MLF_LOCATION_WORD_SKSP}
 
     rm -f ${LEDFILE_WORD}
     rm -f ${LEDFILE_LETTER}
