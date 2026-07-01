@@ -43,7 +43,9 @@ fi
 
 # check options for proper values, verify existence and executability of utils
 if [ -f "${UTIL_DIR}/check_opts.sh" ]; then
+    echo "HTKBIN: ${HTKBIN}"
     . "${UTIL_DIR}/check_opts.sh"
+    echo "HTKBIN: ${HTKBIN}"
 else
     echo "Warning: ${UTIL_DIR}/check_opts.sh not found; skipping option checks. Set UTIL_DIR or install the utils package." >&2
 fi

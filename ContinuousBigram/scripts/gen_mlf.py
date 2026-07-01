@@ -211,9 +211,8 @@ def gen_mlf():
 
 if __name__ == "__main__":
     args = _parse_args()
-    now_str = get_now_str()
     setup_logger(
-        args.mlf_file.parent / f"log_{now_str}.txt",
+        args.mlf_file.parent / f"log.txt",
         logger,
         log_level=logging.DEBUG if args.debug else logging.INFO,
         mode="a",

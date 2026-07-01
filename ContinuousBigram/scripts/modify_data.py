@@ -493,7 +493,7 @@ if __name__ == "__main__":
         log_file,
         flush=True,
         log_level=logging.DEBUG if args.debug else logging.INFO,
-        mode="w"
+        mode="a"
     )
 
     if args.method == "import":

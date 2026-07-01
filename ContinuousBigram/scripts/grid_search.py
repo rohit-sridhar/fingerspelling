@@ -838,7 +838,7 @@ def prepare_data(data_file, label_file, subdirs):
     prep_handler = setup_logger(
         log_file,
         log_level=log_level,
-        mode="w",
+        mode="a",
     )
     logger.info("##### Run prepare data #####")
     logger.info(f"Log file: {log_file}\n")
@@ -908,8 +908,7 @@ def _register_signals():
         signal.signal(sig, _catch_signal_and_cleanup)
         logger.info(f"registered {sig} to _cleanup fxn")
 
-def _catch_signal_and_cleanup(sig):
-    print(f"{sig=}", flush=True)
+def _catch_signal_and_cleanup(sig, frame):
     logger.info(f"Caught signal {sig}")
     _cleanup()
 
@@ -1060,15 +1059,16 @@ def _main():
             
             _make_options_file(subdirs)
             edit_htk_root_file_options(subdirs)
-
+            
             if args.prepare_data or args.prepare_data_only or args.prepare_data_all:
                 prepare_data(data_file, label_file, subdirs)
-
-                # Exit here after prepare_files and gen_grammar finish
+                
+                # Exit here after prepare_files finishes
                 if args.prepare_data_only:
                     _cleanup(subdirs=subdirs)
-                    sys.exit(0)
-
+                    continue
+                    # sys.exit(0)
+                    
             for arg_tup in arg_iter:
                 # wrap entire loop in try and continue if training on one model fails
                 try:

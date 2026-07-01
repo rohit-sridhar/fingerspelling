@@ -283,9 +283,8 @@ def ingest_label_file(label_filepath):
 
 if __name__ == "__main__":
     args = parse_args()
-    now_str = get_now_str()
     setup_logger(
-        args.dict_loc.parent / f"log_{now_str}.txt",
+        args.dict_loc.parent / f"log.txt",
         logger,
         log_level=logging.DEBUG if args.debug else logging.INFO,
         mode="a"
