@@ -210,7 +210,7 @@ ContinuousBigram/scripts/supplemental*
 ContinuousBigram/instr/*/
 ContinuousBigram/instr/mkcmd_letter.*
 ContinuousBigram/instr/mkcmd_word.*
-ContinuousBigram/instr/mktri2_*.*.hed
+ContinuousBigram/instr/mktri2_*.*.*.hed
 ContinuousBigram/instr/mktri1_*.*.hed
 
 # Ignore tag file for vim
