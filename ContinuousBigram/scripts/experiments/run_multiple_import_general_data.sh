@@ -1,28 +1,20 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-##### For all participants
-# typeset -a all_participants=(3f8b 13e3 494d b2d1 c0df d3ab 8e3b fe96 8c4d a3d4 3a6e 3d12 f9ea 2ff7 e0f7 ed8e 51f5 a362 a6ed 0ba8 812c 03ad a021 a442 1d72 711d a95b fa10 1bd5 6b92 5b63 bd21 1f91 917d fbb7 4ddc ab12 dbf9 99cb 39e5 4f1e 63a1 163a c82a f418 9d2b b718 39a6 4c3d 675f 9b23 9ed9 d478 f066 e3c0 fede 0a77 0bea d05c 9ff4 f760 7f32 80fe 19d3 6f68 a3e7 cf84 d69c 1f86 2f35 e4fa 5d33)
-# 
-# typeset -a seeds=(1248 2248 3248 4248 5248)
-# typeset -a data_splits=(train val)
-
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 ROOT="${SCRIPT_DIR}/../.."
 
 . ${SCRIPT_DIR}/utils.sh
 set_vars $1
 
-##### For trial 
 typeset -a data_splits=(train val test)
-
-echo ""
-echo "STARTING IMPORT"
-echo ""
-
 # ############################## IMPORT MULTIPLE (DIM20) ##############################
 # 
-# pid=()
+# echo ""
+# echo "STARTING IMPORT"
+# echo ""
+# 
+# # pid=()
 # for dataset in ${datasets[@]}; do
 # for data_split in ${data_splits[@]}; do
 # for seed in "${seeds[@]}"; do
@@ -30,33 +22,36 @@ echo ""
 #     ${ROOT}/scripts/modify_data.py \
 #         --import_data_loc ${TORCH_ROOT}/data/data_${dataset}_sd${seed}_rh.pq.${data_split} \
 #         --new_data_loc ${ROOT}/data/${dataset}/dim20/thr0/${data_split}/general/sd${seed}/data \
-#         --method import &
-#     pid+=("$!")
+#         --method import
+# #     pid+=("$!")
 # done
 # done
 # done
-# wait "${pid[@]}"
+# # wait "${pid[@]}"
 # 
-############################## IMPORT MULTIPLE (PCA10) ##############################
-
-pid=()
-for dataset in ${datasets[@]}; do
-for data_split in ${data_splits[@]}; do
-for seed in "${seeds[@]}"; do
-    # Code below assumes threshold 0 for all the imported data (should only import thr 0 data)
-    ${ROOT}/scripts/modify_data.py \
-        --import_data_loc ${TORCH_ROOT}/data/data_${dataset}_sd${seed}_pca10_rh.pq.${data_split} \
-        --new_data_loc ${ROOT}/data/${dataset}/pca10/thr0/${data_split}/general/sd${seed}/data \
-        --method import &
-    pid+=("$!")
-done
-done
-done
-wait "${pid[@]}"
-
-############################## IMPORT MULTIPLE (DIM20, PT-SPLIT) ##############################
+# ############################### prep all (dim20) (train,val,test) ################################
 # 
-# pid=()
+# echo ""
+# echo "STARTING DATA PREPARATION"
+# echo ""
+# 
+# for dataset in "${datasets[@]}"; do
+# for data_split in "${data_splits[@]}"; do
+# for seed in "${seeds[@]}"; do
+#     ${ROOT}/scripts/grid_search.py \
+#         --data_files ${ROOT}/data/${dataset}/dim20/thr0/${data_split}/general/sd${seed}/data \
+#         --prepare_data_only
+# done
+# done
+# done
+# 
+# ############################## IMPORT MULTIPLE (DIM20, PT-SPLIT) ##############################
+# 
+# echo ""
+# echo "STARTING IMPORT"
+# echo ""
+# 
+# # pid=()
 # for dataset in ${datasets[@]}; do
 # for data_split in ${data_splits[@]}; do
 # for seed in "${seeds[@]}"; do
@@ -64,6 +59,39 @@ wait "${pid[@]}"
 #     ${ROOT}/scripts/modify_data.py \
 #         --import_data_loc ${TORCH_ROOT}/data/data_${dataset}_sd${seed}_pt-split_rh.pq.${data_split} \
 #         --new_data_loc ${ROOT}/data/${dataset}/dim20/thr0/${data_split}/pt-split/sd${seed}/data \
+#         --method import
+# #     pid+=("$!")
+# done
+# done
+# done
+# # wait "${pid[@]}"
+# 
+############################### prep all (dim20, pt-split) (train,val,test) ################################
+
+echo ""
+echo "STARTING DATA PREPARATION"
+echo ""
+
+for dataset in "${datasets[@]}"; do
+for data_split in "${data_splits[@]}"; do
+for seed in "${seeds[@]}"; do
+    ${ROOT}/scripts/grid_search.py \
+        --data_files ${ROOT}/data/${dataset}/dim20/thr0/${data_split}/pt-split/sd${seed}/data \
+        --prepare_data_only
+done
+done
+done
+
+# ############################## IMPORT MULTIPLE (PCA10) ##############################
+# 
+# pid=()
+# for dataset in ${datasets[@]}; do
+# for data_split in ${data_splits[@]}; do
+# for seed in "${seeds[@]}"; do
+#     # Code below assumes threshold 0 for all the imported data (should only import thr 0 data)
+#     ${ROOT}/scripts/modify_data.py \
+#         --import_data_loc ${TORCH_ROOT}/data/data_${dataset}_sd${seed}_pca10_rh.pq.${data_split} \
+#         --new_data_loc ${ROOT}/data/${dataset}/pca10/thr0/${data_split}/general/sd${seed}/data \
 #         --method import &
 #     pid+=("$!")
 # done
@@ -71,21 +99,20 @@ wait "${pid[@]}"
 # done
 # wait "${pid[@]}"
 # 
+# ############################## IMPORT MULTIPLE (PCA10, PT-SPLIT) ##############################
 # 
-############################## IMPORT MULTIPLE (PCA10, PT-SPLIT) ##############################
-
-pid=()
-for dataset in ${datasets[@]}; do
-for data_split in ${data_splits[@]}; do
-for seed in "${seeds[@]}"; do
-    # Code below assumes threshold 0 for all the imported data (should only import thr 0 data)
-    ${ROOT}/scripts/modify_data.py \
-        --import_data_loc ${TORCH_ROOT}/data/data_${dataset}_sd${seed}_pt-split_pca10_rh.pq.${data_split} \
-        --new_data_loc ${ROOT}/data/${dataset}/pca10/thr0/${data_split}/pt-split/sd${seed}/data \
-        --method import &
-    pid+=("$!")
-done
-done
-done
-wait "${pid[@]}"
-
+# pid=()
+# for dataset in ${datasets[@]}; do
+# for data_split in ${data_splits[@]}; do
+# for seed in "${seeds[@]}"; do
+#     # Code below assumes threshold 0 for all the imported data (should only import thr 0 data)
+#     ${ROOT}/scripts/modify_data.py \
+#         --import_data_loc ${TORCH_ROOT}/data/data_${dataset}_sd${seed}_pt-split_pca10_rh.pq.${data_split} \
+#         --new_data_loc ${ROOT}/data/${dataset}/pca10/thr0/${data_split}/pt-split/sd${seed}/data \
+#         --method import &
+#     pid+=("$!")
+# done
+# done
+# done
+# wait "${pid[@]}"
+# 

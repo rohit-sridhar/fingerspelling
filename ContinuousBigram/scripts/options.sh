@@ -245,7 +245,7 @@ GEN_EXT_FILES=no				# yes or no: generate .ext data
 						# files (say yes unless they
 						# have already been generated!
 
-PREPARE_DATA=${UTIL_DIR}/prepare		# program for creating HTK-
+PREPARE_DATA=${UTIL_DIR}/prepare      # program for creating HTK-
 						# readable data from text
 
 EXT_DIR=${PRJ}/ext/supplemental/dl_cmp/dim20/thr0/train/pt93/sd2248

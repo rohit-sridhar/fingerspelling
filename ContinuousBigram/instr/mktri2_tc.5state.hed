@@ -82,4 +82,8 @@ TC 50 "ST_y_5_" {("y","*-y+*","y+*","*-y").state[5]}
 TC 50 "ST_z_5_" {("z","*-z+*","z+*","*-z").state[5]}
 TC 50 "ST_sp_5_" {("_","*-_+*","_+*","*-_").state[5]}
 
+MU 2 {*.state[3].mix}
+MU 2 {*.state[4].mix}
+MU 2 {*.state[5].mix}
+
 TR 1

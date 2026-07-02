@@ -15,10 +15,9 @@ function gen_ext_files {
         
         ext_all_file="${EXT_DIR%$(echo "${EXT_DIR}" | cut -d/ -f10-)}all/${fname}"
         if [[ ! -f ${ext_all_file} ]]; then
-            # echo "${ext_all_file} doesn't exist"
+            echo "${PREPARE_DATA} ${n} ${VECTOR_LENGTH} ${EXT_DIR}/${fname} ${SAMPLE_PERIOD} 2>&1"
             ${PREPARE_DATA} ${n} ${VECTOR_LENGTH} ${EXT_DIR}/${fname} ${SAMPLE_PERIOD} 2>&1
         else
-            # echo "${ext_all_file} does exist"
             cp -l ${ext_all_file} ${EXT_DIR}/${fname}
         fi
     #      echo converted $fname to `ls ${EXT_DIR} | tail -n 1`

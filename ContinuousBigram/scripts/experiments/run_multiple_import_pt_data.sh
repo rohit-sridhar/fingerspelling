@@ -12,24 +12,23 @@ echo "STARTING IMPORT"
 echo ""
 
 data_splits=(train val)
-participants=(ab12)
-# ############################## IMPORT MULTIPLE (DIM20) (TRAIN,VAL,TEST) ##############################
-# 
-# for dataset in ${datasets[@]}; do
-# for data_split in ${data_splits[@]}; do
-# for seed in "${seeds[@]}"; do
-# bp=0
-# for participant in "${participants[@]}"; do
-#     ${ROOT}/scripts/modify_data.py \
-#         --import_data_loc ${TORCH_ROOT}/data/data_${dataset}_sd${seed}_pt-${participant}_rh.pq.${data_split} \
-#         --new_data_loc ${ROOT}/data/${dataset}/dim20/thr0/${data_split}/pt/${participant}/sd${seed}/data \
-#         --method import --bar_position ${bp} --bar_description "${data_split}|${seed}|${participant}"
-#     bp=$((bp+1))
-# done
-# done
-# done
-# done
-# 
+############################## IMPORT MULTIPLE (DIM20) (TRAIN,VAL,TEST) ##############################
+
+for dataset in ${datasets[@]}; do
+for data_split in ${data_splits[@]}; do
+for seed in "${seeds[@]}"; do
+bp=0
+for participant in "${participants[@]}"; do
+    ${ROOT}/scripts/modify_data.py \
+        --import_data_loc ${TORCH_ROOT}/data/data_${dataset}_sd${seed}_pt-${participant}_rh.pq.${data_split} \
+        --new_data_loc ${ROOT}/data/${dataset}/dim20/thr0/${data_split}/pt/${participant}/sd${seed}/data \
+        --method import --bar_position ${bp} --bar_description "${data_split}|${seed}|${participant}"
+    bp=$((bp+1))
+done
+done
+done
+done
+
 ############################### PREP ALL (DIM20) (TRAIN,VAL,TEST) ################################
 
 echo ""

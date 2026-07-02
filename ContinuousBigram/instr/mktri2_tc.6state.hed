@@ -109,4 +109,9 @@ TC 50 "ST_y_6_" {("y","*-y+*","y+*","*-y").state[6]}
 TC 50 "ST_z_6_" {("z","*-z+*","z+*","*-z").state[6]}
 TC 50 "ST_sp_6_" {("_","*-_+*","_+*","*-_").state[6]}
 
+MU 4 {*.state[3].mix}
+MU 4 {*.state[4].mix}
+MU 4 {*.state[5].mix}
+MU 4 {*.state[6].mix}
+
 TR 1

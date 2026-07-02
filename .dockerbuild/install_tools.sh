@@ -15,6 +15,7 @@ tar -xzvf gt2k.tar.gz && rm -rf gt2k.tar.gz
 # after unzipping, remove checks for TRAINING/TESTING_DIR in options.sh
 sed -i "236,249d" /gt2k/utils/check_opts.sh
 sed -i "76s/==/>=/g" /gt2k/utils/standalone_prepare.c
+sed -i "145s/sizeof(bob)/sizeof(float)/g" /gt2k/utils/standalone_prepare.c
 cd /gt2k/utils
 make
 

@@ -13,6 +13,7 @@ if [ ! -d "${output_dir}" ]; then
     mkdir -p "${output_dir}"
 fi
 
+# --hmmdefs 3state-pca20-gmm2-skip 3state-pca20-gmm2-skip1 3state-pca20-gmm2 4state-pca20-gmm2-skip 4state-pca20-gmm2-skip1 4state-pca20-gmm2 5state-pca20-gmm2-skip 5state-pca20-gmm2-skip1 5state-pca20-gmm2 \
 ############################## TRAIN MULTIPLE (DIM20) ##############################
 for dataset in ${datasets[@]}; do
 for threshold in ${thresholds[@]}; do
@@ -20,9 +21,9 @@ for seed in ${seeds[@]}; do
 for participant in ${participants[@]}; do
     ${ROOT}/scripts/grid_search.py \
         --data_files ${ROOT}/data/${dataset}/dim20/thr${threshold}/train/pt/${participant}/sd${seed}/data/ \
-        --hmmdefs 3state-pca20-gmm2-skip 3state-pca20-gmm2-skip1 3state-pca20-gmm2 4state-pca20-gmm2-skip 4state-pca20-gmm2-skip1 4state-pca20-gmm2 5state-pca20-gmm2-skip 5state-pca20-gmm2-skip1 5state-pca20-gmm2 \
+        --hmmdefs 3state-pca20-gmm1-skip1 4state-pca20-gmm1-skip1 5state-pca20-gmm1-skip1 \
         --results_csv ${output_dir}/results_pt${participant}_sd${seed}_tuning.csv \
-        --prepare_data --clear_hresults ${debug}
+        --no_multi_process --prepare_data --clear_hresults ${debug}
 done
 done
 done
@@ -34,9 +35,9 @@ for seed in ${seeds[@]}; do
 for participant in ${participants[@]}; do
     ${ROOT}/scripts/grid_search.py \
         --data_files ${ROOT}/data/${dataset}/dim20/thr${threshold}/train/pt/${participant}/sd${seed}/data/ \
-        --hmmdefs 3state-pca20-gmm2-skip 3state-pca20-gmm2-skip1 3state-pca20-gmm2 4state-pca20-gmm2-skip 4state-pca20-gmm2-skip1 4state-pca20-gmm2 5state-pca20-gmm2-skip 5state-pca20-gmm2-skip1 5state-pca20-gmm2 \
+        --hmmdefs 3state-pca20-gmm1-skip1 4state-pca20-gmm1-skip1 5state-pca20-gmm1-skip1 \
         --results_csv ${output_dir}/results_pt${participant}_sd${seed}_tuning.csv \
-        --prepare_data --clear_hresults --cross_word ${debug}
+        --no_multi_process --prepare_data --clear_hresults --cross_word ${debug}
 done
 done
 done

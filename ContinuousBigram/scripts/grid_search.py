@@ -369,7 +369,6 @@ def get_base_path(base_dir, subdirs):
 def get_hedfile2_names(subdirs, n_states):
     if args.full_cov:
         raise ValueError("error making hedfile2 name. cannot use full covariance matrix yet.")
-        # hedfile2 = f"${{PRJ}}/instr/mktri2_fc.hed"
     else:
         file_uniq_str = get_file_uniq_str(subdirs)
         hedfile2 = f"${{PRJ}}/instr/mktri2_tc.{n_states}.{file_uniq_str}.hed"
@@ -400,11 +399,10 @@ def get_bool_arg_info():
     return multi_process, cross_word, whole_word, use_phrase
 
 def get_num_threads():
-    num_threads = 0
     try:
         return len(os.sched_getaffinity(0))
-    finally:
-        return os.cpu_count()
+    except (AttributeError, NotImplementedError):
+        return os.cpu_count() or 1
 
 # Helper to edit the options file with new hyperparam (for 1 param)
 def edit_file(re_search, re_repl, file_to_edit):
@@ -618,6 +616,7 @@ def edit_htk_root_file_options(subdirs):
     edit_file(multi_process_search, multi_process_repl, options_file)
     edit_file(threads_search, threads_repl, options_file)
 
+    logger.info(f"{num_threads=}")
     logger.info("##### Set root files #####")
     run_subprocess(["grep", "^" + GRAMMARFILE_ROOT_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + DICTFILE_ROOT_VARNAME + r"\s*=\s*", options_file], logger=logger)
