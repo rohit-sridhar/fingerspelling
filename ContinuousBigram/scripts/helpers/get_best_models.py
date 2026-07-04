@@ -14,7 +14,7 @@ FILENAME_DELIM = "_"
 
 global args
 
-def parse_args():
+def _parse_args():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     
     parser.add_argument(
@@ -97,10 +97,10 @@ def write_json(results_dict):
         json.dump(results_dict, f, indent=4)
 
 if __name__ == "__main__":
-    args = parse_args()
+    args = _parse_args()
     
     results_csvs = args.results_dir.glob("*.csv")
     results_dict = get_best_word_acc_by_csv(results_csvs)
-
+    
     write_json(results_dict)
-
+    

@@ -89,7 +89,7 @@ if __name__ == "__main__":
     out_handler = setup_logger(
         log_file,
         log_level=logging.DEBUG if args.debug else logging.INFO,
-        mode="w"
+        mode="w",
     )
     logger.info(f"{args=}")
     char_frames, total_frames = analyze_mlf()

@@ -10,7 +10,7 @@ from collections import Counter
 LAB_PATH = "./ext/data/"
 DATA_PATH = "./data_original/"
 
-def parse_args():
+def _parse_args():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument(
         "--analysis_type",
@@ -107,7 +107,7 @@ def analyze_counts(label_dir):
     print(letters)
 
 if __name__ == "__main__":
-    args = parse_args()
+    args = _parse_args()
     print(args)
 
     if args.analysis_type == "frames_per_letter":
