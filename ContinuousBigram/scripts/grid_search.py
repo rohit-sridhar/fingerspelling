@@ -494,6 +494,9 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     
     cross_word_search = CROSS_WORD_VARNAME + r"\s*=\s*(yes|no)"
     cross_word_repl = CROSS_WORD_VARNAME + f"={cross_word}"
+
+    use_phrase_search = USE_PHRASE_VARNAME + r"\s*=\s*(yes|no)"
+    use_phrase_repl = USE_PHRASE_VARNAME + f"={use_phrase}"
     
     hedfile1_tokens_root_search, hedfile1_tokens_root_repl = get_hedfile1_info(subdirs)
     hedfile1_orig_local_file = hedfile1_orig.replace("${PRJ}", ROOT)
@@ -527,6 +530,7 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     edit_file(letter_results_search, letter_results_repl, options_file)
     edit_file(word_results_search, word_results_repl, options_file)
     edit_file(cross_word_search, cross_word_repl, options_file)
+    edit_file(use_phrase_search, use_phrase_repl, options_file)
     edit_file(trace_level_search, trace_level_repl, options_file)
     edit_file(hedfile1_tokens_root_search, hedfile1_tokens_root_repl, hedfile1_local_file)
     edit_file(hedfile2_tokens_root_search, hedfile2_tokens_root_repl, hedfile2_local_file)
@@ -543,6 +547,7 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     run_subprocess(["grep", "^" + HEDFILE1_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + HEDFILE2_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + CROSS_WORD_VARNAME + r"\s*=\s*", options_file], logger=logger)
+    run_subprocess(["grep", "^" + USE_PHRASE_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + TRACE_LEVEL_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["head", "-n", "1", f"{hedfile1_local_file}"], logger=logger)
     run_subprocess(["head", "-n", "1", f"{hedfile2_local_file}"], logger=logger)

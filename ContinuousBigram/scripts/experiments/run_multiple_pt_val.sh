@@ -7,9 +7,11 @@ set -euo pipefail
 ## it and runs the best model on the train/val data.
 ########## FIN
 
-ROOT=/data/hmm_modeling/fingerspelling/ContinuousBigram
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+ROOT="${SCRIPT_DIR}/../.."
+
 . ${ROOT}/scripts/experiments/utils.sh
-set_vars $1
+set_vars $@
 
 ##### USE BELOW AFTER TESTING ON INITIAL SAMPLE
 datasets=(${base_dataset}_drop-na_lininterp0)

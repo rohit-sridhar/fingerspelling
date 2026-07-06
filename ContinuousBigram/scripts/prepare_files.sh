@@ -150,6 +150,7 @@ if [[ ! -f "${GRAMMARFILE_ROOT}/done" ]]; then
     ${SCRIPTS_DIR}/gen_grammar.py --label_loc ${label_loc} --grammar_file ${GRAMMARFILE}
     ${SCRIPTS_DIR}/gen_grammar.py --label_loc ${label_loc} --grammar_file ${GRAMMARFILE_WORD}
     ${SCRIPTS_DIR}/gen_grammar.py --label_loc ${label_loc} --grammar_file ${GRAMMARFILE_WORD_SKSP}
+    ${SCRIPTS_DIR}/gen_grammar.py --label_loc ${label_loc} --grammar_file ${GRAMMARFILE_WORD_PHRASE_SKSP}
     echo "#####"
 
     echo "1" > ${GRAMMARFILE_ROOT}/done
