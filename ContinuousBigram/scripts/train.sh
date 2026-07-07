@@ -290,12 +290,86 @@ if ! mkdir -p "${BASE_MLF_LOCATION_GEN}/${cycle}"; then
     exit 2
 fi
 
+
+###############################################################################
+# Function Defs
+###############################################################################
+# Define some useful functions (move to a utils file if there are too many)
+###############################################################################
+function run_herest_iter {
+    iter_type=${1:-}
+    if [[ ${iter_type} == "orig" ]]; then
+        USE_MLF=${MLF_LOCATION_ORIGINAL}
+        USE_TOKENS=${TOKENS_ORIGINAL}
+    elif [[ ${iter_type} == "tri" ]]; then
+        USE_MLF=${MLF_LOCATION}
+        USE_TOKENS=${TOKENS}
+    else
+        echo "first arg to run_herest_iter must be orig or tri. nothing else!"
+        exit 1
+    fi
+
+    next_dir=$((hmm_count+1))
+    if [[ $MULTI_PROCESS = "yes" ]]; then
+        pid=()
+        i=1
+        for train_file in $TRAINING.*; do
+            ${HTKBIN}HERest -v $MIN_VARIANCE \
+                -A -T $TRACE_LEVEL -S $train_file -p $i \
+                $HMM_LOAD_OPT $HMM_TRAINING.$hmm_count/$HMM_MACRO \
+                -M $HMM_TRAINING.$next_dir -I $USE_MLF \
+            ${USE_TOKENS} &
+            pid+=("$!")
+            i=$((i+1))
+        done
+        wait "${pid[@]}"
+
+        ${HTKBIN}HERest -v $MIN_VARIANCE \
+            -A -T $TRACE_LEVEL -p 0 \
+            $HMM_LOAD_OPT $HMM_TRAINING.$hmm_count/$HMM_MACRO \
+            -M $HMM_TRAINING.$next_dir -I $USE_MLF \
+        ${USE_TOKENS} $HMM_TRAINING.$next_dir/HER*.acc
+    else
+        ${HTKBIN}HERest -v $MIN_VARIANCE \
+            -A -T $TRACE_LEVEL -S $TRAINING \
+            $HMM_LOAD_OPT $HMM_TRAINING.$hmm_count/$HMM_MACRO \
+            -M $HMM_TRAINING.$next_dir -I $USE_MLF ${USE_TOKENS}
+    fi
+}
+
+function run_orig_herest_until {
+    last_iteration=${1:-}
+    while [[ $hmm_count -lt $last_iteration ]]
+    do
+        run_herest_iter orig
+        increment_hmm_count rmprev
+    done
+}
+
+function run_tri_herest_until {
+    last_iteration=${1:-}
+    while [[ $hmm_count -lt $last_iteration ]]
+    do
+        run_herest_iter tri
+        increment_hmm_count rmprev
+    done
+}
+
+function increment_hmm_count {
+    arg1=${1:-}
+    if [[ ${arg1} == "rmprev" ]]; then
+        rm -rf $HMM_TRAINING.$hmm_count
+    fi
+    hmm_count=$((hmm_count+1))
+}
+
 ## generate the directories to store the iterations of HMM training
 hmm_count=0
 while [[ $hmm_count -lt $NUM_HMM_DIR ]]
 do
     mkdir -p $HMM_TRAINING.$hmm_count 
-    hmm_count=$((hmm_count+1))
+    increment_hmm_count
+    # hmm_count=$((hmm_count+1))
 done
 
 echo
@@ -326,21 +400,21 @@ echo "*****************************************************"
 typeset -l INITIALIZE_HMM	# make sure it is all lowercase
 if [[ "${INITIALIZE_HMM}" == "yes" ]] ||
    [[ "${INITIALIZE_HMM}" == "1" ]]; then
-	    ## somtimes it works better if you use different topologies for different
-	    ## models.
-	    ##
-	    ## below is an example of how to integrate multiple topologies
-		#      if [[ $n = "token1" ]]; then
-		#  	HMM_LOCATION=$HMM_TOKEN_1
+    ## somtimes it works better if you use different topologies for different
+    ## models.
+    ##
+    ## below is an example of how to integrate multiple topologies
+        #      if [[ $n = "token1" ]]; then
+        #  	HMM_LOCATION=$HMM_TOKEN_1
 
-		#      elif [[ $n = "token2" ]]; then
-		#  	HMM_LOCATION=$HMM_TOKEN_2
-			
-		#      elif [[ $n = "token3" ]]; then
-		#  	HMM_LOCATION=$HMM_TOKEN_3
-		#      else
-		#  	HMM_LOCATION=$HMM_ALL
-		#      fi
+        #      elif [[ $n = "token2" ]]; then
+        #  	HMM_LOCATION=$HMM_TOKEN_2
+                
+        #      elif [[ $n = "token3" ]]; then
+        #  	HMM_LOCATION=$HMM_TOKEN_3
+        #      else
+        #  	HMM_LOCATION=$HMM_ALL
+        #      fi
     
     if [[ $MULTI_PROCESS = "yes" ]]; then
         pid=()
@@ -462,8 +536,9 @@ if [[ $MULTI_PROCESS = "yes" ]]; then
     split -l $lines_per_file $TRAINING "$TRAINING."    # splits train files
 fi
 
+# don't run this using run_herest_iter due to requiring the -d flag
 if [[ "${INITIALIZE_HMM}" == "yes" ]] || [[ "${INITIALIZE_HMM}" == "1" ]]; then
-	## first instance of HERest should be run with the -d option
+    ## first instance of HERest should be run with the -d option
     if [[ $MULTI_PROCESS = "yes" ]]; then
         pid=()
         i=1
@@ -499,36 +574,7 @@ if [[ $TRILETTER = "yes" ]] || [[ $TRILETTER = "1" ]]; then
     last_iteration=$((NUM_HMM_DIR-2*TRI_ITERATIONS-4))
 fi
 
-while [[ $hmm_count -lt $last_iteration ]]
-do
-    next_dir=$((hmm_count+1))
-    if [[ $MULTI_PROCESS = "yes" ]]; then
-        pid=()
-        i=1
-        for train_file in $TRAINING.*; do
-            ${HTKBIN}HERest -v $MIN_VARIANCE \
-                -A -T $TRACE_LEVEL -S $train_file -p $i \
-                $HMM_LOAD_OPT $HMM_TRAINING.$hmm_count/$HMM_MACRO \
-                -M $HMM_TRAINING.$next_dir -I $MLF_LOCATION_ORIGINAL \
-            ${TOKENS_ORIGINAL} &
-            pid+=("$!")
-            i=$((i+1))
-        done
-        wait "${pid[@]}"
-
-        ${HTKBIN}HERest -v $MIN_VARIANCE \
-            -A -T $TRACE_LEVEL -p 0 \
-            $HMM_LOAD_OPT $HMM_TRAINING.$hmm_count/$HMM_MACRO \
-            -M $HMM_TRAINING.$next_dir -I $MLF_LOCATION_ORIGINAL \
-        ${TOKENS_ORIGINAL} $HMM_TRAINING.$next_dir/HER*.acc
-    else
-        ${HTKBIN}HERest -v $MIN_VARIANCE \
-            -A -T $TRACE_LEVEL -S $TRAINING \
-            $HMM_LOAD_OPT $HMM_TRAINING.$hmm_count/$HMM_MACRO \
-            -M $HMM_TRAINING.$next_dir -I $MLF_LOCATION_ORIGINAL ${TOKENS_ORIGINAL}
-    fi
-    hmm_count=$((hmm_count+1))
-done
+run_orig_herest_until ${last_iteration}
 
 ###############################################################################
 # Uses the MLF with triletters
@@ -546,41 +592,11 @@ if [[ $TRILETTER = "yes" ]] || [[ $TRILETTER = "1" ]]; then
 
     next_dir=$((hmm_count+1))
     HHEd -A -T $TRACE_LEVEL $HMM_LOAD_OPT $HMM_TRAINING.$hmm_count/$HMM_MACRO -M $HMM_TRAINING.$next_dir ${HEDFILE1} ${TOKENS_ORIGINAL}
-    hmm_count=$((hmm_count+1))
+    increment_hmm_count rmprev
 
-    while [[ $hmm_count -lt $last_iteration ]]
-    do
-    	next_dir=$((hmm_count+1))
-        
-        if [[ $MULTI_PROCESS = "yes" ]]; then
-            pid=()
-            i=1
-            for train_file in $TRAINING.*; do
-    	        ${HTKBIN}HERest -v $MIN_VARIANCE \
-                    -A -T $TRACE_LEVEL -S $train_file -p $i \
-                    $HMM_LOAD_OPT $HMM_TRAINING.$hmm_count/$HMM_MACRO \
-                    -M $HMM_TRAINING.$next_dir -I $MLF_LOCATION ${TOKENS} &
-                pid+=("$!")
-                i=$((i+1))
-            done
-            wait "${pid[@]}"
-    	    
-            ${HTKBIN}HERest -v $MIN_VARIANCE \
-                -A -T $TRACE_LEVEL -p 0 \
-                $HMM_LOAD_OPT $HMM_TRAINING.$hmm_count/$HMM_MACRO \
-                -M $HMM_TRAINING.$next_dir -I $MLF_LOCATION \
-                ${TOKENS} $HMM_TRAINING.$next_dir/HER*.acc
-        else
-    	    ${HTKBIN}HERest -v $MIN_VARIANCE \
-                -A -T $TRACE_LEVEL -S $TRAINING \
-                $HMM_LOAD_OPT $HMM_TRAINING.$hmm_count/$HMM_MACRO \
-                -M $HMM_TRAINING.$next_dir -I $MLF_LOCATION ${TOKENS}
-        fi
-    	hmm_count=$((hmm_count+1))
-    done
+    run_tri_herest_until ${last_iteration}
 
-    last_iteration=$((NUM_HMM_DIR-1))
-
+    # Again, don't call run_herest_iter due to unique flags
     next_dir=$((hmm_count+1))
     if [[ $MULTI_PROCESS = "yes" ]]; then
         pid=()
@@ -607,15 +623,15 @@ if [[ $TRILETTER = "yes" ]] || [[ $TRILETTER = "1" ]]; then
             -M $HMM_TRAINING.$next_dir -I $MLF_LOCATION ${TOKENS}
     fi
 
-    # hmm_count=$((hmm_count+1))
+    increment_hmm_count rmprev
 
     next_dir=$((hmm_count+1))
     HHEd -A -T $TRACE_LEVEL $HMM_LOAD_OPT $HMM_TRAINING.$hmm_count/$HMM_MACRO -M $HMM_TRAINING.$next_dir ${HEDFILE2} ${TOKENS}
-    hmm_count=$((hmm_count+1))
+    increment_hmm_count rmprev
 
     # Force-align MLFs
     if [[ $FORCE_ALIGN = "yes" ]] || [[ $FORCE_ALIGN = "1" ]]; then
-            ${HTKBIN}HVite -p $INSERT_PENALTY -s $GRAMMAR_SCALE_FACTOR -m -o SW -A -T $TRACE_LEVEL \
+            ${HTKBIN}HVite -p $INSERT_PENALTY -s $GRAMMAR_SCALE_FACTOR -a -o SW -A -T $TRACE_LEVEL \
                 $HMM_LOAD_OPT $HMM_TRAINING.$next_dir/$HMM_MACRO \
                 -S $DATA_SAMPLES -I $MLF_LOCATION -i ${MLF_LOCATION_GEN}/labels.mlf $DICTFILE_ALIGN $TOKENS 
             MLF_LOCATION=${MLF_LOCATION_GEN}/labels.mlf
@@ -623,36 +639,8 @@ if [[ $TRILETTER = "yes" ]] || [[ $TRILETTER = "1" ]]; then
             mv ${MLF_LOCATION}_temp ${MLF_LOCATION}
     fi
 
-    while [[ $hmm_count -lt $last_iteration ]]
-    do
-    	next_dir=$((hmm_count+1))
-        if [[ $MULTI_PROCESS = "yes" ]]; then
-    	    pid=()
-            i=1
-            for train_file in $TRAINING.*; do
-                ${HTKBIN}HERest -v $MIN_VARIANCE -p $i \
-                    -A -T $TRACE_LEVEL -S $train_file \
-                    $HMM_LOAD_OPT $HMM_TRAINING.$hmm_count/$HMM_MACRO \
-                    -M $HMM_TRAINING.$next_dir -I $MLF_LOCATION ${TOKENS} &
-                pid+=("$!")
-                i=$((i+1))
-            done
-            wait "${pid[@]}"
-            
-            ${HTKBIN}HERest -v $MIN_VARIANCE -p 0 \
-                -A -T $TRACE_LEVEL \
-                $HMM_LOAD_OPT $HMM_TRAINING.$hmm_count/$HMM_MACRO \
-                -M $HMM_TRAINING.$next_dir -I $MLF_LOCATION \
-                ${TOKENS} $HMM_TRAINING.$next_dir/HER*.acc
-        else
-    	    ${HTKBIN}HERest -v $MIN_VARIANCE \
-                -A -T $TRACE_LEVEL -S $TRAINING \
-                $HMM_LOAD_OPT $HMM_TRAINING.$hmm_count/$HMM_MACRO \
-                -M $HMM_TRAINING.$next_dir -I $MLF_LOCATION ${TOKENS}
-        fi
-
-    	hmm_count=$((hmm_count+1))
-    done
+    last_iteration=$((NUM_HMM_DIR-1))
+    run_tri_herest_until ${last_iteration}
 
     if [[ $EXPORT_MLF = "yes" ]] || [[ $EXPORT_MLF = "1" ]]; then
 	    ${HTKBIN}HVite -p $INSERT_PENALTY -s $GRAMMAR_SCALE_FACTOR -m -o SWX -A -T $TRACE_LEVEL \

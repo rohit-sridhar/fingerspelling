@@ -189,6 +189,12 @@ def _parse_args():
         action="store_true",
         help="True if using cross word triphones."
     )
+
+    parser.add_argument(
+        "--force_align",
+        action="store_true",
+        help="True if using cross word triphones."
+    )
     
     parser.add_argument(
         "--clear_hresults",
@@ -265,6 +271,9 @@ def get_name_ext(tc, num_its, num_tri_its, hmmdef, trace_value=None):
     if args.full_cov:
         name_ext += "_fc"
     
+    if args.force_align:
+        name_ext += "_align"
+
     if args.no_triletter:
         name_ext += "_no-triletter"
 
@@ -273,6 +282,9 @@ def get_name_ext(tc, num_its, num_tri_its, hmmdef, trace_value=None):
 
     if trace_value is not None:
         name_ext += f".TR{trace_value}"
+
+    if args.test_model:
+        name_ext += ".test"
     
     return name_ext
 
@@ -395,8 +407,9 @@ def get_bool_arg_info():
     cross_word = "yes" if args.cross_word else "no"
     whole_word = "yes" if args.whole_word else "no"
     use_phrase = "yes" if args.use_phrase else "no"
+    force_align = "yes" if args.force_align else "no"
 
-    return multi_process, cross_word, whole_word, use_phrase
+    return multi_process, cross_word, whole_word, use_phrase, force_align
 
 def get_num_threads():
     try:
@@ -461,22 +474,22 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     letter_results_file, word_results_file = get_hresults_prj_filepaths(name_ext, subdirs, ip)
     
     # custom_silsp, multi_process, hedfile1, hedfile1_orig, cross_word, whole_word, use_phrase = get_bool_arg_info(subdirs)
-    _, cross_word, whole_word, use_phrase = get_bool_arg_info()
+    _, cross_word, whole_word, use_phrase, force_align = get_bool_arg_info()
     n_states = hmmdef[:hmmdef.find("-")]
     hedfile1, hedfile1_orig = get_hedfile1_names(subdirs)
     hedfile2, hedfile2_orig = get_hedfile2_names(subdirs, n_states)
  
     ip_search = IP_VARNAME + r"\s*=\s*-?[0-9]+(\.[0-9]+)*"
     ip_repl = IP_VARNAME + f"={ip}"
-    
-    tc_search = "^TC [0-9]+"
-    tc_repl = f"TC {tc}"
-    
+
+    # tc_search = "^TC [0-9]+"
+    # tc_repl = f"TC {tc}"
+
     num_its_search = NUM_ITS_VARNAME + r"\s*=\s*[0-9]+"
     num_its_repl = NUM_ITS_VARNAME + f"={num_its}"
     
     num_tri_its_search = NUM_TRI_ITS_VARNAME + r"\s*=\s*[0-9]+"
-    num_tri_its_repl = NUM_TRI_ITS_VARNAME + f"={num_tri_its}"
+    num_tri_its_repl = NUM_TRI_ITS_VARNAME + f"={num_tri_its}" 
     
     hmmdef_search = HMMDEF_VARNAME + r"\s*=\s*\$HMM_TOPOLOGY_DIR\/.+"
     hmmdef_repl = HMMDEF_VARNAME + f"=$HMM_TOPOLOGY_DIR/{hmmdef}"
@@ -492,11 +505,23 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     models_dir = get_model_path(subdirs, hmmdef)
     make_dir(models_dir)
     
+    letter_results_search = LOG_LETTER_VARNAME + r"\s*=\s*\$\{PRJ\}\/.*hresults\.log_letter.*"
+    letter_results_repl = LOG_LETTER_VARNAME + f"={letter_results_file}"
+    
+    word_results_search = LOG_WORD_VARNAME + r"\s*=\s*\$\{PRJ\}\/.*hresults\.log_word.*"
+    word_results_repl = LOG_WORD_VARNAME + f"={word_results_file}"
+
     cross_word_search = CROSS_WORD_VARNAME + r"\s*=\s*(yes|no)"
     cross_word_repl = CROSS_WORD_VARNAME + f"={cross_word}"
 
     use_phrase_search = USE_PHRASE_VARNAME + r"\s*=\s*(yes|no)"
     use_phrase_repl = USE_PHRASE_VARNAME + f"={use_phrase}"
+    
+    force_align_search = FORCE_ALIGN_VARNAME + r"\s*=\s*(yes|no)"
+    force_align_repl = FORCE_ALIGN_VARNAME + f"={force_align}"
+    
+    trace_level_search = TRACE_LEVEL_VARNAME + r"\s*=\s*[0-9]+"
+    trace_level_repl = TRACE_LEVEL_VARNAME + f"={trace_value}"
     
     hedfile1_tokens_root_search, hedfile1_tokens_root_repl = get_hedfile1_info(subdirs)
     hedfile1_orig_local_file = hedfile1_orig.replace("${PRJ}", ROOT)
@@ -507,15 +532,6 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     hedfile2_orig_local_file = hedfile2_orig.replace("${PRJ}", ROOT)
     hedfile2_local_file = hedfile2.replace("${PRJ}", ROOT)
     shutil.copyfile(hedfile2_orig_local_file, hedfile2_local_file)
-    
-    letter_results_search = LOG_LETTER_VARNAME + r"\s*=\s*\$\{PRJ\}\/.*hresults\.log_letter.*"
-    letter_results_repl = LOG_LETTER_VARNAME + f"={letter_results_file}"
-    
-    word_results_search = LOG_WORD_VARNAME + r"\s*=\s*\$\{PRJ\}\/.*hresults\.log_word.*"
-    word_results_repl = LOG_WORD_VARNAME + f"={word_results_file}"
-
-    trace_level_search = TRACE_LEVEL_VARNAME + r"\s*=\s*[0-9]+"
-    trace_level_repl = TRACE_LEVEL_VARNAME + f"={trace_value}"
     
     options_file = get_options_file(subdirs)
 
@@ -531,6 +547,7 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     edit_file(word_results_search, word_results_repl, options_file)
     edit_file(cross_word_search, cross_word_repl, options_file)
     edit_file(use_phrase_search, use_phrase_repl, options_file)
+    edit_file(force_align_search, force_align_repl, options_file)
     edit_file(trace_level_search, trace_level_repl, options_file)
     edit_file(hedfile1_tokens_root_search, hedfile1_tokens_root_repl, hedfile1_local_file)
     edit_file(hedfile2_tokens_root_search, hedfile2_tokens_root_repl, hedfile2_local_file)
@@ -544,17 +561,18 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     run_subprocess(["grep", "^" + MODELS_ROOT_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + LOG_LETTER_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + LOG_WORD_VARNAME + r"\s*=\s*", options_file], logger=logger)
-    run_subprocess(["grep", "^" + HEDFILE1_VARNAME + r"\s*=\s*", options_file], logger=logger)
-    run_subprocess(["grep", "^" + HEDFILE2_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + CROSS_WORD_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + USE_PHRASE_VARNAME + r"\s*=\s*", options_file], logger=logger)
+    run_subprocess(["grep", "^" + FORCE_ALIGN_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + TRACE_LEVEL_VARNAME + r"\s*=\s*", options_file], logger=logger)
+    run_subprocess(["grep", "^" + HEDFILE1_VARNAME + r"\s*=\s*", options_file], logger=logger)
+    run_subprocess(["grep", "^" + HEDFILE2_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["head", "-n", "1", f"{hedfile1_local_file}"], logger=logger)
     run_subprocess(["head", "-n", "1", f"{hedfile2_local_file}"], logger=logger)
     logger.info("#####\n")
 
 def edit_htk_root_file_options(subdirs):
-    multi_process, _, _, _ = get_bool_arg_info()
+    multi_process, *_ = get_bool_arg_info()
     options_file = get_options_file(subdirs)
     file_uniq_str = get_file_uniq_str(subdirs)
     vector_dim = get_vector_dim(subdirs)

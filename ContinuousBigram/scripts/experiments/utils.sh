@@ -9,7 +9,9 @@ typeset -a seeds=(1248 2248 3248 4248 5248)
 typeset -a data_splits=(train val test)
 typeset -a datasets=()
 typeset -a participants=()
+typeset -a results_jsons=()
 typeset -a thresholds=(0)
+typeset debug=
 typeset base_dataset=
 
 # function cleanup {
@@ -46,17 +48,35 @@ function set_participants {
     fi
 }
 
+# sets debug variable based on all args passed in
 function set_debug {
-    debug=${1:-}
-    if [[ ${debug} == "debug" ]]; then
-        debug="--debug"
-    fi
+    for arg in "$@"; do
+        # Check if the argument is debug
+        if [[ ${arg} == "debug" ]]; then
+            debug="--debug"
+        fi
+    done
 }
 
+# the functions below is for test.sh primarily. if any other
+# script uses json files, the var may not be set correctly.
+function set_results_jsons {
+    for arg in "$@"; do
+        # Check if the argument ends with the suffix
+        if [[ "$arg" == *".json" ]]; then
+            results_jsons+=("$arg")
+        fi
+    done
+}
+
+# sets the vars for all shell scripts in ContinuousBigram/scripts/experiments/
 function set_vars {
-    set_datasets ${1:-} ${3:-}
-    set_participants ${1:-} ${4:-}
-    set_debug ${2:-}
+    # set_datasets ${1:-} ${3:-}
+    # set_participants ${1:-} ${4:-}
+    set_datasets ${1:-}
+    set_participants ${1:-}
+    set_debug $@
+    set_results_jsons $@
 }
 
 #################### functions for grp tuning/import ####################

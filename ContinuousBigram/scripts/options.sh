@@ -82,7 +82,7 @@ WORD_LEVEL=yes # whether to process data as word level or letter level
 TRILETTER=yes # whether to enable triletter configuration
 CROSS_WORD=no # whether triletters should expand across words  TODO
 
-FORCE_ALIGN=no # Use to enable/disable forced alignment during training
+FORCE_ALIGN=no # Use to enable/disable forced alignment during training or testing
 EXPORT_MLF=no # Use to export MLF for use outside project
 # WHOLE_WORD=yes
 
@@ -143,16 +143,17 @@ DICTFILE_WORD=${DICTFILE_ROOT}/dict_tri2word
 DICTFILE_WORD_SKSP=${DICTFILE_ROOT}/dict_tri2word_sksp
 # DICTFILE_WORD_WHOLE=${DICTFILE_ROOT}/dict_tri2word_whole
 
+###### USE FOR ALIGNMNENT ######
+DICTFILE_ALIGN=${DICTFILE_ROOT}/dict_tri2tri # Dictionary used during forced alignment
+
 ###### USE FOR CROSS WORD TRILETTER ######
 DICTFILE_CROSS=${DICTFILE_ROOT}/dict_tri2letter_cross
 DICTFILE_WORD_CROSS=${DICTFILE_ROOT}/dict_tri2word_cross
+DICTFILE_ALIGN_CROSS=${DICTFILE_ROOT}/dict_tri2tri_cross
 
 ###### USE FOR SINGLE LETTER ######
 # DICTFILE=${PRJ}/dict/dict_letter2letter
 # DICTFILE_WORD=${PRJ}/dict/dict_letter2word
-
-###### USE FOR ALIGNMNENT ######
-DICTFILE_ALIGN=${DICTFILE_ROOT}/dict_tri2tri # Dictionary used during forced alignment
 
 #######################################################
 ################### COMMANDS FILES ####################

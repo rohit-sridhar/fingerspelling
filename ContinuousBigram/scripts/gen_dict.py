@@ -12,7 +12,20 @@ from threading import Lock
 from pathlib import Path
 from utils import *
 
-WRITTEN = set()
+DICT_TYPE_CHOICES = [
+    "letter",
+    "word",
+    "tri_letter",
+    "tri_letter_whole",
+    "tri_word",
+    "tri_word_whole",
+    "tri_word_sksp",
+    "tri_align",
+    "cross_letter",
+    "cross_word",
+    "cross_tri_align"
+]
+written = set()
 logger = logging.getLogger(__name__)
 dictfile_lock = Lock()
 
@@ -72,7 +85,7 @@ def parse_args():
         "--dict_type",
         type=str,
         default="letter",
-        choices = ['letter', 'word', 'tri_letter', 'tri_letter_whole', 'tri_word', 'tri_word_whole', 'tri_word_sksp', 'cross_letter', 'cross_word'],
+        choices = DICT_TYPE_CHOICES,
         help="New dict file"
     )
     
@@ -94,47 +107,65 @@ def initialize_dict():
         if args.dict_type.startswith("cross_") or \
                 args.dict_type.endswith("_sksp") or \
                 args.dict_type.endswith("_whole"):
-            f.writelines([f'{ENTER} {ENTER}\n', f'{EXIT} {EXIT}\n'])
+            f.writelines([f"{ENTER} {ENTER}\n", f"{EXIT} {EXIT}\n"])
         else:
-            f.writelines([f'{ENTER} {ENTER}\n', f'{EXIT} {EXIT}\n', f'{SPACE} {SPACE}\n'])
+            f.writelines([f"{ENTER} {ENTER}\n", f"{EXIT} {EXIT}\n", f"{SPACE} {SPACE}\n"])
 
 # Write a single dictionary entry to file (triletter only)
 def write_entry_to_file(entry):
     with dictfile_lock, open(args.dict_loc, "a") as f:
-        if entry not in WRITTEN:
+        if entry not in written:
             f.write(entry + "\n")
-            WRITTEN.add(entry)
+            written.add(entry)
 
 #################### TRILETTER LEVEL FUNCTIONS ####################
 
 # Process the first entry for any word
-def process_first_triletter(word, letter=True):
+def process_first_triletter(word, letter=True, tri_align=False):
     logger.debug(f"{word=}")
     try:
         val = '+'.join([word[0],word[1]])
     except:
         raise ValueError(word)
-    entry = ' '.join([word[0], val])
+
+    if tri_align:
+        entry = ' '.join([val, val])
+    else:
+        entry = ' '.join([word[0], val])
     
     if letter:
         write_entry_to_file(entry)
     return val
 
 # Process the last entry for any word
-def process_last_triletter(word, letter=True):
-    val = '-'.join([word[-2],word[-1]])
-    entry = ' '.join([word[-1], val])
-    
+def process_last_triletter(word, letter=True, tri_align=False):
+    try:
+        val = '-'.join([word[-2],word[-1]])
+    except:
+        raise ValueError(word)
+
+    if tri_align:
+        entry = ' '.join([val, val])
+    else:
+        entry = ' '.join([word[-1], val])
+
     if letter:
         write_entry_to_file(entry)
     return val
 
 # Process the middle entry for any word (centered at i)
-def process_middle_triletter(word, i, letter=True):
-    val = '-'.join([word[i-1], word[i]])
-    val = '+'.join([val, word[i+1]])
-    entry = ' '.join([word[i], val])
-    
+def process_middle_triletter(word, i, letter=True, tri_align=False):
+    try:
+        val = '-'.join([word[i-1], word[i]])
+        val = '+'.join([val, word[i+1]])
+    except:
+        raise ValueError(word)
+
+    if tri_align:
+        entry = ' '.join([val, val])
+    else:
+        entry = ' '.join([word[i], val])
+
     if letter:
         write_entry_to_file(entry)
     return val
@@ -145,20 +176,33 @@ def write_single_entry(word, sksp=False):
     write_entry_to_file(entry)
 
 # Write the entry for any word with more than 2 letters
-def write_full_letter_entry(word):
-    _ = process_first_triletter(word, letter=True)
+def write_full_letter_entry(word, tri_align=False):
+    _ = process_first_triletter(
+        word,
+        letter=True,
+        tri_align=tri_align,
+    )
     
     for i in range(1, len(word)-1):
-        _ = process_middle_triletter(word, i, letter=True)
+        _ = process_middle_triletter(
+            word,
+            i,
+            letter=True,
+            tri_align=tri_align,
+        )
     
-    _ = process_last_triletter(word, letter=True)
+    _ = process_last_triletter(
+        word,
+        letter=True,
+        tri_align=tri_align,
+    )
 
 # Main Letter Level Wrapper that picks the correct entry writing function
-def add_letter_to_dict(word):
+def add_letter_to_dict(word, tri_align=False):
     if len(word) == 1:
         write_single_entry(word)
     else:
-        write_full_letter_entry(word)
+        write_full_letter_entry(word, tri_align=tri_align)
 
 #################### TRILETTER WHOLE LEVEL FUNCTIONS ####################
 def add_whole_letter_to_dict(phrase):
@@ -256,13 +300,14 @@ def ingest_label_file(label_filepath):
     tokens = collect_tokens(label_filepath)
     logger.debug(f"{label_filepath=}")
     phrase = SPACE.join(tokens)
-    if args.dict_type == "cross_letter":
-        logger.debug(f"{phrase=}")
-        add_letter_to_dict(phrase)
-    elif args.dict_type == "tri_letter_whole":
+    if args.dict_type == "tri_letter_whole":
         add_whole_letter_to_dict(phrase)
     elif args.dict_type == "tri_word_whole":
         add_whole_word_to_dict(phrase)
+    elif args.dict_type == "cross_letter":
+        add_letter_to_dict(phrase)
+    elif args.dict_type == "cross_tri_align":
+        add_letter_to_dict(phrase, tri_align=True)
     else:
         for i,word in enumerate(tokens):
             if args.dict_type == "word":
@@ -273,6 +318,8 @@ def ingest_label_file(label_filepath):
                 add_word_to_dict(word, sksp=False)
             elif args.dict_type == "tri_word_sksp":
                 add_word_to_dict(word, sksp=True)
+            elif args.dict_type == "tri_align":
+                add_letter_to_dict(word, tri_align=True)
             # Note we don't use the sksp arg with dict_type cross_word
             elif args.dict_type == "cross_word":
                 add_cross_word_to_dict(

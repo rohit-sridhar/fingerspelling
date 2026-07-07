@@ -7,12 +7,14 @@ ROOT="${SCRIPT_DIR}/../.."
 . ${SCRIPT_DIR}/utils.sh
 set_vars $@
 
-output_dir=${ROOT}/results/pt_results/tot/
+output_dir=${ROOT}/results/pt_results/tot
 
 if [ ! -d "${output_dir}" ]; then
     mkdir -p "${output_dir}"
 fi
 
+participants=(2ff7)
+seeds=(1248)
 # --hmmdefs 3state-pca20-gmm2-skip 3state-pca20-gmm2-skip1 3state-pca20-gmm2 4state-pca20-gmm2-skip 4state-pca20-gmm2-skip1 4state-pca20-gmm2 5state-pca20-gmm2-skip 5state-pca20-gmm2-skip1 5state-pca20-gmm2 \
 ############################## TRAIN MULTIPLE (DIM20) ##############################
 for dataset in ${datasets[@]}; do

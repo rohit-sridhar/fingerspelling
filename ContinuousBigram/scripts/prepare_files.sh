@@ -92,8 +92,10 @@ fi
 if [[ ! -f "${DICTFILE_ROOT}/done" ]]; then
     echo "##### Generating dict (tri2letter/tri2word) files .... #####"
     ${SCRIPTS_DIR}/gen_dict.py --label_loc ${label_loc} --dict_type tri_letter --dict_loc ${DICTFILE} --num_threads ${THREADS}
+    ${SCRIPTS_DIR}/gen_dict.py --label_loc ${label_loc} --dict_type tri_align --dict_loc ${DICTFILE_ALIGN} --num_threads ${THREADS}
     # ${SCRIPTS_DIR}/gen_dict.py --label_loc ${label_loc} --dict_type tri_letter_whole --dict_loc ${DICTFILE_WHOLE} --num_threads ${THREADS}
     ${SCRIPTS_DIR}/gen_dict.py --label_loc ${label_loc} --dict_type cross_letter --dict_loc ${DICTFILE_CROSS} --num_threads ${THREADS}
+    ${SCRIPTS_DIR}/gen_dict.py --label_loc ${label_loc} --dict_type cross_tri_align --dict_loc ${DICTFILE_CROSS_ALIGN} --num_threads ${THREADS}
 
     ${SCRIPTS_DIR}/gen_dict.py --label_loc ${label_loc} --dict_type tri_word --dict_loc ${DICTFILE_WORD} --num_threads ${THREADS}
     ${SCRIPTS_DIR}/gen_dict.py --label_loc ${label_loc} --dict_type tri_word_sksp --dict_loc ${DICTFILE_WORD_SKSP} --num_threads ${THREADS}
