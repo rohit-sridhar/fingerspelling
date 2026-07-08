@@ -124,7 +124,7 @@ echo "MLF_LOCATION_ORIGINAL: $MLF_LOCATION_ORIGINAL"
 
 # reads in ${TOKENS} from command file and creates a grammar and dictionary
 # assumes that the grammar is a simple, single gesture grammar
-typeset -l GEN_GRAMMAR		# make sure it is all lowercase
+typeset -l GEN_GRAMMAR      # make sure it is all lowercase
 if [[ "${GEN_GRAMMAR}" == "yes" ]] ||
     [[ "${GEN_GRAMMAR}" == "1" ]]; then
         rm ${GRAMMARFILE}
@@ -208,7 +208,7 @@ rm -f $WORD_LATTICE*
 rm -rf $MLF_LOCATION_GEN/*
 for i in ${HMM_TRAINING}*\.*
 do
-	rm -rf $i/*
+    rm -rf $i/*
 done
 
 # generate a list of all data samples HTK has avaliable to it.
@@ -228,12 +228,12 @@ MIN_CYCLES=1
 # also determine the number or times training and testing are exectuted
 if [[ $TRAIN_TEST_VALIDATION = "CROSS" ]]; then
 
-    TRAIN_TEST_SCRIPT=$SCRIPTS_DIR/cv/gen_cross_val.sh	
+    TRAIN_TEST_SCRIPT=$SCRIPTS_DIR/cv/gen_cross_val.sh
     TEST_TRAIN_CYCLES=$MIN_CYCLES
 
 elif [[ $TRAIN_TEST_VALIDATION = "LEAVE_ONE_OUT" ]]; then
 
-    TRAIN_TEST_SCRIPT=$SCRIPTS_DIR/cv/gen_leave_one_out.sh	
+    TRAIN_TEST_SCRIPT=$SCRIPTS_DIR/cv/gen_leave_one_out.sh
     TEST_TRAIN_CYCLES=`cat $DATA_SAMPLES | wc -l`
 
 elif [[ $TRAIN_TEST_VALIDATION = "REPEAT_CROSS" ]]; then
@@ -258,15 +258,15 @@ else
 fi
 
 # generate the training and testing files, if we're going to
-typeset -l GEN_TRAIN_TEST 	# make sure it is all lowercase
+typeset -l GEN_TRAIN_TEST       # make sure it is all lowercase
 
 if [[ "${GEN_TRAIN_TEST}" == "yes" ]] ||
    [[ "${GEN_TRAIN_TEST}" == "1" ]] ; then
-	echo Generating training/test sets, could take a while
-	rm -f $TRAINING_BASENAME*
-	rm -f $TESTING_BASENAME*
-	$TRAIN_TEST_SCRIPT $DATA_SAMPLES $TRAINING_BASENAME $TESTING_BASENAME \
-			   $TT_NAME_SCRIPT $OPTIONS_FILE $NUM_TEST_SAMPLES
+        echo Generating training/test sets, could take a while
+        rm -f $TRAINING_BASENAME*
+        rm -f $TESTING_BASENAME*
+        $TRAIN_TEST_SCRIPT $DATA_SAMPLES $TRAINING_BASENAME $TESTING_BASENAME \
+            $TT_NAME_SCRIPT $OPTIONS_FILE $NUM_TEST_SAMPLES
 fi
 
 
@@ -296,6 +296,19 @@ fi
 ###############################################################################
 # Define some useful functions (move to a utils file if there are too many)
 ###############################################################################
+function get_last_iteration {
+    if [[ -z $tri_iters_count ]] || [[ -z $single_iter_count ]]; then
+        echo "tri_iters_count and single_iter_counts must be defined before calling get_last_iteration"
+        exit 1
+    fi
+    last_iteration=$((NUM_HMM_DIR-(tri_iters_count*TRI_ITERATIONS)-single_iter_count-1))
+    if [[ ${last_iteration} -lt 5 ]]; then
+        echo "Increase NUM_HMM_DIR (set by num_its in grid_search). It is too small for training."
+        exit 1
+    fi
+    echo "${last_iteration}"
+}
+
 function run_herest_iter {
     iter_type=${1:-}
     if [[ ${iter_type} == "orig" ]]; then
@@ -397,7 +410,7 @@ echo "*****************************************************"
 # Uses the MLF with single letters
 ###############################################################################
 
-typeset -l INITIALIZE_HMM	# make sure it is all lowercase
+typeset -l INITIALIZE_HMM   # make sure it is all lowercase
 if [[ "${INITIALIZE_HMM}" == "yes" ]] ||
    [[ "${INITIALIZE_HMM}" == "1" ]]; then
     ## somtimes it works better if you use different topologies for different
@@ -472,7 +485,7 @@ if [[ "${INITIALIZE_HMM}" == "yes" ]] ||
             ${HTKBIN}HInit -A -T $TRACE_LEVEL -v ${MIN_VARIANCE} -M $HMM_TRAINING.1 -l $n \
                 -S $TRAINING -I $MLF_LOCATION_ORIGINAL -o $n \
                     $HMM_TRAINING.0/$n
-	    
+    
             ${HTKBIN}HRest  -A  -m 1 -T $TRACE_LEVEL -t -i 30 -v ${MIN_VARIANCE}  -l $n \
                 -M $HMM_TRAINING.2/ -S $TRAINING \
                 -I $MLF_LOCATION_ORIGINAL $HMM_TRAINING.1/$n
@@ -571,7 +584,14 @@ hmm_count=3
 
 last_iteration=$((NUM_HMM_DIR-1))
 if [[ $TRILETTER = "yes" ]] || [[ $TRILETTER = "1" ]]; then
-    last_iteration=$((NUM_HMM_DIR-2*TRI_ITERATIONS-4))
+    # Define the two variables below to represent:
+    #   tri_iters_count is the number of times HERest is repeated for tri_iters times
+    #   single_iter_count is the number of times HHEd or another single iter of training is called
+    #   Both variables get decremented before the iter(s) start(s).
+    tri_iters_count=2
+    single_iter_count=3
+    last_iteration=$(get_last_iteration)
+    # last_iteration=$((NUM_HMM_DIR-(tri_iters_count*TRI_ITERATIONS)-single_iter_count-1))
 fi
 
 run_orig_herest_until ${last_iteration}
@@ -588,15 +608,18 @@ run_orig_herest_until ${last_iteration}
 # fi
 
 if [[ $TRILETTER = "yes" ]] || [[ $TRILETTER = "1" ]]; then
-    last_iteration=$((NUM_HMM_DIR-TRI_ITERATIONS-3))
-
     next_dir=$((hmm_count+1))
+    single_iter_count=$((single_iter_count-1))
     HHEd -A -T $TRACE_LEVEL $HMM_LOAD_OPT $HMM_TRAINING.$hmm_count/$HMM_MACRO -M $HMM_TRAINING.$next_dir ${HEDFILE1} ${TOKENS_ORIGINAL}
     increment_hmm_count rmprev
 
+    tri_iters_count=$((tri_iters_count-1))
+    last_iteration=$(get_last_iteration)
+    # last_iteration=$((NUM_HMM_DIR-TRI_ITERATIONS-3))
     run_tri_herest_until ${last_iteration}
 
-    # Again, don't call run_herest_iter due to unique flags
+    # Again, don't call run_herest_iter due to unique flag for generating STATS file
+    single_iter_count=$((single_iter_count-1))
     next_dir=$((hmm_count+1))
     if [[ $MULTI_PROCESS = "yes" ]]; then
         pid=()
@@ -622,10 +645,10 @@ if [[ $TRILETTER = "yes" ]] || [[ $TRILETTER = "1" ]]; then
             $HMM_LOAD_OPT $HMM_TRAINING.$hmm_count/$HMM_MACRO \
             -M $HMM_TRAINING.$next_dir -I $MLF_LOCATION ${TOKENS}
     fi
-
     increment_hmm_count rmprev
 
     next_dir=$((hmm_count+1))
+    single_iter_count=$((single_iter_count-1))
     HHEd -A -T $TRACE_LEVEL $HMM_LOAD_OPT $HMM_TRAINING.$hmm_count/$HMM_MACRO -M $HMM_TRAINING.$next_dir ${HEDFILE2} ${TOKENS}
     increment_hmm_count rmprev
 
@@ -639,11 +662,13 @@ if [[ $TRILETTER = "yes" ]] || [[ $TRILETTER = "1" ]]; then
             mv ${MLF_LOCATION}_temp ${MLF_LOCATION}
     fi
 
-    last_iteration=$((NUM_HMM_DIR-1))
+    tri_iters_count=$((tri_iters_count-1))
+    last_iteration=$(get_last_iteration)
+    # last_iteration=$((NUM_HMM_DIR-1))
     run_tri_herest_until ${last_iteration}
 
     if [[ $EXPORT_MLF = "yes" ]] || [[ $EXPORT_MLF = "1" ]]; then
-	    ${HTKBIN}HVite -p $INSERT_PENALTY -s $GRAMMAR_SCALE_FACTOR -m -o SWX -A -T $TRACE_LEVEL \
+            ${HTKBIN}HVite -p $INSERT_PENALTY -s $GRAMMAR_SCALE_FACTOR -m -o SWX -A -T $TRACE_LEVEL \
                 $HMM_LOAD_OPT $HMM_TRAINING.$next_dir/$HMM_MACRO \
                 -S $DATA_SAMPLES -I $MLF_LOCATION_ORIGINAL -i ${MLF_LOCATION_GEN}/labels.mlf_export $DICTFILE $TOKENS
     fi
@@ -663,7 +688,7 @@ fi
 # # -H is the HMM to load
 # # -S is the list of EXT files it should use
 # # -I is the MLF (Master Label File) - should contain the word list for each ext
-# # 		file 
+# #     file 
 # # -i is the MLF file to store output to
 # # -a load a label file and create an alignment network for each test file.
 # # -n use 'i' tokens to perform N-best recognition.
@@ -730,7 +755,7 @@ if [[ $MULTI_PROCESS = "yes" ]]; then
 
         if [[ $WORD_LEVEL = "yes" ]] || [[ $WORD_LEVEL = "1" ]]; then
             OUTPUT_MLF_WORD_SUB="$OUTPUT_MLF_WORD.${test_file##*.}"
-        	${HTKBIN}HVite -p $INSERT_PENALTY -s $GRAMMAR_SCALE_FACTOR -A -T $TRACE_LEVEL \
+                ${HTKBIN}HVite -p $INSERT_PENALTY -s $GRAMMAR_SCALE_FACTOR -A -T $TRACE_LEVEL \
                     $HMM_LOAD_OPT $HMM_TRAINING.$next_dir/$HMM_MACRO \
                     -w ${WORD_LATTICE}_word -S $test_file -I $MLF_LOCATION \
                     -i $OUTPUT_MLF_WORD_SUB -n 4 20 $DICTFILE_WORD $TOKENS &
@@ -741,12 +766,12 @@ if [[ $MULTI_PROCESS = "yes" ]]; then
     rm -rf $TESTING.*
 else
     ${HTKBIN}HVite -p $INSERT_PENALTY -t $PRUNING_THRESHOLD -s $GRAMMAR_SCALE_FACTOR -A -T $TRACE_LEVEL \
-    	$HMM_LOAD_OPT $HMM_TRAINING.$next_dir/$HMM_MACRO \
-    	-w $WORD_LATTICE -S $TESTING -I $MLF_LOCATION \
-    	-i $OUTPUT_MLF $DICTFILE $TOKENS
+        $HMM_LOAD_OPT $HMM_TRAINING.$next_dir/$HMM_MACRO \
+        -w $WORD_LATTICE -S $TESTING -I $MLF_LOCATION \
+        -i $OUTPUT_MLF $DICTFILE $TOKENS
     
     if [[ $WORD_LEVEL = "yes" ]] || [[ $WORD_LEVEL = "1" ]]; then
-    	${HTKBIN}HVite -p $INSERT_PENALTY -s $GRAMMAR_SCALE_FACTOR -A -T $TRACE_LEVEL \
+        ${HTKBIN}HVite -p $INSERT_PENALTY -s $GRAMMAR_SCALE_FACTOR -A -T $TRACE_LEVEL \
             $HMM_LOAD_OPT $HMM_TRAINING.$next_dir/$HMM_MACRO \
             -w ${WORD_LATTICE}_word -S $TESTING -I $MLF_LOCATION \
             -i $OUTPUT_MLF_WORD -n 4 20 $DICTFILE_WORD $TOKENS
@@ -779,7 +804,7 @@ echo "*****************************************************"
 if [[ $MULTI_PROCESS = "yes" ]]; then
     output_mlfs=`find ${EXT_DIR} -type f -wholename "$OUTPUT_MLF.*"`
     ${HTKBIN}HResults -A -e "???" $ENTER -e "???" $EXIT -T $TRACE_LEVEL -t -I $MLF_LOCATION_ORIGINAL \
-     	-p $TOKENS_ORIGINAL $output_mlfs >> $LOG_RESULTS
+        -p $TOKENS_ORIGINAL $output_mlfs >> $LOG_RESULTS
     
     if [[ $WORD_LEVEL = "yes" ]] || [[ $WORD_LEVEL = "1" ]]; then
         output_mlfs_word=`find ${EXT_DIR} -type f -wholename "$OUTPUT_MLF_WORD.*"`

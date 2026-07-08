@@ -288,6 +288,15 @@ def get_name_ext(tc, num_its, num_tri_its, hmmdef, trace_value=None):
     
     return name_ext
 
+def get_base_path(base_dir, subdirs):
+    dataset = "_".join(subdirs.split(os.path.sep)[:2])
+    data_file_dict = load_json_file(DATA_FILE_DICT_FILE)
+
+    root_path = data_file_dict[dataset]["label_path"].replace("label", base_dir)
+    root_path = os.path.split(root_path)[0]
+
+    return root_path
+
 # Get the results filepath
 def get_hresults_prj_filepaths(name_ext, subdirs, ip):
     results_dir = os.path.join(RESULTS_ROOT, subdirs)
@@ -368,15 +377,6 @@ def get_hedfile1_info(subdirs):
         hedfile1_tokens_root_repl = f"CL {tokens_path}/commands_tri_internal"
 
     return hedfile1_tokens_root_search, hedfile1_tokens_root_repl
-
-def get_base_path(base_dir, subdirs):
-    dataset = "_".join(subdirs.split(os.path.sep)[:2])
-    data_file_dict = load_json_file(DATA_FILE_DICT_FILE)
-
-    root_path = data_file_dict[dataset]["label_path"].replace("label", base_dir)
-    root_path = os.path.split(root_path)[0]
-
-    return root_path
 
 def get_hedfile2_names(subdirs, n_states):
     if args.full_cov:
