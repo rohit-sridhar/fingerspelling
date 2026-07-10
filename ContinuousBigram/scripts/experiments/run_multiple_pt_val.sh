@@ -16,27 +16,28 @@ set_vars $@
 ##### USE BELOW AFTER TESTING ON INITIAL SAMPLE
 # typeset -a results_jsons=(${@:2})
 
-if [[ $2 == "" ]]; then
-    echo "Pass 1 or more results JSON files as the second+ arg(s)"
+if [[ ${#results_jsons[@]} -eq 0 ]]; then
+    echo "Pass 1 or more results JSON files as the third+ arg(s)"
     exit 1
 fi
 
-############################## USER DEP VALIDATION ###############################
+############################## ALIGNMENT ###############################
 # --ip_values -200 -100 -50 -25 0 \
-participants=(8e3b)
 
+# participants=(8e3b 6f68)
+# seeds=(1248)
 output_dir=${ROOT}/results/pt_results/tot_all/${base_dataset}
 
 if [ ! -d ${output_dir} ]; then
     mkdir -p ${output_dir}
 fi
 
-for results_json in ${results_jsons[@]}; do 
+for results_json in ${results_jsons[@]}; do
     if [[ ! -f ${results_json} ]]; then
         echo "Results JSON ${results_json} does not exist. Skipping iteration."
         continue
     fi
-
+    
     for dataset in ${datasets[@]}; do
     for seed in ${seeds[@]}; do
     for threshold in ${thresholds[@]}; do
@@ -50,11 +51,18 @@ for results_json in ${results_jsons[@]}; do
             model_path=${model_path%?}
         fi
         
-        python ${ROOT}/scripts/grid_search.py \
+        cross_word=
+        model_name=$(basename "${model_path}")
+        if [[ "$model_name" == *"_cross"* ]]; then
+            cross_word="--cross"
+        fi
+        
+        echo python ${ROOT}/scripts/grid_search.py \
             --data_files ${ROOT}/data/${dataset}/dim20/thr${threshold}/train/pt/${participant}/sd${seed}/data/ \
             --test_model_path ${model_path} \
             --results_csv ${output_dir}/results_pt${participant}_sd${seed}.csv \
-            --test_model --prepare_data --clear_hresults --force_align ${debug}
+            --test_model --prepare_data --clear_hresults \
+            ${cross_word} ${debug} ${force_align}
     done
     done
     done

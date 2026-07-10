@@ -18,31 +18,38 @@ set -euo pipefail
 # 
 ##################################################
 
-echo Processing $2
+OPTIONS_FILE=${1:-}
+TEST_DATA=${2:-}
+MODEL=${3:-}
 
-OPTIONS_FILE=$1;
+. ${OPTIONS_FILE}
+
+# echo "Processing ${TEST_DATA}"
+echo "Processing ${TEST_DATA}"
 
 if [ ! -x "${OPTIONS_FILE}" ]; then
    echo "Can't read options file '${OPTIONS_FILE}', make sure the file exists and is readable and executable"
    exit;
 fi
 
-. ${OPTIONS_FILE}
-
-rm -f $TESTING_BASENAME*
+rm -f $TEST_DATA*
 $SCRIPTS_DIR/cv/gen_test_set.sh $DATA_SAMPLES $TESTING_BASENAME $TT_NAME_SCRIPT $NUM_TEST_SAMPLES
 
-
 HMM_LOAD_OPT="-H"
-TEST_DATA=$2
-MODEL=$3
 LETTER_RESULTS_FILE=$LOG_RESULTS
 WORD_RESULTS_FILE=$LOG_RESULTS_WORD
 
 if [[ $WORD_SKSP == "yes" ]]; then
-    DICTFILE_WORD=$DICTFILE_WORD_SKSP
-    TOKENS_WORD=$TOKENS_WORD_SKSP
+    # Grammar files
     GRAMMARFILE_WORD=$GRAMMARFILE_WORD_SKSP
+    
+    # Dict files
+    DICTFILE_WORD=$DICTFILE_WORD_SKSP
+
+    # Tokens files
+    TOKENS_WORD=$TOKENS_WORD_SKSP
+
+    # MLF files
     MLF_LOCATION=$MLF_LOCATION_SKSP
     MLF_LOCATION_WORD=$MLF_LOCATION_WORD_SKSP
     MLF_LOCATION_ORIGINAL=$MLF_LOCATION_ORIGINAL_SKSP
@@ -52,17 +59,45 @@ if [[ $WORD_SKSP_PHRASE == "yes" ]]; then
     GRAMMARFILE_WORD=$GRAMMARFILE_WORD_PHRASE_SKSP
 fi
 
+if [[ $CROSS_WORD == "yes" ]]; then
+    # Dict Files
+    DICTFILE=$DICTFILE_CROSS
+    DICTFILE_WORD=$DICTFILE_WORD_CROSS
+
+    # Token Files
+    TOKENS=$TOKENS_CROSS
+
+    # MLF Files
+    MLF_LOCATION=$MLF_LOCATION_CROSS
+fi
+
+NETWORK_OPT=
+if [[ $FORCE_ALIGN = "yes" ]] || [[ $FORCE_ALIGN = "1" ]]; then
+    # skip word level and have HVite output alignments
+    WORD_LEVEL=no
+    NETWORK_OPT="-a"
+    
+    # Output mlfs should be tagged as aligned mlfs
+    OUTPUT_MLF="${OUTPUT_MLF}_align"
+    OUTPUT_MLF_WORD="${OUTPUT_MLF_WORD}_align"
+    
+    MLF_LOCATION=$MLF_LOCATION_ORIGINAL_SKSP
+    TEST_DATA=$DATA_SAMPLES
+    # # Dictfile needs to be alignment dict and cross word if needed
+    # DICTFILE=$DICTFILE_REV
+    # if [[ $CROSS_WORD == "yes" ]]; then
+    #     DICTFILE=$DICTFILE_CROSS_REV
+    # fi
+else
+    # else set to use the generated lattice (from grammar)
+    NETWORK_OPT="-w ${WORD_LATTICE}"
+fi
+
 echo
 echo "*****************************************************"
 echo "Generating Grammar (using HTK Tools)"
 echo "*****************************************************"
-# if [[ $BIGRAM_LETTER = "yes" ]]; then
-#     ${HTKBIN}HLStats -b $BIGRAM_LETTER_FILE -s $ENTER $EXIT -o $TOKENS_ORIGINAL $MLF_LOCATION_ORIGINAL
-#     ${HTKBIN}HBuild -n $BIGRAM_LETTER_FILE -s $ENTER $EXIT $TOKENS_ORIGINAL ${WORD_LATTICE}
-# else
 ${HTKBIN}HParse -l ${GRAMMARFILE} ${WORD_LATTICE}
-# fi
-
 if [[ $WORD_LEVEL = "yes" ]] || [[ $WORD_LEVEL = "1" ]]; then
     ${HTKBIN}HParse -l ${GRAMMARFILE_WORD} ${WORD_LATTICE}_word
 fi
@@ -71,6 +106,7 @@ echo
 echo "*****************************************************"
 echo "Checking our Models"
 echo "*****************************************************"
+
 ###############################################################################
 # now we check our models
 ###############################################################################
@@ -91,20 +127,7 @@ echo "*****************************************************"
 # Uses the Dict file with triletters (For both word and letter)
 ###############################################################################
 
-NETWORK_OPT=
-if [[ $FORCE_ALIGN = "yes" ]] || [[ $FORCE_ALIGN = "1" ]]; then
-    WORD_LEVEL=no
-    NETWORK_OPT="-a"
-
-    OUTPUT_MLF="${OUTPUT_MLF}_align"
-    OUTPUT_MLF_WORD="${OUTPUT_MLF_WORD}_align"
-
-    # MLF_LOCATION=$MLF_LOCATION_WORD
-    DICTFILE=$DICTFILE_ALIGN
-else
-    NETWORK_OPT="-w ${WORD_LATTICE}"
-fi
-
+THREADS=5
 if [[ $MULTI_PROCESS = "yes" ]]; then
     num_lines=`cat $TEST_DATA | wc -l` #   compute the num lines in test file
     lines_per_file=$(($num_lines / $THREADS))
@@ -128,12 +151,6 @@ if [[ $MULTI_PROCESS = "yes" ]]; then
                     -i $OUTPUT_MLF_WORD_SUB -n 4 20 $DICTFILE_WORD $TOKENS &
             pid+=("$!")
         fi
-        
-        # HLRescore -p -10.0 -s 0.0 -A -T 1 -w -I mlf/labels.mlf_tri_internal_sksp -i ./ext/result.mlf_word -n lang_models/lm.1/ngram_lm ./commands/commands_word_sksp ./ext/data/*.lat
-
-        # ${HTKBIN}HLRescore -p $INSERT_PENALTY -s $GRAMMAR_SCALE_FACTOR -A -T $TRACE_LEVEL \
-        #       $HMM_LOAD_OPT $MODEL -w -I $MLF_LOCATION -i "$OUTPUT_MLF_WORD.rcr" \
-        #       -n $LM_DIR/lm.$NGRAM/$lm_file $TOKENS_WORD $EXT_DIR/data/*.lat &
     done
     wait "${pid[@]}"
     rm -rf $TEST_DATA.*
@@ -153,16 +170,17 @@ fi
 
 # Exit here for forced alignment. No need to run HResults
 if [[ $FORCE_ALIGN = "yes" ]] || [[ $FORCE_ALIGN = "1" ]]; then
+    awk 'BEGIN {print "#!MLF!#"} /^#!MLF!#/ {next} {if (NF == 4 && $4 ~ /^-?[0-9.]+$/) print $1, $2, $3; else print}' ${OUTPUT_MLF}* > "${MLF_LOCATION_ORIGINAL}_bootstrap"
+    # awk 'BEGIN {print "#!MLF!#"} /^#!MLF!#/ {next} {if (NF == 4 && $4 ~ /^-?[0-9.]+$/) $4=""; {print}' ${OUTPUT_MLF}.* \
+    #     > "${MLF_LOCATION_ORIGINAL}_bootstrap"
     exit 0
 fi
-
-# confidence levels
-#HVite -H hmm.7/newMacros -w word.lattice -S $TESTING -I labels.mlf -o output.mlf -n 4 20 dict commands
 
 echo
 echo "*****************************************************"
 echo Testing Models
 echo "*****************************************************"
+
 ###############################################################################
 # now we run the tests
 ###############################################################################
@@ -179,6 +197,7 @@ echo "*****************************************************"
 # Uses the MLF with triletters
 # Uses the Tokens file with triletters
 ###############################################################################
+
 if [[ $MULTI_PROCESS = "yes" ]]; then
     output_mlfs=`find ${EXT_DIR} -type f -wholename "$OUTPUT_MLF.*"`
     ${HTKBIN}HResults -A -e "???" $ENTER -e "???" $EXIT -T $TRACE_LEVEL -t -I $MLF_LOCATION_ORIGINAL \

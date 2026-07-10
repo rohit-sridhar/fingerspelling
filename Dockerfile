@@ -45,7 +45,7 @@ RUN python --version && pip --version
 
 # Install python libraries
 # RUN pip install dtw-python 
-RUN pip install numpy pandas pyarrow fastparquet
+RUN pip install numpy pandas matplotlib pyarrow fastparquet
 RUN pip install tqdm pytest
 
 # Install copilot

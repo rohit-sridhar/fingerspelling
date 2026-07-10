@@ -15,6 +15,7 @@ from utils import *
 DICT_TYPE_CHOICES = [
     "letter",
     "word",
+    "letter_tri",
     "tri_letter",
     "tri_letter_whole",
     "tri_word",
@@ -22,6 +23,7 @@ DICT_TYPE_CHOICES = [
     "tri_word_sksp",
     "tri_align",
     "cross_letter",
+    "cross_letter_tri",
     "cross_word",
     "cross_tri_align"
 ]
@@ -121,7 +123,12 @@ def write_entry_to_file(entry):
 #################### TRILETTER LEVEL FUNCTIONS ####################
 
 # Process the first entry for any word
-def process_first_triletter(word, letter=True, tri_align=False):
+def process_first_triletter(
+    word,
+    letter=True,
+    tri_align=False,
+    swap_order=False,
+):
     logger.debug(f"{word=}")
     try:
         val = '+'.join([word[0],word[1]])
@@ -130,6 +137,8 @@ def process_first_triletter(word, letter=True, tri_align=False):
 
     if tri_align:
         entry = ' '.join([val, val])
+    elif swap_order:
+        entry = ' '.join([val, word[0]])
     else:
         entry = ' '.join([word[0], val])
     
@@ -138,7 +147,12 @@ def process_first_triletter(word, letter=True, tri_align=False):
     return val
 
 # Process the last entry for any word
-def process_last_triletter(word, letter=True, tri_align=False):
+def process_last_triletter(
+    word,
+    letter=True,
+    tri_align=False,
+    swap_order=False,
+):
     try:
         val = '-'.join([word[-2],word[-1]])
     except:
@@ -146,6 +160,8 @@ def process_last_triletter(word, letter=True, tri_align=False):
 
     if tri_align:
         entry = ' '.join([val, val])
+    elif swap_order:
+        entry = ' '.join([val, word[-1]])
     else:
         entry = ' '.join([word[-1], val])
 
@@ -154,7 +170,13 @@ def process_last_triletter(word, letter=True, tri_align=False):
     return val
 
 # Process the middle entry for any word (centered at i)
-def process_middle_triletter(word, i, letter=True, tri_align=False):
+def process_middle_triletter(
+    word,
+    i,
+    letter=True,
+    tri_align=False,
+    swap_order=False,
+):
     try:
         val = '-'.join([word[i-1], word[i]])
         val = '+'.join([val, word[i+1]])
@@ -163,6 +185,8 @@ def process_middle_triletter(word, i, letter=True, tri_align=False):
 
     if tri_align:
         entry = ' '.join([val, val])
+    elif swap_order:
+        entry = ' '.join([val, word[i]])
     else:
         entry = ' '.join([word[i], val])
 
@@ -176,11 +200,12 @@ def write_single_entry(word, sksp=False):
     write_entry_to_file(entry)
 
 # Write the entry for any word with more than 2 letters
-def write_full_letter_entry(word, tri_align=False):
+def write_full_triletter_entry(word, tri_align=False, swap_order=False):
     _ = process_first_triletter(
         word,
         letter=True,
         tri_align=tri_align,
+        swap_order=swap_order,
     )
     
     for i in range(1, len(word)-1):
@@ -189,30 +214,36 @@ def write_full_letter_entry(word, tri_align=False):
             i,
             letter=True,
             tri_align=tri_align,
+            swap_order=swap_order,
         )
     
     _ = process_last_triletter(
         word,
         letter=True,
         tri_align=tri_align,
+        swap_order=swap_order,
     )
 
 # Main Letter Level Wrapper that picks the correct entry writing function
-def add_letter_to_dict(word, tri_align=False):
+def add_triletter_to_dict(word, tri_align=False, swap_order=False):
     if len(word) == 1:
         write_single_entry(word)
     else:
-        write_full_letter_entry(word, tri_align=tri_align)
+        write_full_triletter_entry(
+            word,
+            tri_align=tri_align,
+            swap_order=swap_order,
+        )
 
 #################### TRILETTER WHOLE LEVEL FUNCTIONS ####################
-def add_whole_letter_to_dict(phrase):
+def add_whole_triletter_to_dict(phrase):
     tokens = phrase.split(SPACE)
     tokens = [f"{{{token}}}" for token in tokens]
     
     if len(tokens) == 1:
         write_single_entry(tokens)
     else:
-        write_full_letter_entry(tokens)
+        write_full_triletter_entry(tokens)
 
 def add_whole_word_to_dict(phrase):
     tokens = phrase.split(SPACE)
@@ -221,7 +252,7 @@ def add_whole_word_to_dict(phrase):
     if len(tokens) == 1:
         write_single_entry(tokens)
     else:
-        entries = get_full_word_entry(tokens)
+        entries = get_full_triletter_word_entry(tokens)
         entries[0] = ''.join(entries[0])
 
         entry = ' '.join(entries)
@@ -238,7 +269,7 @@ def write_uniletter_dict():
 #################### TRILETTER WORD LEVEL FUNCTIONS ####################
 
 # Main Word Level Wrapper that aggregated triletter contexts for word dict
-def get_full_word_entry(word):
+def get_full_triletter_word_entry(word):
     entries = [word]
     first_triletter = process_first_triletter(word, letter=False)
     entries.append(first_triletter)
@@ -252,12 +283,12 @@ def get_full_word_entry(word):
     return entries
 
 # Adds all triletters for a given word to the dict
-def add_word_to_dict(word, sksp=False):
+def add_triletter_word_to_dict(word, sksp=False):
     if len(word) == 1:
         write_single_entry(word, sksp)
     else:
         word = word.strip(SPACE)
-        entries = get_full_word_entry(word)
+        entries = get_full_triletter_word_entry(word)
 
         ### NOTE about the if statement below.
         # Counterintuitive but is the way it should be.
@@ -278,7 +309,7 @@ def add_cross_word_to_dict(word, first=False, last=False):
     if len(word) == 1:
         entries = [word, word]
     else:
-        entries = get_full_word_entry(word)
+        entries = get_full_triletter_word_entry(word)
 
     if not first:
         entries[1] = f"{SPACE}-{entries[1]}"
@@ -301,25 +332,29 @@ def ingest_label_file(label_filepath):
     logger.debug(f"{label_filepath=}")
     phrase = SPACE.join(tokens)
     if args.dict_type == "tri_letter_whole":
-        add_whole_letter_to_dict(phrase)
+        add_whole_triletter_to_dict(phrase)
     elif args.dict_type == "tri_word_whole":
         add_whole_word_to_dict(phrase)
     elif args.dict_type == "cross_letter":
-        add_letter_to_dict(phrase)
+        add_triletter_to_dict(phrase)
+    elif args.dict_type == "cross_letter_tri":
+        add_triletter_to_dict(phrase, swap_order=True)
     elif args.dict_type == "cross_tri_align":
-        add_letter_to_dict(phrase, tri_align=True)
+        add_triletter_to_dict(phrase, tri_align=True)
     else:
         for i,word in enumerate(tokens):
             if args.dict_type == "word":
                 add_uniletter_word_to_dict(word)
+            elif args.dict_type == "letter_tri":
+                add_triletter_to_dict(word, swap_order=True)
             elif args.dict_type == "tri_letter":
-                add_letter_to_dict(word)
+                add_triletter_to_dict(word)
             elif args.dict_type == "tri_word":
-                add_word_to_dict(word, sksp=False)
+                add_triletter_word_to_dict(word, sksp=False)
             elif args.dict_type == "tri_word_sksp":
-                add_word_to_dict(word, sksp=True)
+                add_triletter_word_to_dict(word, sksp=True)
             elif args.dict_type == "tri_align":
-                add_letter_to_dict(word, tri_align=True)
+                add_triletter_to_dict(word, tri_align=True)
             # Note we don't use the sksp arg with dict_type cross_word
             elif args.dict_type == "cross_word":
                 add_cross_word_to_dict(

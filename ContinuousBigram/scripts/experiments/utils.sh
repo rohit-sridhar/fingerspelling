@@ -11,6 +11,7 @@ typeset -a datasets=()
 typeset -a participants=()
 typeset -a results_jsons=()
 typeset -a thresholds=(0)
+typeset force_align=
 typeset debug=
 typeset base_dataset=
 
@@ -23,7 +24,10 @@ typeset base_dataset=
 # 
 # trap cleanup SIGTERM SIGINT SIGQUIT SIGHUP
 
-#################### set vars for all experimental shell scripts ####################
+#################### set vars for all experiment shell scripts ####################
+# The first arg is positional and is the base dataset name
+# The remaining args may be script specific. For example, run_multiple_pt_val.sh
+# requires the second arg to be
 function set_datasets {
     base_dataset=${1:-}
     datasets=(${base_dataset}_drop-na_lininterp0)
@@ -49,17 +53,21 @@ function set_participants {
 }
 
 # sets debug variable based on all args passed in
-function set_debug {
-    for arg in "$@"; do
+function set_flag {
+    declare -n flag=${1:-}
+    flag_str=${1:-}
+    for arg in "${@:2}"; do
+        echo "Inside Loop"
         # Check if the argument is debug
-        if [[ ${arg} == "debug" ]]; then
-            debug="--debug"
+        if [[ ${arg} == "${flag_str}" ]]; then
+            flag="--${flag_str}"
         fi
     done
 }
 
 # the functions below is for test.sh primarily. if any other
-# script uses json files, the var may not be set correctly.
+# script uses json files, it may reuse it. Consider renaming
+# to json_args instead
 function set_results_jsons {
     for arg in "$@"; do
         # Check if the argument ends with the suffix
@@ -71,11 +79,10 @@ function set_results_jsons {
 
 # sets the vars for all shell scripts in ContinuousBigram/scripts/experiments/
 function set_vars {
-    # set_datasets ${1:-} ${3:-}
-    # set_participants ${1:-} ${4:-}
     set_datasets ${1:-}
     set_participants ${1:-}
-    set_debug $@
+    set_flag "debug" $@
+    set_flag "force_align" $@
     set_results_jsons $@
 }
 

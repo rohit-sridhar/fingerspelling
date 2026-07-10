@@ -50,7 +50,6 @@ else
     echo "Warning: ${UTIL_DIR}/check_opts.sh not found; skipping option checks. Set UTIL_DIR or install the utils package." >&2
 fi
 
-# When Cross word is enabled this logic may need to be changed
 if [[ $WORD_SKSP == "yes" ]]; then
     # Grammar files
     GRAMMARFILE_WORD=$GRAMMARFILE_WORD_SKSP
@@ -171,16 +170,6 @@ fi
 # Prepare data for training/testing
 ########################################################################
 
-### Set the Cross word files
-# if [[ $TRILETTER = "yes" ]] && [[ $CROSS_WORD = "yes" ]]; then
-#     TOKENS=$TOKENS_CROSS
-#     MLF_LOCATION=$MLF_LOCATION_CROSS
-#     DICTFILE=$DICTFILE_CROSS
-#     DICTFILE_WORD=$DICTFILE_CROSS_WORD
-#     GRAMMARFILE_WORD=$GRAMMARFILE_WORD_CROSS
-# fi
-
-
 # DATA_SAMPLES=all-extfiles
 
 TT_NAME_SCRIPT=$SCRIPTS_DIR/gen_train_test_name.sh      # make consistent names
@@ -296,6 +285,8 @@ fi
 ###############################################################################
 # Define some useful functions (move to a utils file if there are too many)
 ###############################################################################
+
+# get the last iteration using the counters (tri iters and single iter)
 function get_last_iteration {
     if [[ -z $tri_iters_count ]] || [[ -z $single_iter_count ]]; then
         echo "tri_iters_count and single_iter_counts must be defined before calling get_last_iteration"
@@ -309,14 +300,15 @@ function get_last_iteration {
     echo "${last_iteration}"
 }
 
+# run a single iteration of herest
 function run_herest_iter {
     iter_type=${1:-}
     if [[ ${iter_type} == "orig" ]]; then
-        USE_MLF=${MLF_LOCATION_ORIGINAL}
-        USE_TOKENS=${TOKENS_ORIGINAL}
+        mlf_file=${MLF_LOCATION_ORIGINAL}
+        tokens_file=${TOKENS_ORIGINAL}
     elif [[ ${iter_type} == "tri" ]]; then
-        USE_MLF=${MLF_LOCATION}
-        USE_TOKENS=${TOKENS}
+        mlf_file=${MLF_LOCATION}
+        tokens_file=${TOKENS}
     else
         echo "first arg to run_herest_iter must be orig or tri. nothing else!"
         exit 1
@@ -330,8 +322,8 @@ function run_herest_iter {
             ${HTKBIN}HERest -v $MIN_VARIANCE \
                 -A -T $TRACE_LEVEL -S $train_file -p $i \
                 $HMM_LOAD_OPT $HMM_TRAINING.$hmm_count/$HMM_MACRO \
-                -M $HMM_TRAINING.$next_dir -I $USE_MLF \
-            ${USE_TOKENS} &
+                -M $HMM_TRAINING.$next_dir -I $mlf_file \
+            ${tokens_file} &
             pid+=("$!")
             i=$((i+1))
         done
@@ -340,16 +332,17 @@ function run_herest_iter {
         ${HTKBIN}HERest -v $MIN_VARIANCE \
             -A -T $TRACE_LEVEL -p 0 \
             $HMM_LOAD_OPT $HMM_TRAINING.$hmm_count/$HMM_MACRO \
-            -M $HMM_TRAINING.$next_dir -I $USE_MLF \
-        ${USE_TOKENS} $HMM_TRAINING.$next_dir/HER*.acc
+            -M $HMM_TRAINING.$next_dir -I $mlf_file \
+        ${tokens_file} $HMM_TRAINING.$next_dir/HER*.acc
     else
         ${HTKBIN}HERest -v $MIN_VARIANCE \
             -A -T $TRACE_LEVEL -S $TRAINING \
             $HMM_LOAD_OPT $HMM_TRAINING.$hmm_count/$HMM_MACRO \
-            -M $HMM_TRAINING.$next_dir -I $USE_MLF ${USE_TOKENS}
+            -M $HMM_TRAINING.$next_dir -I $mlf_file ${tokens_file}
     fi
 }
 
+# run orig herest until last iteration
 function run_orig_herest_until {
     last_iteration=${1:-}
     while [[ $hmm_count -lt $last_iteration ]]
@@ -359,6 +352,7 @@ function run_orig_herest_until {
     done
 }
 
+# run tri herest until last iteration
 function run_tri_herest_until {
     last_iteration=${1:-}
     while [[ $hmm_count -lt $last_iteration ]]
@@ -368,6 +362,21 @@ function run_tri_herest_until {
     done
 }
 
+function run_hhed_and_herest {
+    hedfile=${1:-}
+    tokens_file=${2:-}
+
+    next_dir=$((hmm_count+1))
+    single_iter_count=$((single_iter_count-1))
+    HHEd -A -T $TRACE_LEVEL $HMM_LOAD_OPT $HMM_TRAINING.$hmm_count/$HMM_MACRO -M $HMM_TRAINING.$next_dir ${hedfile} ${tokens_file}
+    increment_hmm_count rmprev
+
+    tri_iters_count=$((tri_iters_count-1))
+    last_iteration=$(get_last_iteration)
+    run_tri_herest_until ${last_iteration}
+}
+
+# increment hmm count and remove prev model if requested
 function increment_hmm_count {
     arg1=${1:-}
     if [[ ${arg1} == "rmprev" ]]; then
@@ -587,11 +596,16 @@ if [[ $TRILETTER = "yes" ]] || [[ $TRILETTER = "1" ]]; then
     # Define the two variables below to represent:
     #   tri_iters_count is the number of times HERest is repeated for tri_iters times
     #   single_iter_count is the number of times HHEd or another single iter of training is called
+    ##      in general it would HHEd n times and HERest once (to generate $STATS)
     #   Both variables get decremented before the iter(s) start(s).
-    tri_iters_count=2
-    single_iter_count=3
+    if [[ $FULL_COV == "1" ]] || [[ $FULL_COV == "yes" ]]; then
+        tri_iters_count=4
+        single_iter_count=5
+    elif [[ $FULL_COV == "0" ]] || [[ $FULL_COV == "no" ]]; then
+        tri_iters_count=3
+        single_iter_count=4
+    fi
     last_iteration=$(get_last_iteration)
-    # last_iteration=$((NUM_HMM_DIR-(tri_iters_count*TRI_ITERATIONS)-single_iter_count-1))
 fi
 
 run_orig_herest_until ${last_iteration}
@@ -600,23 +614,8 @@ run_orig_herest_until ${last_iteration}
 # Uses the MLF with triletters
 # Uses the Tokens file with triletters
 ###############################################################################
-# if [[ $TRILETTER = "yes" ]] && [[ $CROSS_WORD = "yes" ]]; then
-#     TOKENS=$TOKENS_CROSS
-#     MLF_LOCATION=$MLF_LOCATION_CROSS
-#     DICTFILE=$DICTFILE_CROSS
-#     DICTFILE_WORD=$DICTFILE_CROSS_WORD
-# fi
-
 if [[ $TRILETTER = "yes" ]] || [[ $TRILETTER = "1" ]]; then
-    next_dir=$((hmm_count+1))
-    single_iter_count=$((single_iter_count-1))
-    HHEd -A -T $TRACE_LEVEL $HMM_LOAD_OPT $HMM_TRAINING.$hmm_count/$HMM_MACRO -M $HMM_TRAINING.$next_dir ${HEDFILE1} ${TOKENS_ORIGINAL}
-    increment_hmm_count rmprev
-
-    tri_iters_count=$((tri_iters_count-1))
-    last_iteration=$(get_last_iteration)
-    # last_iteration=$((NUM_HMM_DIR-TRI_ITERATIONS-3))
-    run_tri_herest_until ${last_iteration}
+    run_hhed_and_herest ${HEDFILE1} ${TOKENS_ORIGINAL}
 
     # Again, don't call run_herest_iter due to unique flag for generating STATS file
     single_iter_count=$((single_iter_count-1))
@@ -647,11 +646,7 @@ if [[ $TRILETTER = "yes" ]] || [[ $TRILETTER = "1" ]]; then
     fi
     increment_hmm_count rmprev
 
-    next_dir=$((hmm_count+1))
-    single_iter_count=$((single_iter_count-1))
-    HHEd -A -T $TRACE_LEVEL $HMM_LOAD_OPT $HMM_TRAINING.$hmm_count/$HMM_MACRO -M $HMM_TRAINING.$next_dir ${HEDFILE2} ${TOKENS}
-    increment_hmm_count rmprev
-
+    run_hhed_and_herest ${HEDFILE2} ${TOKENS}
     # Force-align MLFs
     if [[ $FORCE_ALIGN = "yes" ]] || [[ $FORCE_ALIGN = "1" ]]; then
             ${HTKBIN}HVite -p $INSERT_PENALTY -s $GRAMMAR_SCALE_FACTOR -a -o SW -A -T $TRACE_LEVEL \
@@ -662,10 +657,11 @@ if [[ $TRILETTER = "yes" ]] || [[ $TRILETTER = "1" ]]; then
             mv ${MLF_LOCATION}_temp ${MLF_LOCATION}
     fi
 
-    tri_iters_count=$((tri_iters_count-1))
-    last_iteration=$(get_last_iteration)
-    # last_iteration=$((NUM_HMM_DIR-1))
-    run_tri_herest_until ${last_iteration}
+    run_hhed_and_herest ${HEDFILE3} ${TOKENS}
+
+    if [[ $FULL_COV == "yes" ]] || [[ $FULL_COV == "0" ]]; then
+        run_hhed_and_herest ${HEDFILE4} ${TOKENS}
+    fi
 
     if [[ $EXPORT_MLF = "yes" ]] || [[ $EXPORT_MLF = "1" ]]; then
             ${HTKBIN}HVite -p $INSERT_PENALTY -s $GRAMMAR_SCALE_FACTOR -m -o SWX -A -T $TRACE_LEVEL \

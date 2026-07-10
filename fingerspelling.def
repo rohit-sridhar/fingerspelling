@@ -33,27 +33,27 @@ From: ubuntu:latest
         gpg-agent
     add-apt-repository ppa:deadsnakes/ppa -y
 
-    # Install Python 3.8 and development headers
+    # Install Python 3.9 and development headers
     apt-get install -y --no-install-recommends \
-        python3.8 \
-        python3.8-dev \
-        python3.8-distutils \
+        python3.9 \
+        python3.9-dev \
+        python3.9-distutils \
         curl
 
-    # Install the correct pip version for Python 3.8
-    curl -sS https://bootstrap.pypa.io/pip/3.8/get-pip.py | python3.8
+    # Install the correct pip version for Python 3.9
+    curl -sS https://bootstrap.pypa.io/pip/3.9/get-pip.py | python3.9
 
-    # Set Python 3.8 as the default commands
-    ln -sf /usr/bin/python3.8 /usr/bin/python3
-    ln -sf /usr/bin/python3.8 /usr/bin/python
-    ln -sf /usr/local/bin/pip3.8 /usr/bin/pip3
-    ln -sf /usr/local/bin/pip3.8 /usr/bin/pip
+    # Set Python 3.9 as the default commands
+    ln -sf /usr/bin/python3.9 /usr/bin/python3
+    ln -sf /usr/bin/python3.9 /usr/bin/python
+    ln -sf /usr/local/bin/pip3.9 /usr/bin/pip3
+    ln -sf /usr/local/bin/pip3.9 /usr/bin/pip
 
     # Verify the installations
     python --version && pip --version
 
     # Install python libraries
-    pip install numpy pandas pyarrow fastparquet
+    pip install numpy pandas matplotlib pyarrow fastparquet
     pip install tqdm pytest
 
     # Install copilot

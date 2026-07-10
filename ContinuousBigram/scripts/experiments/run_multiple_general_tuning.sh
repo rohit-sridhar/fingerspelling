@@ -11,6 +11,7 @@ set_vars $@
 typeset -a data_groups=(general)
 # typeset -a data_groups=(pt-split)
 
+seeds=(3248 4248 5248)
 ############################## TRAIN MULTIPLE DIM20;PCA10 ##############################
 for seed in ${seeds[@]}; do
 for data_group in ${data_groups[@]}; do
@@ -21,17 +22,50 @@ for data_group in ${data_groups[@]}; do
         mkdir -p "${ROOT}/results/${output_dir}"
     fi
     
+    # for dataset in ${datasets[@]}; do
+    # for seed in "${seeds[@]}"; do
+    #     ${ROOT}/scripts/grid_search.py \
+    #         --data_files ${ROOT}/data/${dataset}/dim20/thr0/train/${data_group}/sd${seed}/data/ \
+    #         --hmmdefs 6state-pca20-gmm2 6state-pca20-gmm2-skip1 \
+    #         --results_csv ${ROOT}/results/${output_dir}/results_${dataset}.csv \
+    #         --num_its 500 --num_tri_its 100 \
+    #         --clear_hresults --prepare_data
+    # done
+    # done
+    
     for dataset in ${datasets[@]}; do
     for seed in "${seeds[@]}"; do
         ${ROOT}/scripts/grid_search.py \
             --data_files ${ROOT}/data/${dataset}/dim20/thr0/train/${data_group}/sd${seed}/data/ \
-            --hmmdefs 6state-pca20-gmm2-skip 6state-pca20-gmm2-skip1 6state-pca20-gmm2 \
+            --hmmdefs 6state-pca20-gmm2 6state-pca20-gmm2-skip1 \
             --results_csv ${ROOT}/results/${output_dir}/results_${dataset}.csv \
-            --num_its 500 --num_tri_its 500 \
-            --clear_hresults --prepare_data
+            --num_its 500 --num_tri_its 100 \
+            --force_align --clear_hresults --prepare_data
     done
     done
-    
+
+    # for dataset in ${datasets[@]}; do
+    # for seed in "${seeds[@]}"; do
+    #     ${ROOT}/scripts/grid_search.py \
+    #         --data_files ${ROOT}/data/${dataset}/dim20/thr0/train/${data_group}/sd${seed}/data/ \
+    #         --hmmdefs 6state-pca20-gmm2 6state-pca20-gmm2-skip1 \
+    #         --results_csv ${ROOT}/results/${output_dir}/results_${dataset}.csv \
+    #         --num_its 500 --num_tri_its 100 \
+    #         --full_cov --clear_hresults --prepare_data
+    # done
+    # done
+    # 
+    # for dataset in ${datasets[@]}; do
+    # for seed in "${seeds[@]}"; do
+    #     ${ROOT}/scripts/grid_search.py \
+    #         --data_files ${ROOT}/data/${dataset}/dim20/thr0/train/${data_group}/sd${seed}/data/ \
+    #         --hmmdefs 6state-pca20-gmm2 6state-pca20-gmm2-skip1 \
+    #         --results_csv ${ROOT}/results/${output_dir}/results_${dataset}.csv \
+    #         --num_its 500 --num_tri_its 100 \
+    #         --cross_word --clear_hresults --prepare_data
+    # done
+    # done
+
     # for dataset in ${datasets[@]}; do
     # for seed in "${seeds[@]}"; do
     #     ${ROOT}/scripts/grid_search.py \

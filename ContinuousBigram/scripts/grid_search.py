@@ -92,7 +92,7 @@ def _parse_args():
         "--num_its",
         type=int,
         nargs='+',
-        default=[20],
+        default=[40],
         help="Number of standard training iterations."
     )
     
@@ -120,12 +120,6 @@ def _parse_args():
         help="Ngrams to use with HLM modeling tools. If Ngram=0, doesn't use HLM tools. CURRENTLY NOT IN USE."
     )
     
-    # parser.add_argument(
-    #     "--no_custom_silsp",
-    #     action='store_true',
-    #     help="If true, won't use custom sil/sp models. custom sil/sp is used by default."
-    # )
-
     parser.add_argument(
         "--full_cov",
         action='store_true',
@@ -256,27 +250,24 @@ def get_ip_ext(ip):
 def get_name_ext(tc, num_its, num_tri_its, hmmdef, trace_value=None):
     name_ext = ""
 
-    # Do not include insertion-penalty (ip) in the name extension anymore
     if args.test_model_path is not None:
         name_ext += os.path.basename(args.test_model_path)[len(MODEL_MACROS_FILE) + 1:]
     else:
         name_ext += "_".join([f"{hmmdef}", f"{num_its}its", f"{num_tri_its}tri-its", f"tc{tc}"])
 
-    # if args.no_custom_silsp:
-    #     name_ext += "_no-silsp"
-    
-    if args.cross_word:
-        name_ext += "_cross"
+    if args.test_model_path is None:
+        if args.cross_word:
+            name_ext += "_cross"
+
+        if args.force_align:
+            name_ext += "_align"
+
+        if args.no_triletter:
+            name_ext += "_no-triletter"
 
     if args.full_cov:
         name_ext += "_fc"
     
-    if args.force_align:
-        name_ext += "_align"
-
-    if args.no_triletter:
-        name_ext += "_no-triletter"
-
     if args.custom_ext is not None:
         name_ext += f".{args.custom_ext}"
 
@@ -379,12 +370,9 @@ def get_hedfile1_info(subdirs):
     return hedfile1_tokens_root_search, hedfile1_tokens_root_repl
 
 def get_hedfile2_names(subdirs, n_states):
-    if args.full_cov:
-        raise ValueError("error making hedfile2 name. cannot use full covariance matrix yet.")
-    else:
-        file_uniq_str = get_file_uniq_str(subdirs)
-        hedfile2 = f"${{PRJ}}/instr/mktri2_tc.{n_states}.{file_uniq_str}.hed"
-        hedfile2_orig = f"${{PRJ}}/instr/mktri2_tc.{n_states}.hed"
+    file_uniq_str = get_file_uniq_str(subdirs)
+    hedfile2 = f"${{PRJ}}/instr/mktri2_tc.{n_states}.{file_uniq_str}.hed"
+    hedfile2_orig = f"${{PRJ}}/instr/mktri2_tc.{n_states}.hed"
 
     return hedfile2, hedfile2_orig
 
@@ -408,8 +396,9 @@ def get_bool_arg_info():
     whole_word = "yes" if args.whole_word else "no"
     use_phrase = "yes" if args.use_phrase else "no"
     force_align = "yes" if args.force_align else "no"
+    full_cov = "yes" if args.full_cov else "no"
 
-    return multi_process, cross_word, whole_word, use_phrase, force_align
+    return multi_process, cross_word, whole_word, use_phrase, force_align, full_cov
 
 def get_num_threads():
     try:
@@ -473,8 +462,7 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     name_ext = get_name_ext(tc, num_its, num_tri_its, hmmdef) # We leave trace_value out in this call.
     letter_results_file, word_results_file = get_hresults_prj_filepaths(name_ext, subdirs, ip)
     
-    # custom_silsp, multi_process, hedfile1, hedfile1_orig, cross_word, whole_word, use_phrase = get_bool_arg_info(subdirs)
-    _, cross_word, whole_word, use_phrase, force_align = get_bool_arg_info()
+    _, cross_word, whole_word, use_phrase, force_align, full_cov = get_bool_arg_info()
     n_states = hmmdef[:hmmdef.find("-")]
     hedfile1, hedfile1_orig = get_hedfile1_names(subdirs)
     hedfile2, hedfile2_orig = get_hedfile2_names(subdirs, n_states)
@@ -520,6 +508,9 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     force_align_search = FORCE_ALIGN_VARNAME + r"\s*=\s*(yes|no)"
     force_align_repl = FORCE_ALIGN_VARNAME + f"={force_align}"
     
+    full_cov_search = FULL_COV_VARNAME + r"\s*=\s*(yes|no)"
+    full_cov_repl = FULL_COV_VARNAME + f"={full_cov}"
+
     trace_level_search = TRACE_LEVEL_VARNAME + r"\s*=\s*[0-9]+"
     trace_level_repl = TRACE_LEVEL_VARNAME + f"={trace_value}"
     
@@ -548,6 +539,7 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     edit_file(cross_word_search, cross_word_repl, options_file)
     edit_file(use_phrase_search, use_phrase_repl, options_file)
     edit_file(force_align_search, force_align_repl, options_file)
+    edit_file(full_cov_search, full_cov_repl, options_file)
     edit_file(trace_level_search, trace_level_repl, options_file)
     edit_file(hedfile1_tokens_root_search, hedfile1_tokens_root_repl, hedfile1_local_file)
     edit_file(hedfile2_tokens_root_search, hedfile2_tokens_root_repl, hedfile2_local_file)
@@ -564,6 +556,7 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     run_subprocess(["grep", "^" + CROSS_WORD_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + USE_PHRASE_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + FORCE_ALIGN_VARNAME + r"\s*=\s*", options_file], logger=logger)
+    run_subprocess(["grep", "^" + FULL_COV_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + TRACE_LEVEL_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + HEDFILE1_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + HEDFILE2_VARNAME + r"\s*=\s*", options_file], logger=logger)
@@ -876,35 +869,6 @@ def prepare_data(data_file, label_file, subdirs):
 
     logger.info("#####\n")
 
-# TODO Standardize the output file naming and name ext (with trace ext)
-# Note that grammar_type_arg is different from grammar_type.
-# In this case grammar_type is hardcoded as grliwi, but it should be
-# hardcoded everywhere
-# def gen_grammar(subdirs, label_file, grammar_type_arg='word'):
-#     if grammar_type_arg.startswith("letter"):
-#         grammar_file = "_".join([LETTER_GRAMMAR, "isolated"])
-#         if grammar_type_arg.endswith("_whole_word"):
-#             grammar_file = "_".join([grammar_file, "whole"])
-#     else:
-#         grammar_file = WORD_GRAMMAR
-#         if grammar_type_arg.endswith("_phrase_sksp"):
-#             grammar_file = "_".join([grammar_file, "phrase", "sksp"])
-#         elif grammar_type_arg.endswith("_sksp"):
-#             grammar_file = "_".join([grammar_file, "isolated", "sksp"])
-#         elif grammar_type_arg.endswith("_whole_word"):
-#             grammar_file = "_".join([grammar_file, "isolated", "whole"])
-#         else:
-#             grammar_file = "_".join([grammar_file, "isolated"])
-# 
-#     grammar_filepath = os.path.join(GRAMMAR_ROOT, subdirs, grammar_file)
-# 
-#     gen_grammar_args = ['python', GEN_GRAMMAR_SCRIPT]
-#     gen_grammar_args += ["--label_loc", label_file]
-#     gen_grammar_args += ["--grammar_file", grammar_filepath]
-# 
-#     logger.info("Gen Grammar Command: " + ' '.join(gen_grammar_args))
-#     run_subprocess(gen_grammar_args, logger=logger)
-
 # def clear_results_files(ip, tc, num_its, num_tri_its, hmmdef, subdirs, grammar_type):
 def clear_results_files(ip, tc, num_its, num_tri_its, hmmdef, subdirs):
     name_ext = get_name_ext(tc, num_its, num_tri_its, hmmdef)
@@ -912,8 +876,6 @@ def clear_results_files(ip, tc, num_its, num_tri_its, hmmdef, subdirs):
     
     letter_results_file = swap_prj_to_root(letter_results_file)
     word_results_file = swap_prj_to_root(word_results_file)
-    # letter_results_file = os.path.join(*letter_results_file.split(os.path.sep)[1:])
-    # word_results_file = os.path.join(*word_results_file.split(os.path.sep)[1:])
     
     logger.info("##### Clearing Results Files #####")
     with open(letter_results_file, 'w') as f:

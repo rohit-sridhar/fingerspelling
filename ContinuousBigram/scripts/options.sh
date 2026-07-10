@@ -47,8 +47,7 @@ SAMPLE_PERIOD=1000
 MULTI_PROCESS=yes
 THREADS=96
 
-#PRUNING_THRESHOLD="50 50 500" #Threshold for alpha-beta pruning, of form "start step-size end"
-PRUNING_THRESHOLD=0
+PRUNING_THRESHOLD="50 50 500" #Threshold for alpha-beta pruning, of form "start step-size end"
 
 HMM_TOPOLOGY_DIR=${PRJ}/hmmdefs
 
@@ -81,6 +80,7 @@ GEN_TRAIN_TEST=yes				# whether or not to generate
 WORD_LEVEL=yes # whether to process data as word level or letter level
 TRILETTER=yes # whether to enable triletter configuration
 CROSS_WORD=no # whether triletters should expand across words  TODO
+FULL_COV=no # whether to use HEDFILE4 (HHEd with FC command)
 
 FORCE_ALIGN=no # Use to enable/disable forced alignment during training or testing
 EXPORT_MLF=no # Use to export MLF for use outside project
@@ -137,6 +137,7 @@ DICTFILE_ROOT=${PRJ}/dict/supplemental_gen_drop-na_lininterp0/dim20/thr0/all
 
 ###### USE FOR MAIN TRAINING ######
 DICTFILE=${DICTFILE_ROOT}/dict_tri2letter
+DICTFILE_REV=${DICTFILE_ROOT}/dict_letter2tri
 # DICTFILE_WHOLE=${DICTFILE_ROOT}/dict_tri2letter_whole
 
 DICTFILE_WORD=${DICTFILE_ROOT}/dict_tri2word
@@ -148,8 +149,9 @@ DICTFILE_ALIGN=${DICTFILE_ROOT}/dict_tri2tri # Dictionary used during forced ali
 
 ###### USE FOR CROSS WORD TRILETTER ######
 DICTFILE_CROSS=${DICTFILE_ROOT}/dict_tri2letter_cross
+DICTFILE_CROSS_REV=${DICTFILE_ROOT}/dict_letter2tri_cross
 DICTFILE_WORD_CROSS=${DICTFILE_ROOT}/dict_tri2word_cross
-DICTFILE_ALIGN_CROSS=${DICTFILE_ROOT}/dict_tri2tri_cross
+DICTFILE_CROSS_ALIGN=${DICTFILE_ROOT}/dict_tri2tri_cross
 
 ###### USE FOR SINGLE LETTER ######
 # DICTFILE=${PRJ}/dict/dict_letter2letter
@@ -231,8 +233,11 @@ LM_DIR=${PRJ}/lang_models
 
 FILE_UNIQ_STR=tmp
 N_STATES=1state
+
 HEDFILE1=${PRJ}/instr/mktri1_silsp.${FILE_UNIQ_STR}.hed
 HEDFILE2=${PRJ}/instr/mktri2_tc.${N_STATES}.${FILE_UNIQ_STR}.hed
+HEDFILE3=${PRJ}/instr/mkgmm_mu.${N_STATES}.hed
+HEDFILE4=${PRJ}/instr/mkfc.hed
 
 LEDFILE_WORD=${PRJ}/instr/mkcmd_word.${FILE_UNIQ_STR}.led
 LEDFILE_LETTER=${PRJ}/instr/mkcmd_letter.${FILE_UNIQ_STR}.led
