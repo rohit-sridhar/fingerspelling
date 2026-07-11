@@ -82,6 +82,7 @@ if [[ $FORCE_ALIGN = "yes" ]] || [[ $FORCE_ALIGN = "1" ]]; then
     OUTPUT_MLF_WORD="${OUTPUT_MLF_WORD}_align"
     
     MLF_LOCATION=$MLF_LOCATION_ORIGINAL_SKSP
+    # TODO Change this later if bootstrapping on alignments works. otherwise delete.
     TEST_DATA=$DATA_SAMPLES
     # # Dictfile needs to be alignment dict and cross word if needed
     # DICTFILE=$DICTFILE_REV

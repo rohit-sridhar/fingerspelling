@@ -24,8 +24,6 @@ SCRIPTS_DIR=${PRJ}/scripts			# location of scripts directory
 						#
 # UTIL_DIR=/usr/local/gt2k/utils			# location of utils directory
 UTIL_DIR=/gt2k/utils
-                        #
-						#
 VECTOR_LENGTH=10				# number of elements in your
 						# feature vector. This is the
 						# number of observations per
@@ -204,6 +202,7 @@ MLF_ROOT=${PRJ}/mlf/supplemental_gen_drop-na_lininterp0/dim20/thr0/all
 
 MLF_LOCATION_ORIGINAL=${MLF_ROOT}/labels.mlf_letter # used for building model and results
 MLF_LOCATION_ORIGINAL_SKSP=${MLF_ROOT}/labels.mlf_letter_sksp # used for building model and results
+MLF_LOCATION_ORIGINAL_SKSP_BOOTSTRAP=${MLF_ROOT}/labels.mlf_letter_sksp_bootstrap # used for building model and results
 # MLF_LOCATION_ORIGINAL_WHOLE=${MLF_ROOT}/labels.mlf_letter_whole # used for building model and results
 
 ###### USE FOR MAIN TRAINING ######

@@ -24,8 +24,8 @@ fi
 ############################## ALIGNMENT ###############################
 # --ip_values -200 -100 -50 -25 0 \
 
-# participants=(8e3b 6f68)
-# seeds=(1248)
+participants=(8e3b 6f68)
+seeds=(1248)
 output_dir=${ROOT}/results/pt_results/tot_all/${base_dataset}
 
 if [ ! -d ${output_dir} ]; then
@@ -57,7 +57,7 @@ for results_json in ${results_jsons[@]}; do
             cross_word="--cross"
         fi
         
-        echo python ${ROOT}/scripts/grid_search.py \
+        ${ROOT}/scripts/grid_search.py \
             --data_files ${ROOT}/data/${dataset}/dim20/thr${threshold}/train/pt/${participant}/sd${seed}/data/ \
             --test_model_path ${model_path} \
             --results_csv ${output_dir}/results_pt${participant}_sd${seed}.csv \

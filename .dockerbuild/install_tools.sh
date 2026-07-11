@@ -16,6 +16,7 @@ tar -xzvf gt2k.tar.gz && rm -rf gt2k.tar.gz
 sed -i "236,249d" /gt2k/utils/check_opts.sh
 sed -i "76s/==/>=/g" /gt2k/utils/standalone_prepare.c
 sed -i "145s/sizeof(bob)/sizeof(float)/g" /gt2k/utils/standalone_prepare.c
+sed -i "53s/sampPeriod = 2000/sampPeriod = 1000/g" /gt2k/utils/standalone_prepare.c
 cd /gt2k/utils
 make
 

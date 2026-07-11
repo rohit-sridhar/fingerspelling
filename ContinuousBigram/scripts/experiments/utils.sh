@@ -57,7 +57,6 @@ function set_flag {
     declare -n flag=${1:-}
     flag_str=${1:-}
     for arg in "${@:2}"; do
-        echo "Inside Loop"
         # Check if the argument is debug
         if [[ ${arg} == "${flag_str}" ]]; then
             flag="--${flag_str}"
