@@ -29,8 +29,6 @@ echo "*****************************************************"
 echo converting data files to .ext files
 echo "*****************************************************"
 ## Above is done in prepare_files now
-# rm -rf $EXT_DIR/*
-# if [[ ! -f "${EXT_DIR}/done" ]]; then
 if [[ ${MULTI_PROCESS} = "yes" ]]; then
     num_lines=`cat ${DATAFILES_LIST} | wc -l` #   compute the num lines per file
     lines_per_file=$((${num_lines} / ${THREADS}))

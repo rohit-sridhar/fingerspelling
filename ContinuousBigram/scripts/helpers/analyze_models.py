@@ -221,7 +221,7 @@ if __name__ == "__main__":
     setup_logger(
         log_file,
         log_level=logging.DEBUG if args.debug else logging.INFO,
-        mode="w",
+        mode="a",
     )
     logger.info(args)
     

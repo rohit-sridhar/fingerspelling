@@ -25,6 +25,36 @@ typeset base_dataset=
 # trap cleanup SIGTERM SIGINT SIGQUIT SIGHUP
 
 #################### set vars for all experiment shell scripts ####################
+function set_slurm_subsets_if_exists {
+    if [[ -v SLURM_ARRAY_TASK_ID ]]; then
+        total=1
+        for arg in ${@}; do
+            declare -n arr_ref=$arg
+            arr_len=${#arr_ref[@]}
+            total=$(( total * arr_len ))
+        done
+
+        if [[ ${SLURM_ARRAY_TASK_ID} -ge ${total} ]]; then
+            echo "The SLUM ARRAY TASK ID is too large. Should be <= data_groups*data_splits*seeds"
+            exit 1
+        fi
+        
+        rel_task_id=${SLURM_ARRAY_TASK_ID}
+        rel_total=$total
+        for arg in ${@}; do
+            declare -n arr_ref=$arg
+
+            arr_len=${#arr_ref[@]}
+            rel_total=$(( rel_total / arr_len ))
+
+            arr_idx=$(( rel_task_id / rel_total ))
+            arr_ref=(${arr_ref[${arr_idx}]})
+
+            rel_task_id=$(( rel_task_id % rel_total ))
+        done
+    fi
+}
+
 # The first arg is positional and is the base dataset name
 # The remaining args may be script specific. For example, run_multiple_pt_val.sh
 # requires the second arg to be
@@ -41,14 +71,6 @@ function set_participants {
     else
         echo "you can only pass supplemental_gen or main_train as the first arg for now. tbd add more datasets."
         exit 1
-    fi
-
-    if [[ -v SLURM_ARRAY_TASK_ID ]]; then
-        if [[ ${SLURM_ARRAY_TASK_ID} -ge ${#participants[@]} ]]; then
-            echo "The SLUM ARRAY TASK ID is too large. Should be <= num participants"
-            exit 1
-        fi
-        participants=(${participants[${SLURM_ARRAY_TASK_ID}]})
     fi
 }
 

@@ -23,10 +23,9 @@ fi
 
 ############################## ALIGNMENT ###############################
 # --ip_values -200 -100 -50 -25 0 \
-
-participants=(8e3b 6f68)
-seeds=(1248)
 output_dir=${ROOT}/results/pt_results/tot_all/${base_dataset}
+
+set_slurm_subsets_if_exists participants
 
 if [ ! -d ${output_dir} ]; then
     mkdir -p ${output_dir}
@@ -39,8 +38,8 @@ for results_json in ${results_jsons[@]}; do
     fi
     
     for dataset in ${datasets[@]}; do
-    for seed in ${seeds[@]}; do
     for threshold in ${thresholds[@]}; do
+    for seed in ${seeds[@]}; do
     for participant in ${participants[@]}; do
         model_exists=$(eval jq ".pt${participant}.model_exists" ${results_json})
         if [[ "$model_exists" == "false" ]]; then
@@ -56,11 +55,16 @@ for results_json in ${results_jsons[@]}; do
         if [[ "$model_name" == *"_cross"* ]]; then
             cross_word="--cross"
         fi
+
+        # if force_align don't pass a results csv
+        results_csv_opt=
+        if [[ -z "${force_align}" ]]; then
+            results_csv_opt="--results_csv ${output_dir}/results_pt${participant}_sd${seed}.csv"
+        fi
         
         ${ROOT}/scripts/grid_search.py \
             --data_files ${ROOT}/data/${dataset}/dim20/thr${threshold}/train/pt/${participant}/sd${seed}/data/ \
-            --test_model_path ${model_path} \
-            --results_csv ${output_dir}/results_pt${participant}_sd${seed}.csv \
+            --test_model_path ${model_path} ${results_csv_opt} \
             --test_model --prepare_data --clear_hresults \
             ${cross_word} ${debug} ${force_align}
     done

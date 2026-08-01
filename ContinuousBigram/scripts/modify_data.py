@@ -418,6 +418,12 @@ def import_data(new_data_loc, new_label_loc):
     for seq_id in tqdm(df_seq_ids, position=args.bar_position, desc=args.bar_description):
         new_datafile = os.path.join(new_data_loc, str(seq_id))
         new_label_file = os.path.join(new_label_loc, str(seq_id) + ".lab")
+
+        if os.path.exists(new_datafile):
+            os.unlink(new_datafile)
+
+        if os.path.exists(new_label_file):
+            os.unlink(new_label_file)
         
         datafile = os.path.join(data_path, str(seq_id))
         label_file = os.path.join(label_path, str(seq_id) + ".lab")

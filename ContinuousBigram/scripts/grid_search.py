@@ -121,12 +121,6 @@ def _parse_args():
     )
     
     parser.add_argument(
-        "--full_cov",
-        action='store_true',
-        help="If true, uses hmmdefs with full covariance for sil/sp models."
-    )
-    
-    parser.add_argument(
         "--no_multi_process",
         action='store_true',
         help="If true, won't use multiprocessing."
@@ -191,6 +185,18 @@ def _parse_args():
     )
     
     parser.add_argument(
+        "--full_cov",
+        action='store_true',
+        help="If true, uses hmmdefs with full covariance for sil/sp models."
+    )
+    
+    parser.add_argument(
+        "--bootstrap",
+        action='store_true',
+        help="If true, uses bootstrap mlfs for predefined segmentations."
+    )
+    
+    parser.add_argument(
         "--clear_hresults",
         action="store_true",
         help="If true, clear the hresults files (otherwise results will be appended, if the files exist)."
@@ -227,6 +233,9 @@ def _check_args():
         if not valid_data_loc(args.data_files[i]):
             logger.error(args.data_files[i])
             raise ValueError(f"Data files {args.data_files[i]} must start with DATA_ROOT and end with /data (last subdir).")
+    
+    if args.test_model and args.test_model_path is None:
+        raise ValueError("for now you must pass a saved model path when running test_model.")
 
     if args.test_model_path is not None:
         # if args.test_model_path.startswith("."):
@@ -255,7 +264,6 @@ def get_name_ext(tc, num_its, num_tri_its, hmmdef, trace_value=None):
     else:
         name_ext += "_".join([f"{hmmdef}", f"{num_its}its", f"{num_tri_its}tri-its", f"tc{tc}"])
 
-    if args.test_model_path is None:
         if args.cross_word:
             name_ext += "_cross"
 
@@ -265,9 +273,12 @@ def get_name_ext(tc, num_its, num_tri_its, hmmdef, trace_value=None):
         if args.no_triletter:
             name_ext += "_no-triletter"
 
-    if args.full_cov:
-        name_ext += "_fc"
-    
+        if args.full_cov:
+            name_ext += "_fc"
+
+        if args.bootstrap:
+            name_ext += "_bts"
+
     if args.custom_ext is not None:
         name_ext += f".{args.custom_ext}"
 
@@ -276,6 +287,10 @@ def get_name_ext(tc, num_its, num_tri_its, hmmdef, trace_value=None):
 
     if args.test_model:
         name_ext += ".test"
+
+        # add align at the end if generating alignments only
+        if args.force_align:
+            name_ext += "_align"
     
     return name_ext
 
@@ -397,8 +412,9 @@ def get_bool_arg_info():
     use_phrase = "yes" if args.use_phrase else "no"
     force_align = "yes" if args.force_align else "no"
     full_cov = "yes" if args.full_cov else "no"
+    bootstrap = "yes" if args.bootstrap else "no"
 
-    return multi_process, cross_word, whole_word, use_phrase, force_align, full_cov
+    return multi_process, cross_word, whole_word, use_phrase, force_align, full_cov, bootstrap
 
 def get_num_threads():
     try:
@@ -462,7 +478,7 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     name_ext = get_name_ext(tc, num_its, num_tri_its, hmmdef) # We leave trace_value out in this call.
     letter_results_file, word_results_file = get_hresults_prj_filepaths(name_ext, subdirs, ip)
     
-    _, cross_word, whole_word, use_phrase, force_align, full_cov = get_bool_arg_info()
+    _, cross_word, whole_word, use_phrase, force_align, full_cov, bootstrap = get_bool_arg_info()
     n_states = hmmdef[:hmmdef.find("-")]
     hedfile1, hedfile1_orig = get_hedfile1_names(subdirs)
     hedfile2, hedfile2_orig = get_hedfile2_names(subdirs, n_states)
@@ -511,6 +527,9 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     full_cov_search = FULL_COV_VARNAME + r"\s*=\s*(yes|no)"
     full_cov_repl = FULL_COV_VARNAME + f"={full_cov}"
 
+    bootstrap_search = BOOTSTRAP_VARNAME + r"\s*=\s*(yes|no)"
+    bootstrap_repl = BOOTSTRAP_VARNAME + f"={bootstrap}"
+
     trace_level_search = TRACE_LEVEL_VARNAME + r"\s*=\s*[0-9]+"
     trace_level_repl = TRACE_LEVEL_VARNAME + f"={trace_value}"
     
@@ -540,6 +559,7 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     edit_file(use_phrase_search, use_phrase_repl, options_file)
     edit_file(force_align_search, force_align_repl, options_file)
     edit_file(full_cov_search, full_cov_repl, options_file)
+    edit_file(bootstrap_search, bootstrap_repl, options_file)
     edit_file(trace_level_search, trace_level_repl, options_file)
     edit_file(hedfile1_tokens_root_search, hedfile1_tokens_root_repl, hedfile1_local_file)
     edit_file(hedfile2_tokens_root_search, hedfile2_tokens_root_repl, hedfile2_local_file)
@@ -557,6 +577,7 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     run_subprocess(["grep", "^" + USE_PHRASE_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + FORCE_ALIGN_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + FULL_COV_VARNAME + r"\s*=\s*", options_file], logger=logger)
+    run_subprocess(["grep", "^" + BOOTSTRAP_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + TRACE_LEVEL_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + HEDFILE1_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + HEDFILE2_VARNAME + r"\s*=\s*", options_file], logger=logger)
@@ -687,14 +708,15 @@ def test_model(tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
     main_log_handler.setLevel(logging.ERROR)
 
     if args.test_model_path is None:
-        _, new_model_path = get_saved_model_path(subdirs, tc, num_its, num_tri_its, hmmdef)
+        raise ValueError("TODO: implement model path building when args.test_model is True and test_model_path is None")
+        # _, model_path = get_saved_model_path(subdirs, tc, num_its, num_tri_its, hmmdef)
     else:
-        new_model_path = args.test_model_path
-    logger.info(f"Model Dir: {new_model_path}")
+        model_path = args.test_model_path
+    logger.info(f"Model Dir: {model_path}")
 
     options_file = get_options_file(subdirs)
     test_data_file = get_test_data_file(subdirs)
-    test_args = [TEST_SCRIPT, options_file, test_data_file, new_model_path]  # Last arg is for phrase grammar
+    test_args = [TEST_SCRIPT, options_file, test_data_file, model_path]  # Last arg is for phrase grammar
 
     logger.info("Test Command: " + ' '.join(test_args))
     # Run and stream output into the test logger
@@ -817,7 +839,7 @@ def get_model_path(subdirs, hmmdef):
 # gets the saved model path (after grid_search a single model is saved). This
 # is the path to that model (after fixing the hyperparams)
 def get_saved_model_path(subdirs, tc, num_its, num_tri_its, hmmdef):
-    name_ext = get_name_ext(tc, num_its, num_tri_its, hmmdef)  # Pass none for first arg because the model doesn't vary by grammar
+    name_ext = get_name_ext(tc, num_its, num_tri_its, hmmdef)
 
     saved_model_dir = os.path.dirname(get_model_path(subdirs, hmmdef))
     saved_model_file = '_'.join([MODEL_MACROS_FILE, name_ext])

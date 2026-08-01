@@ -12,9 +12,14 @@ set -euo pipefail
 #
 ###############################################################################
 
-ALL_FILES=$1
-NAME_SCRIPT=$3
+ALL_FILES=${1:-}
+TESTING_BASENAME=${2:-}
+NAME_SCRIPT=${3:-}
+NUM_SAMPLES=${4:-}
 
-TESTING=`$NAME_SCRIPT $2 0`	# generate name for the testing file
-cat $ALL_FILES | sort -R | head -n $4 > $TESTING
+TESTING=`$NAME_SCRIPT $TESTING_BASENAME 0`	# generate name for the testing file
+shuf -n $NUM_SAMPLES > $TESTING
+
+# cat $ALL_FILES | sort -R | head -n $NUM_SAMPLES > $TESTING
+# echo "EOF gen_test_set"
 

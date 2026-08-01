@@ -78,6 +78,16 @@ if [[ $CROSS_WORD == "yes" ]]; then
     MLF_LOCATION=$MLF_LOCATION_CROSS
 fi
 
+if [[ $BOOTSTRAP == "yes" ]]; then
+    MLF_LOCATION_ORIGINAL=$MLF_LOCATION_ORIGINAL_SKSP_BOOTSTRAP
+
+    if [[ $CROSS_WORD == "yes" ]]; then
+        MLF_LOCATION=$MLF_LOCATION_CROSS_BOOTSTRAP
+    else
+        MLF_LOCATION=$MLF_LOCATION_SKSP_BOOTSTRAP
+    fi
+fi
+
 # Overwrites the choice made above because whole_word contains
 # no spaces. 
 # if [[ $WHOLE_WORD == "yes" ]]; then
@@ -422,7 +432,7 @@ echo "*****************************************************"
 typeset -l INITIALIZE_HMM   # make sure it is all lowercase
 if [[ "${INITIALIZE_HMM}" == "yes" ]] ||
    [[ "${INITIALIZE_HMM}" == "1" ]]; then
-    ## somtimes it works better if you use different topologies for different
+    ## sometimes it works better if you use different topologies for different
     ## models.
     ##
     ## below is an example of how to integrate multiple topologies
@@ -608,7 +618,9 @@ if [[ $TRILETTER = "yes" ]] || [[ $TRILETTER = "1" ]]; then
     last_iteration=$(get_last_iteration)
 fi
 
+echo "After initialization hmm_count: ${hmm_count}"
 run_orig_herest_until ${last_iteration}
+echo "After uniletter: ${hmm_count}"
 
 ###############################################################################
 # Uses the MLF with triletters
@@ -616,6 +628,7 @@ run_orig_herest_until ${last_iteration}
 ###############################################################################
 if [[ $TRILETTER = "yes" ]] || [[ $TRILETTER = "1" ]]; then
     run_hhed_and_herest ${HEDFILE1} ${TOKENS_ORIGINAL}
+    echo "After hedfile1: ${hmm_count}"
 
     # Again, don't call run_herest_iter due to unique flag for generating STATS file
     single_iter_count=$((single_iter_count-1))
@@ -645,8 +658,10 @@ if [[ $TRILETTER = "yes" ]] || [[ $TRILETTER = "1" ]]; then
             -M $HMM_TRAINING.$next_dir -I $MLF_LOCATION ${TOKENS}
     fi
     increment_hmm_count rmprev
+    echo "After single herest: ${hmm_count}"
 
     run_hhed_and_herest ${HEDFILE2} ${TOKENS}
+    echo "After hedfile2: ${hmm_count}"
     # Force-align MLFs
     if [[ $FORCE_ALIGN = "yes" ]] || [[ $FORCE_ALIGN = "1" ]]; then
             ${HTKBIN}HVite -p $INSERT_PENALTY -s $GRAMMAR_SCALE_FACTOR -a -o SW -A -T $TRACE_LEVEL \
@@ -658,9 +673,11 @@ if [[ $TRILETTER = "yes" ]] || [[ $TRILETTER = "1" ]]; then
     fi
 
     run_hhed_and_herest ${HEDFILE3} ${TOKENS}
+    echo "After hedfile3: ${hmm_count}"
 
     if [[ $FULL_COV == "yes" ]] || [[ $FULL_COV == "0" ]]; then
         run_hhed_and_herest ${HEDFILE4} ${TOKENS}
+        echo "After hedfile4: ${hmm_count}"
     fi
 
     if [[ $EXPORT_MLF = "yes" ]] || [[ $EXPORT_MLF = "1" ]]; then

@@ -10,6 +10,120 @@ set -euo pipefail
 ##################################################################
 
 ##################################################
+# Function defs
+##################################################
+# set htk files (pre force_alignment)
+function set_htk_files {
+    HMM_LOAD_OPT="-H"
+    LETTER_RESULTS_FILE=$LOG_RESULTS
+    WORD_RESULTS_FILE=$LOG_RESULTS_WORD
+
+    if [[ $WORD_SKSP == "yes" ]]; then
+        # Grammar files
+        GRAMMARFILE_WORD=$GRAMMARFILE_WORD_SKSP
+        
+        # Dict files
+        DICTFILE_WORD=$DICTFILE_WORD_SKSP
+
+        # Tokens files
+        TOKENS_WORD=$TOKENS_WORD_SKSP
+
+        # MLF files
+        MLF_LOCATION=$MLF_LOCATION_SKSP
+        MLF_LOCATION_WORD=$MLF_LOCATION_WORD_SKSP
+        MLF_LOCATION_ORIGINAL=$MLF_LOCATION_ORIGINAL_SKSP
+    fi
+
+    if [[ $WORD_SKSP_PHRASE == "yes" ]]; then
+        GRAMMARFILE_WORD=$GRAMMARFILE_WORD_PHRASE_SKSP
+    fi
+    
+    if [[ $CROSS_WORD == "yes" ]]; then
+        # Dict Files
+        DICTFILE=$DICTFILE_CROSS
+        DICTFILE_WORD=$DICTFILE_WORD_CROSS
+
+        # Token Files
+        TOKENS=$TOKENS_CROSS
+
+        # MLF Files
+        MLF_LOCATION=$MLF_LOCATION_CROSS
+    fi
+}
+
+function set_htk_alignment_files {
+    # skip word level and have HVite output alignments
+    WORD_LEVEL=no
+    NETWORK_OPT="-a"
+    
+    # Output mlfs should be tagged as aligned mlfs
+    OUTPUT_MLF="${OUTPUT_MLF}_align"
+    
+    # TODO Change this later if bootstrapping on alignments works. otherwise delete.
+    TEST_DATA=$DATA_SAMPLES
+
+
+    tri=${1:-}
+    if [[ ${tri} = "uni" ]]; then
+        MLF_LOCATION=$MLF_LOCATION_ORIGINAL_SKSP
+    elif [[ ${tri} = "tri" ]]; then
+        # reset mlf/dict for tri mlfs (and use cross if original model is cross word)
+        MLF_LOCATION=$MLF_LOCATION_SKSP
+        DICTFILE=$DICTFILE_ALIGN
+        if [[ $CROSS_WORD = "yes" ]] || [[ $CROSS_WORD = "1" ]]; then
+            MLF_LOCATION=$MLF_LOCATION_CROSS
+            DICTFILE=$DICTFILE_CROSS_ALIGN
+        fi
+    else
+        echo "pass uni or tri as first arg to set_htk_alignment_files"
+        exit 1
+    fi
+}
+
+# run hvite function does the main model checking
+function run_hvite {
+    if [[ $MULTI_PROCESS = "yes" ]]; then
+        num_lines=`cat $TEST_DATA | wc -l` #   compute the num lines in test file
+        lines_per_file=$(($num_lines / $THREADS))
+        if [[ $lines_per_file -lt 1 ]]; then
+            lines_per_file=1
+        fi
+        split -l $lines_per_file $TEST_DATA "$TEST_DATA."     # splits testing files
+        pid=()
+        
+        for test_file in $TEST_DATA.*; do
+            OUTPUT_MLF_SUB="$OUTPUT_MLF.${test_file##*.}"
+            ${HTKBIN}HVite -p $INSERT_PENALTY -t $PRUNING_THRESHOLD -s $GRAMMAR_SCALE_FACTOR -A -T $TRACE_LEVEL \
+                $HMM_LOAD_OPT $MODEL $NETWORK_OPT -S $test_file -I $MLF_LOCATION \
+                -i $OUTPUT_MLF_SUB $DICTFILE $TOKENS &
+            pid+=("$!")
+
+            if [[ $WORD_LEVEL = "yes" ]] || [[ $WORD_LEVEL = "1" ]]; then
+                OUTPUT_MLF_WORD_SUB="$OUTPUT_MLF_WORD.${test_file##*.}"
+                    ${HTKBIN}HVite -p $INSERT_PENALTY -s $GRAMMAR_SCALE_FACTOR -A -T $TRACE_LEVEL \
+                        $HMM_LOAD_OPT $MODEL -w ${WORD_LATTICE}_word -S $test_file -I $MLF_LOCATION \
+                        -i $OUTPUT_MLF_WORD_SUB -n 4 20 $DICTFILE_WORD $TOKENS &
+                pid+=("$!")
+            fi
+        done
+        wait "${pid[@]}"
+        rm -rf $TEST_DATA.*
+    else
+        ${HTKBIN}HVite -p $INSERT_PENALTY -t $PRUNING_THRESHOLD -s $GRAMMAR_SCALE_FACTOR -A -T $TRACE_LEVEL \
+            $HMM_LOAD_OPT $MODEL ${NETWORK_OPT} \
+            -S $TEST_DATA -I $MLF_LOCATION \
+            -i $OUTPUT_MLF $DICTFILE $TOKENS 
+        
+        if [[ $WORD_LEVEL = "yes" ]] || [[ $WORD_LEVEL = "1" ]]; then
+            ${HTKBIN}HVite -p $INSERT_PENALTY -s $GRAMMAR_SCALE_FACTOR -A -T $TRACE_LEVEL \
+                $HMM_LOAD_OPT $MODEL -w ${WORD_LATTICE}_word \
+                -S $TEST_DATA -I $MLF_LOCATION \
+                -i $OUTPUT_MLF_WORD -n 4 20 $DICTFILE_WORD $TOKENS
+        fi
+    fi
+}
+
+##################################################
 # 
 # Arg 1: options shell script
 # Arg 2: List of test files
@@ -35,64 +149,7 @@ fi
 rm -f $TEST_DATA*
 $SCRIPTS_DIR/cv/gen_test_set.sh $DATA_SAMPLES $TESTING_BASENAME $TT_NAME_SCRIPT $NUM_TEST_SAMPLES
 
-HMM_LOAD_OPT="-H"
-LETTER_RESULTS_FILE=$LOG_RESULTS
-WORD_RESULTS_FILE=$LOG_RESULTS_WORD
-
-if [[ $WORD_SKSP == "yes" ]]; then
-    # Grammar files
-    GRAMMARFILE_WORD=$GRAMMARFILE_WORD_SKSP
-    
-    # Dict files
-    DICTFILE_WORD=$DICTFILE_WORD_SKSP
-
-    # Tokens files
-    TOKENS_WORD=$TOKENS_WORD_SKSP
-
-    # MLF files
-    MLF_LOCATION=$MLF_LOCATION_SKSP
-    MLF_LOCATION_WORD=$MLF_LOCATION_WORD_SKSP
-    MLF_LOCATION_ORIGINAL=$MLF_LOCATION_ORIGINAL_SKSP
-fi
-
-if [[ $WORD_SKSP_PHRASE == "yes" ]]; then
-    GRAMMARFILE_WORD=$GRAMMARFILE_WORD_PHRASE_SKSP
-fi
-
-if [[ $CROSS_WORD == "yes" ]]; then
-    # Dict Files
-    DICTFILE=$DICTFILE_CROSS
-    DICTFILE_WORD=$DICTFILE_WORD_CROSS
-
-    # Token Files
-    TOKENS=$TOKENS_CROSS
-
-    # MLF Files
-    MLF_LOCATION=$MLF_LOCATION_CROSS
-fi
-
-NETWORK_OPT=
-if [[ $FORCE_ALIGN = "yes" ]] || [[ $FORCE_ALIGN = "1" ]]; then
-    # skip word level and have HVite output alignments
-    WORD_LEVEL=no
-    NETWORK_OPT="-a"
-    
-    # Output mlfs should be tagged as aligned mlfs
-    OUTPUT_MLF="${OUTPUT_MLF}_align"
-    OUTPUT_MLF_WORD="${OUTPUT_MLF_WORD}_align"
-    
-    MLF_LOCATION=$MLF_LOCATION_ORIGINAL_SKSP
-    # TODO Change this later if bootstrapping on alignments works. otherwise delete.
-    TEST_DATA=$DATA_SAMPLES
-    # # Dictfile needs to be alignment dict and cross word if needed
-    # DICTFILE=$DICTFILE_REV
-    # if [[ $CROSS_WORD == "yes" ]]; then
-    #     DICTFILE=$DICTFILE_CROSS_REV
-    # fi
-else
-    # else set to use the generated lattice (from grammar)
-    NETWORK_OPT="-w ${WORD_LATTICE}"
-fi
+set_htk_files
 
 echo
 echo "*****************************************************"
@@ -128,53 +185,26 @@ echo "*****************************************************"
 # Uses the Dict file with triletters (For both word and letter)
 ###############################################################################
 
-THREADS=5
-if [[ $MULTI_PROCESS = "yes" ]]; then
-    num_lines=`cat $TEST_DATA | wc -l` #   compute the num lines in test file
-    lines_per_file=$(($num_lines / $THREADS))
-    if [[ $lines_per_file -lt 1 ]]; then
-        lines_per_file=1
-    fi
-    split -l $lines_per_file $TEST_DATA "$TEST_DATA."     # splits testing files
-    pid=()
+NETWORK_OPT=
+if [[ $FORCE_ALIGN = "yes" ]] || [[ $FORCE_ALIGN = "1" ]]; then 
+    # generate uniletter alignments
+    set_htk_alignment_files uni
+    run_hvite
+    awk 'BEGIN {print "#!MLF!#"} /^#!MLF!#/ {next} {if (NF == 4 && $4 ~ /^-?[0-9.]+$/) print $1, $2, $3; else print}' ${OUTPUT_MLF}.* > "${MLF_LOCATION}_bootstrap"
+    rm -rf ${OUTPUT_MLF}.*
     
-    for test_file in $TEST_DATA.*; do
-        OUTPUT_MLF_SUB="$OUTPUT_MLF.${test_file##*.}"
-        ${HTKBIN}HVite -p $INSERT_PENALTY -t $PRUNING_THRESHOLD -s $GRAMMAR_SCALE_FACTOR -A -T $TRACE_LEVEL \
-            $HMM_LOAD_OPT $MODEL $NETWORK_OPT -S $test_file -I $MLF_LOCATION \
-            -i $OUTPUT_MLF_SUB $DICTFILE $TOKENS &
-        pid+=("$!")
-
-        if [[ $WORD_LEVEL = "yes" ]] || [[ $WORD_LEVEL = "1" ]]; then
-            OUTPUT_MLF_WORD_SUB="$OUTPUT_MLF_WORD.${test_file##*.}"
-                ${HTKBIN}HVite -p $INSERT_PENALTY -s $GRAMMAR_SCALE_FACTOR -A -T $TRACE_LEVEL \
-                    $HMM_LOAD_OPT $MODEL -w ${WORD_LATTICE}_word -S $test_file -I $MLF_LOCATION \
-                    -i $OUTPUT_MLF_WORD_SUB -n 4 20 $DICTFILE_WORD $TOKENS &
-            pid+=("$!")
-        fi
-    done
-    wait "${pid[@]}"
-    rm -rf $TEST_DATA.*
-else
-    ${HTKBIN}HVite -p $INSERT_PENALTY -t $PRUNING_THRESHOLD -s $GRAMMAR_SCALE_FACTOR -A -T $TRACE_LEVEL \
-        $HMM_LOAD_OPT $MODEL ${NETWORK_OPT} \
-        -S $TEST_DATA -I $MLF_LOCATION \
-        -i $OUTPUT_MLF $DICTFILE $TOKENS 
+    # generate tri letter alignments
+    set_htk_alignment_files tri
+    run_hvite
+    awk 'BEGIN {print "#!MLF!#"} /^#!MLF!#/ {next} {if (NF == 4 && $4 ~ /^-?[0-9.]+$/) print $1, $2, $3; else print}' ${OUTPUT_MLF}.* > "${MLF_LOCATION}_bootstrap"
+    rm -rf ${OUTPUT_MLF}.*
     
-    if [[ $WORD_LEVEL = "yes" ]] || [[ $WORD_LEVEL = "1" ]]; then
-        ${HTKBIN}HVite -p $INSERT_PENALTY -s $GRAMMAR_SCALE_FACTOR -A -T $TRACE_LEVEL \
-            $HMM_LOAD_OPT $MODEL -w ${WORD_LATTICE}_word \
-            -S $TEST_DATA -I $MLF_LOCATION \
-            -i $OUTPUT_MLF_WORD -n 4 20 $DICTFILE_WORD $TOKENS
-    fi
-fi
-
-# Exit here for forced alignment. No need to run HResults
-if [[ $FORCE_ALIGN = "yes" ]] || [[ $FORCE_ALIGN = "1" ]]; then
-    awk 'BEGIN {print "#!MLF!#"} /^#!MLF!#/ {next} {if (NF == 4 && $4 ~ /^-?[0-9.]+$/) print $1, $2, $3; else print}' ${OUTPUT_MLF}* > "${MLF_LOCATION_ORIGINAL}_bootstrap"
-    # awk 'BEGIN {print "#!MLF!#"} /^#!MLF!#/ {next} {if (NF == 4 && $4 ~ /^-?[0-9.]+$/) $4=""; {print}' ${OUTPUT_MLF}.* \
-    #     > "${MLF_LOCATION_ORIGINAL}_bootstrap"
+    # Exit here for forced alignment. No need to run HResults
     exit 0
+else
+    # else set to use the generated lattice (from grammar)
+    NETWORK_OPT="-w ${WORD_LATTICE}"
+    run_hvite
 fi
 
 echo

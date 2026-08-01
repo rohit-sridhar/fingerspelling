@@ -79,6 +79,7 @@ WORD_LEVEL=yes # whether to process data as word level or letter level
 TRILETTER=yes # whether to enable triletter configuration
 CROSS_WORD=no # whether triletters should expand across words  TODO
 FULL_COV=no # whether to use HEDFILE4 (HHEd with FC command)
+BOOTSTRAP=no # whether to use bootstrap mlfs for predefined segmentation
 
 FORCE_ALIGN=no # Use to enable/disable forced alignment during training or testing
 EXPORT_MLF=no # Use to export MLF for use outside project
@@ -208,6 +209,7 @@ MLF_LOCATION_ORIGINAL_SKSP_BOOTSTRAP=${MLF_ROOT}/labels.mlf_letter_sksp_bootstra
 ###### USE FOR MAIN TRAINING ######
 MLF_LOCATION=${MLF_ROOT}/labels.mlf_tri_internal
 MLF_LOCATION_SKSP=${MLF_ROOT}/labels.mlf_tri_internal_sksp
+MLF_LOCATION_SKSP_BOOTSTRAP=${MLF_ROOT}/labels.mlf_tri_internal_sksp_bootstrap
 # MLF_LOCATION_WHOLE=${MLF_ROOT}/labels.mlf_tri_internal_whole
 
 MLF_LOCATION_WORD=${MLF_ROOT}/labels.mlf_word
@@ -216,6 +218,7 @@ MLF_LOCATION_WORD_SKSP=${MLF_ROOT}/labels.mlf_word_sksp
 
 ###### USE FOR CROSS WORD TRILETTER ######
 MLF_LOCATION_CROSS=${MLF_ROOT}/labels.mlf_tri_cross
+MLF_LOCATION_CROSS_BOOTSTRAP=${MLF_ROOT}/labels.mlf_tri_cross_bootstrap
 
 ###### USE FOR SINGLE LETTER ######
 # MLF_LOCATION=${PRJ}/mlf/labels.mlf_letter
