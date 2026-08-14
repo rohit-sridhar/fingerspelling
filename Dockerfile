@@ -45,8 +45,10 @@ RUN python --version && pip --version
 
 # Install python libraries
 # RUN pip install dtw-python 
+RUN pip install --upgrade --ignore-installed "pyparsing<3.1.0"
 RUN pip install numpy pandas matplotlib pyarrow fastparquet
 RUN pip install tqdm pytest
+RUN pip install --upgrade --ignore-installed typing-extensions
 
 # Install copilot
 RUN curl -fsSL https://gh.io/copilot-install | bash

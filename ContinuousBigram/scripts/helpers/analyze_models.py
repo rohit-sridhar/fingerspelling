@@ -29,7 +29,7 @@ TRAIN_TYPE_POS = 5
 
 def is_required(arg):
     for i,arg_passed in enumerate(sys.argv):
-        if arg_passed == "--analysis_type":
+        if arg_passed in ["-at", "--analysis_type"]:
             if i+1 < len(sys.argv):
                 return arg in REQUIRED_ARGS[sys.argv[i+1]]
 
@@ -64,6 +64,7 @@ def _parse_args():
         type=str,
         nargs="+",
         choices=["pt","grp.rnd", "sd"],
+        default=[],
         required=is_required("-gp"),
         help="Prefix to determine participant grouping type to get best model over",
     )
@@ -84,15 +85,13 @@ def get_grp_names_from_file(results_csv):
     logger.debug(f"Results CSV split: {csv_filepath_split=}")
     grp_names = []
 
-    if args.grp_prefixes is None:
+    if not args.grp_prefixes:
         grp_names = ["null"]
     else:
-        grp_prefixes = args.grp_prefixes
-
-    for grp_prefix in args.grp_prefixes:
-        for component in csv_filepath_split:
-            if component.startswith(grp_prefix):
-                grp_names.append(component)
+        for grp_prefix in args.grp_prefixes:
+            for component in csv_filepath_split:
+                if component.startswith(grp_prefix):
+                    grp_names.append(component)
 
     logger.debug(f"Extracted Group Name from results file: {grp_names=}")
     return grp_names
@@ -118,16 +117,16 @@ def gather_results(results_csvs):
     
     def add_grp_names(row, grp_names=[]):
         return "_".join(grp_names)
-
+    
     df_cols = ["grp_by","model_path","model_exists","letter_acc","word_acc","sent_corr"]
     df_chunks = []
     logger.debug(df_cols)
-
+    
     for results_csv in tqdm(results_csvs):
         logger.info(f"Processing {results_csv}")
         df = pd.read_csv(results_csv, delimiter="|")
         logger.debug(f"After loading results csv: {df.shape=}")
-
+        
         df["letter_results_file"] = df["letter_results_file"].astype("str")
         logger.debug(f"dataframe dtypes: {df.dtypes}")
         df = df.fillna(value=-1.0)
@@ -135,9 +134,9 @@ def gather_results(results_csvs):
         
         if df.shape[0] == 0:
             continue
-
+        
         df[["model_path", "model_exists"]] = df.apply(add_model_path, axis=1, result_type="expand")
-
+        
         grp_names = get_grp_names_from_file(results_csv)
         df["grp_by"] = df.apply(
             add_grp_names,
@@ -171,8 +170,6 @@ def write_json(df):
     
     with open(json_path, 'w') as f:
         json.dump(df.to_dict(orient='index'), f, indent=4)
-
-# analyzes results from gathered csv files
 
 # adds analysis cols to df. should be called by df.apply
 def add_analysis_cols(row):
