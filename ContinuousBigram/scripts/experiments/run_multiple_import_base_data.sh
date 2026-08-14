@@ -18,8 +18,8 @@ echo ""
 
 for dataset in ${datasets[@]}; do
     ${ROOT}/scripts/modify_data.py \
-        --import_data_loc ${TORCH_ROOT}/data/data_${dataset}_rh.pq.all \
-        --new_data_loc ${ROOT}/data/${dataset}/dim20/thr0/all/data \
+        --import_data_loc ${TORCH_ROOT}/data/data_${dataset}_ctr-fc_rh.pq.all \
+        --new_data_loc ${ROOT}/data/${dataset}/dim10/ctr-fc/thr0/all/data \
         --bar_description "importing base ${dataset}" --method import \
         ${debug}
 done
@@ -32,10 +32,38 @@ echo ""
 
 for dataset in ${datasets[@]}; do
     ${ROOT}/scripts/grid_search.py \
-        --data_files ${ROOT}/data/${dataset}/dim20/thr0/all/data \
+        --data_files ${ROOT}/data/${dataset}/dim10/ctr-fc/thr0/all/data \
         --prepare_data_only --prepare_data_all ${debug}
 done
 
+################################################## !!!! 
+
+# ############################## IMPORT ALL (DIM20) ###############################
+# 
+# echo ""
+# echo "STARTING IMPORT"
+# echo ""
+# 
+# for dataset in ${datasets[@]}; do
+#     ${ROOT}/scripts/modify_data.py \
+#         --import_data_loc ${TORCH_ROOT}/data/data_${dataset}_rh.pq.all \
+#         --new_data_loc ${ROOT}/data/${dataset}/dim20/thr0/all/data \
+#         --bar_description "importing base ${dataset}" --method import \
+#         ${debug}
+# done
+# 
+# ############################### PREP ALL (DIM20) ################################
+# 
+# echo ""
+# echo "STARTING DATA PREPARATION"
+# echo ""
+# 
+# for dataset in ${datasets[@]}; do
+#     ${ROOT}/scripts/grid_search.py \
+#         --data_files ${ROOT}/data/${dataset}/dim20/thr0/all/data \
+#         --prepare_data_only --prepare_data_all ${debug}
+# done
+# 
 # ############################## IMPORT ALL (DELPOL20) ###########################
 # 
 # for dataset in ${datasets[@]}; do
@@ -64,3 +92,4 @@ done
 # done
 # 
 # ################################################################################
+

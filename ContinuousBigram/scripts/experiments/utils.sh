@@ -12,6 +12,7 @@ typeset -a participants=()
 typeset -a results_jsons=()
 typeset -a thresholds=(0)
 typeset force_align=
+typeset bootstrap=
 typeset debug=
 typeset base_dataset=
 
@@ -74,7 +75,11 @@ function set_participants {
     fi
 }
 
-# sets debug variable based on all args passed in
+# sets flag variable based on all args passed in
+# first arg to this function is the flag variable to check for
+# second arg is array of all remaining flags. checks 
+#   passed args for flag and sets the passed variable to
+#   the flag if present in args (otherwise leaves it empty)
 function set_flag {
     declare -n flag=${1:-}
     flag_str=${1:-}
@@ -104,6 +109,7 @@ function set_vars {
     set_participants ${1:-}
     set_flag "debug" $@
     set_flag "force_align" $@
+    set_flag "bootstrap" $@
     set_results_jsons $@
 }
 

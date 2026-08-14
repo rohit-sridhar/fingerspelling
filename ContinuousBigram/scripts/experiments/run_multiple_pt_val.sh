@@ -13,17 +13,13 @@ ROOT="${SCRIPT_DIR}/../.."
 . ${ROOT}/scripts/experiments/utils.sh
 set_vars $@
 
-##### USE BELOW AFTER TESTING ON INITIAL SAMPLE
-# typeset -a results_jsons=(${@:2})
-
 if [[ ${#results_jsons[@]} -eq 0 ]]; then
     echo "Pass 1 or more results JSON files as the third+ arg(s)"
     exit 1
 fi
 
 ############################## ALIGNMENT ###############################
-# --ip_values -200 -100 -50 -25 0 \
-output_dir=${ROOT}/results/pt_results/tot_all/${base_dataset}
+output_dir=${ROOT}/results/pt_results/tot_align/${base_dataset}
 
 set_slurm_subsets_if_exists participants
 
@@ -55,7 +51,7 @@ for results_json in ${results_jsons[@]}; do
         if [[ "$model_name" == *"_cross"* ]]; then
             cross_word="--cross"
         fi
-
+        
         # if force_align don't pass a results csv
         results_csv_opt=
         if [[ -z "${force_align}" ]]; then
@@ -63,7 +59,7 @@ for results_json in ${results_jsons[@]}; do
         fi
         
         ${ROOT}/scripts/grid_search.py \
-            --data_files ${ROOT}/data/${dataset}/dim20/thr${threshold}/train/pt/${participant}/sd${seed}/data/ \
+            --data_files ${ROOT}/data/${dataset}/dim10/ctr-fc/thr${threshold}/train/pt/${participant}/sd${seed}/data/ \
             --test_model_path ${model_path} ${results_csv_opt} \
             --test_model --prepare_data --clear_hresults \
             ${cross_word} ${debug} ${force_align}
@@ -72,10 +68,6 @@ for results_json in ${results_jsons[@]}; do
     done
     done
 done
-
-# if [[ ! -d ${ROOT}/data/${dataset}/dim20/thr${threshold}/test/pt/${participant}/data ]]; then
-#     echo "${ROOT}/data/${dataset}/dim20/thr${threshold}/test/pt/${participant}/data does not exist"
-# fi
 
 ############################## USER DEP ALL ###############################
 
@@ -104,14 +96,14 @@ done
 #         fi
 #     
 #         python ${ROOT}/scripts/grid_search.py \
-#             --data_files ${ROOT}/data/${dataset}/dim20/thr${threshold}/test/pt/${participant}/data/ \
+#             --data_files ${ROOT}/data/${dataset}/dim10/ctr-fc/thr${threshold}/test/pt/${participant}/data/ \
 #             --test_model_path  ${model_path} \
 #             --ip_values -5 \
 #             --results_csv ${output_dir}/results_pt${participant}_grliwi.csv \
 #             --test_model --prepare_data --clear_hresults
 # 
 #         python ${ROOT}/scripts/grid_search.py \
-#             --data_files ${ROOT}/data/${dataset}/dim20/thr${threshold}/test/pt/${participant}/data/ \
+#             --data_files ${ROOT}/data/${dataset}/dim10/ctr-fc/thr${threshold}/test/pt/${participant}/data/ \
 #             --test_model_path  ${model_path} \
 #             --ip_values -5 \
 #             --results_csv ${output_dir}/results_pt${participant}_grliwph.csv \
