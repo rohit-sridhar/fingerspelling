@@ -60,7 +60,7 @@ function set_slurm_subsets_if_exists {
 # requires the second arg to be
 function set_datasets {
     base_dataset=${1:-}
-    datasets=(${base_dataset}_drop-na_lininterp0)
+    datasets=(${base_dataset}_drop-na_lininterp0 ${base_dataset}_drop-na_lininterp1 ${base_dataset}_drop-na_lininterp2)
 }
 
 function set_participants {
