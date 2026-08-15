@@ -6,6 +6,7 @@ ROOT="${SCRIPT_DIR}/../.."
 
 . ${SCRIPT_DIR}/utils.sh
 set_vars $1
+set_slurm_subsets_if_exists participants
 
 echo ""
 echo "STARTING IMPORT"

@@ -6,6 +6,7 @@ ROOT="${SCRIPT_DIR}/../.."
 
 . ${SCRIPT_DIR}/utils.sh
 set_vars $@
+set_slurm_subsets_if_exists datasets
 
 # Delete sll dirs before creating. Extremely dangerous. Use with caution.
 # find ${ROOT} -name "supplemental_gen_drop-na_lininterp0" -type d -print0 | xargs -0 rm -rfv

@@ -6,6 +6,7 @@ ROOT="${SCRIPT_DIR}/../.."
 
 . ${SCRIPT_DIR}/utils.sh
 set_vars $@
+set_slurm_subsets_if_exists participants
 
 ############################## SET OUTPUT DIR ##############################
 output_dir=${ROOT}/results/pt_results/tot
@@ -16,8 +17,6 @@ fi
 if [ ! -d "${output_dir}" ]; then
     mkdir -p "${output_dir}"
 fi
-
-set_slurm_subsets_if_exists participants
 
 ############################## TRAIN MULTIPLE (DIM10) ##############################
 # Default

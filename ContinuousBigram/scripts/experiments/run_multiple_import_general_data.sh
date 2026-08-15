@@ -6,11 +6,8 @@ ROOT="${SCRIPT_DIR}/../.."
 
 . ${SCRIPT_DIR}/utils.sh
 set_vars $1
-
 typeset -a data_groups=(general pt-split)
-# typeset -a data_splits=(train val test)
-
-set_slurm_subsets_if_exists data_groups data_splits seeds
+set_slurm_subsets_if_exists datasets data_groups data_splits seeds
 
 ############################## IMPORT MULTIPLE (DIM10) ##############################
 

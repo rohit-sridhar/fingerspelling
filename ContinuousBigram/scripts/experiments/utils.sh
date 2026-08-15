@@ -26,6 +26,13 @@ typeset base_dataset=
 # trap cleanup SIGTERM SIGINT SIGQUIT SIGHUP
 
 #################### set vars for all experiment shell scripts ####################
+# each arg is an array ref. the first for loop counts the total number of elems
+# in the array. the second for loop finds the relative position in each array
+# and resets the array to include that relative position only, using the SLURM ARRAY TASK ID.
+# To do so, we divide out the relative total (starting from the total number of elems) by the
+# array length to array index. Then we divide the relative task id (starting from the original
+# SLURM ARR TASK ID) to determine the array idx. Finally, we reset the relative task id
+# by the offset within the group total (rel total).
 function set_slurm_subsets_if_exists {
     if [[ -v SLURM_ARRAY_TASK_ID ]]; then
         total=1
@@ -34,9 +41,9 @@ function set_slurm_subsets_if_exists {
             arr_len=${#arr_ref[@]}
             total=$(( total * arr_len ))
         done
-
+        
         if [[ ${SLURM_ARRAY_TASK_ID} -ge ${total} ]]; then
-            echo "The SLUM ARRAY TASK ID is too large. Should be <= data_groups*data_splits*seeds"
+            echo "The SLUM ARRAY TASK ID is too large."
             exit 1
         fi
         
@@ -44,13 +51,13 @@ function set_slurm_subsets_if_exists {
         rel_total=$total
         for arg in ${@}; do
             declare -n arr_ref=$arg
-
+            
             arr_len=${#arr_ref[@]}
             rel_total=$(( rel_total / arr_len ))
-
+            
             arr_idx=$(( rel_task_id / rel_total ))
             arr_ref=(${arr_ref[${arr_idx}]})
-
+            
             rel_task_id=$(( rel_task_id % rel_total ))
         done
     fi

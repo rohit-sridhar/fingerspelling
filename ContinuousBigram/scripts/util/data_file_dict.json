@@ -1,9 +1,4 @@
 {
-    "supplemental_gen_dim20": {
-        "data_path": "/data/hmm_modeling/fingerspelling/ContinuousBigram/data/supplemental_gen/dim20/thr0/all/data",
-        "label_path": "/data/hmm_modeling/fingerspelling/ContinuousBigram/label/supplemental_gen/dim20/thr0/all/label",
-        "supplemental": true
-    },
     "main_train_drop-na_dim20": {
         "data_path": "/data/hmm_modeling/fingerspelling/ContinuousBigram/data/main_train_drop-na/dim20/thr0/all/data",
         "label_path": "/data/hmm_modeling/fingerspelling/ContinuousBigram/label/main_train_drop-na/dim20/thr0/all/label",
@@ -34,16 +29,33 @@
         "label_path": "/data/hmm_modeling/fingerspelling/ContinuousBigram/label/main_train_na-thr0.3_drop-na_lininterp1/dim20/thr0/all/label",
         "supplemental": false
     },
-    "supplemental_gen_drop-na_dim20": {
-        "data_path": "/data/hmm_modeling/fingerspelling/ContinuousBigram/data/supplemental_gen_drop-na/dim20/thr0/all/data",
-        "label_path": "/data/hmm_modeling/fingerspelling/ContinuousBigram/label/supplemental_gen_drop-na/dim20/thr0/all/label",
-        "supplemental": true
-    },
     "supplemental_gen_drop-na_lininterp0_dim10": {
         "data_path": "/data/hmm_modeling/fingerspelling/ContinuousBigram/data/supplemental_gen_drop-na_lininterp0/dim10/ctr-fc/thr0/all/data",
         "label_path": "/data/hmm_modeling/fingerspelling/ContinuousBigram/label/supplemental_gen_drop-na_lininterp0/dim10/ctr-fc/thr0/all/label",
         "supplemental": true,
         "_comment": "May need to surface ctr-fc if other strategies surface that use dim10 data."
+    },
+    "supplemental_gen_drop-na_lininterp1_dim10": {
+        "data_path": "/data/hmm_modeling/fingerspelling/ContinuousBigram/data/supplemental_gen_drop-na_lininterp1/dim10/ctr-fc/thr0/all/data",
+        "label_path": "/data/hmm_modeling/fingerspelling/ContinuousBigram/label/supplemental_gen_drop-na_lininterp1/dim10/ctr-fc/thr0/all/label",
+        "supplemental": true,
+        "_comment": "May need to surface ctr-fc if other strategies surface that use dim10 data."
+    },
+    "supplemental_gen_drop-na_lininterp2_dim10": {
+        "data_path": "/data/hmm_modeling/fingerspelling/ContinuousBigram/data/supplemental_gen_drop-na_lininterp2/dim10/ctr-fc/thr0/all/data",
+        "label_path": "/data/hmm_modeling/fingerspelling/ContinuousBigram/label/supplemental_gen_drop-na_lininterp2/dim10/ctr-fc/thr0/all/label",
+        "supplemental": true,
+        "_comment": "May need to surface ctr-fc if other strategies surface that use dim10 data."
+    },
+    "supplemental_gen_dim20": {
+        "data_path": "/data/hmm_modeling/fingerspelling/ContinuousBigram/data/supplemental_gen/dim20/thr0/all/data",
+        "label_path": "/data/hmm_modeling/fingerspelling/ContinuousBigram/label/supplemental_gen/dim20/thr0/all/label",
+        "supplemental": true
+    },
+    "supplemental_gen_drop-na_dim20": {
+        "data_path": "/data/hmm_modeling/fingerspelling/ContinuousBigram/data/supplemental_gen_drop-na/dim20/thr0/all/data",
+        "label_path": "/data/hmm_modeling/fingerspelling/ContinuousBigram/label/supplemental_gen_drop-na/dim20/thr0/all/label",
+        "supplemental": true
     },
     "supplemental_gen_drop-na_lininterp0_dim20": {
         "data_path": "/data/hmm_modeling/fingerspelling/ContinuousBigram/data/supplemental_gen_drop-na_lininterp0/dim20/thr0/all/data",

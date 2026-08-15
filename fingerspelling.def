@@ -63,7 +63,7 @@ From: ubuntu:latest
     rm -rf /var/lib/apt/lists/*
 
 %files
-    # Copies contents of local .dockerbuild folder to the container's root (/)
+    # Copies contents of local .dockerbuild folder to the container''s root (/)
     # Singularity handles file transfers AFTER the initial environment setup
     /storage/home/hcoda1/5/rsridhar37/r-ts133-0/fingerspelling/.dockerbuild/* /
 
