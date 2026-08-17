@@ -12,8 +12,10 @@ typeset -a participants=()
 typeset -a results_jsons=()
 typeset -a thresholds=(0)
 typeset force_align=
+typeset output_dir=
 typeset bootstrap=
 typeset debug=
+typeset warning=
 typeset base_dataset=
 
 # function cleanup {
@@ -98,6 +100,20 @@ function set_flag {
     done
 }
 
+# sets the output dir for testing/training
+# aggregate results files. expects arg1 to be
+# the dataset and arg2 to be the subdirectories
+# creates the entire path if it doesn't exist
+function set_output_dir {
+    dataset=${1:-}
+    subdirs=${2:-}
+    output_dir=${ROOT}/agg_results/${dataset}/${subdirs}
+
+    if [ ! -d "${output_dir}" ]; then
+        mkdir -p "${output_dir}"
+    fi
+}
+
 # the functions below is for test.sh primarily. if any other
 # script uses json files, it may reuse it. Consider renaming
 # to json_args instead
@@ -115,6 +131,7 @@ function set_vars {
     set_datasets ${1:-}
     set_participants ${1:-}
     set_flag "debug" $@
+    set_flag "warning" $@
     set_flag "force_align" $@
     set_flag "bootstrap" $@
     set_results_jsons $@

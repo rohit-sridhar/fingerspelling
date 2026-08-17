@@ -19,6 +19,12 @@ from utils import *
 from glob import glob
 
 logger = logging.getLogger(__name__)
+get_log_level = lambda: (
+    logging.DEBUG if args.debug
+    else logging.WARNING if args.warning 
+    else logging.INFO
+)
+
 
 ###### TO ADD A NEW HYPERPARAM #######
 ### Below, we describe the workflow for adding new hyperparams
@@ -205,7 +211,13 @@ def _parse_args():
     parser.add_argument(
         "--debug",
         action="store_true",
-        help="If true, runs in debug mode and logs additional information."
+        help="If true, logs additional information."
+    )
+
+    parser.add_argument(
+        "--warning",
+        action="store_true",
+        help="If true, logs only warnings."
     )
     
     return parser.parse_args()
@@ -233,7 +245,10 @@ def _check_args():
         if not valid_data_loc(args.data_files[i]):
             logger.error(args.data_files[i])
             raise ValueError(f"Data files {args.data_files[i]} must start with DATA_ROOT and end with /data (last subdir).")
-    
+
+    if args.debug and args.warning:
+        raise ValueError(f"You cannot pass --debug and --warning at the same time.")
+
     if args.test_model and args.test_model_path is None:
         raise ValueError("for now you must pass a saved model path when running test_model.")
 
@@ -700,7 +715,7 @@ def test_model(tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
     # Use utils.attach_file_handler via wildcard import from utils
     test_handler = setup_logger(
         log_file,
-        log_level=logging.INFO,
+        log_level=get_log_level(),
         mode="w"
     )
     logger.info("##### Running test.sh #####")
@@ -723,7 +738,7 @@ def test_model(tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
     run_subprocess(test_args, logger=logger)
 
     root_logger.removeHandler(test_handler)
-    main_log_handler.setLevel(logging.INFO)
+    main_log_handler.setLevel(get_log_level())
     test_handler.close()
 
     logger.info("#####\n")
@@ -739,7 +754,7 @@ def train_model(tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
     # attach a per-train file handler so training output goes to its own file
     train_handler = setup_logger(
         log_file,
-        log_level=logging.INFO,
+        log_level=get_log_level(),
         mode="w"
     )
     logger.info("##### Running train.sh script #####")
@@ -754,7 +769,7 @@ def train_model(tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
     run_subprocess(train_args, logger=logger)
 
     root_logger.removeHandler(train_handler)
-    main_log_handler.setLevel(logging.INFO)
+    main_log_handler.setLevel(get_log_level())
     train_handler.close()
 
 def get_results(results_file, letter_results=True):
@@ -870,7 +885,7 @@ def prepare_data(data_file, label_file, subdirs):
 
     name_ext = ""
     log_file = get_log_file(subdirs, name_ext, mode="prepare_data")
-    log_level = logging.DEBUG if args.debug else logging.INFO
+    log_level = get_log_level()
 
     prep_handler = setup_logger(
         log_file,
@@ -887,7 +902,7 @@ def prepare_data(data_file, label_file, subdirs):
 
     root_logger.removeHandler(prep_handler)
     prep_handler.close()
-    set_buffer_handler_level(logging.INFO)
+    set_buffer_handler_level(get_log_level())
 
     logger.info("#####\n")
 
@@ -945,7 +960,7 @@ def _close_main_log_handler(subdirs=None):
             log_file = os.path.join(LOG_ROOT, "premature", ".".join(["grid_search", now_str, "txt"]))
 
         make_dir(os.path.split(log_file)[0])
-        log_level = logging.DEBUG if args.debug else logging.INFO
+        log_level = get_log_level()
         
         main_log_handler = setup_logger(
             log_file,
@@ -975,7 +990,7 @@ def train_on_tup(arg_tup, subdirs):
     # Reconfigure logging to write to files in the log directory for this subdirs.
     # This ensures further logging goes to file backends (and flushes buffered logs).
     global main_log_handler
-    log_level = logging.DEBUG if args.debug else logging.INFO
+    log_level = get_log_level()
     main_log_handler = setup_logger(
         grid_log,
         flush=True,
@@ -1093,13 +1108,22 @@ def _main():
         finally:
             _cleanup(subdirs=subdirs)
 
+def __exit_script():
+    _cleanup()
+    sys.exit(0)
+
 if __name__ == "__main__":
     _register_signals()
+    
     args = _parse_args()
     _check_args()
-    set_buffer_handler_level(new_level=logging.DEBUG if args.debug else logging.INFO)
-
+    
+    logging.debug(f"log level: {get_log_level()}")
+    set_buffer_handler_level(new_level=get_log_level())
+    # set_buffer_handler_level(new_level=logging.DEBUG if args.debug else logging.INFO)
+    
     file_uniq_strs = set()
     main_log_handler = None
+    
     _main()
 

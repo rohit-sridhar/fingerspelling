@@ -23,7 +23,7 @@ for seed in "${seeds[@]}"; do
     if [[ ${data_group} == "general" ]]; then
         import_data_loc=${TORCH_ROOT}/data/data_${dataset}_sd${seed}_ctr-fc_rh.pq.${data_split}
     else
-        import_data_loc=${TORCH_ROOT}/data/data_${dataset}_sd${seed}_pt-split_ctr-fc_rh.pq.${data_split}
+        import_data_loc=${TORCH_ROOT}/data/data_${dataset}_sd${seed}_${data_group}_ctr-fc_rh.pq.${data_split}
     fi
 
     ${ROOT}/scripts/modify_data.py \
