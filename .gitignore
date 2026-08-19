@@ -192,6 +192,7 @@ ContinuousBigram/lang_models
 ContinuousBigram/trainsets
 ContinuousBigram/testsets
 ContinuousBigram/results
+ContinuousBigram/agg_results
 ContinuousBigram/all-extfiles
 ContinuousBigram/datafiles
 ContinuousBigram/mlf

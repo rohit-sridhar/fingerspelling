@@ -5,6 +5,7 @@ export AWS_EC2_METADATA_DISABLED=true
 
 TORCH_ROOT=/data/deep_learning/fs_transformers
 
+typeset -a fingers=(tmb idx mid rin pin)
 typeset -a seeds=(1248 2248 3248 4248 5248)
 typeset -a data_splits=(train val test)
 typeset -a datasets=()
@@ -105,10 +106,12 @@ function set_flag {
 # the dataset and arg2 to be the subdirectories
 # creates the entire path if it doesn't exist
 function set_output_dir {
-    dataset=${1:-}
-    subdirs=${2:-}
-    output_dir=${ROOT}/agg_results/${dataset}/${subdirs}
-
+    # dataset=${1:-}
+    # output_dir=${ROOT}/agg_results/${dataset}/${subdirs}
+    
+    subdirs=${1:-}
+    output_dir=${ROOT}/agg_results/${subdirs}
+    
     if [ ! -d "${output_dir}" ]; then
         mkdir -p "${output_dir}"
     fi
@@ -143,7 +146,6 @@ function get_seeded_random {
   openssl enc -aes-256-ctr -pass pass:"$seed" -nosalt \
     </dev/zero 2>/dev/null
 }
-
 
 function get_name_from_filename {
     name=""

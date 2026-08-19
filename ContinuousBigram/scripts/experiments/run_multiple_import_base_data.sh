@@ -6,37 +6,70 @@ ROOT="${SCRIPT_DIR}/../.."
 
 . ${SCRIPT_DIR}/utils.sh
 set_vars $@
-set_slurm_subsets_if_exists datasets
+# set_slurm_subsets_if_exists datasets
+set_slurm_subsets_if_exists datasets fingers
 
 # Delete sll dirs before creating. Extremely dangerous. Use with caution.
 # find ${ROOT} -name "supplemental_gen_drop-na_lininterp0" -type d -print0 | xargs -0 rm -rfv
-############################## IMPORT ALL (DIM20) ###############################
+############################## IMPORT ALL (FGR) ###############################
 
 echo ""
 echo "STARTING IMPORT"
 echo ""
 
+for fgr in ${fingers[@]}; do
 for dataset in ${datasets[@]}; do
     ${ROOT}/scripts/modify_data.py \
-        --import_data_loc ${TORCH_ROOT}/data/data_${dataset}_ctr-fc_rh.pq.all \
-        --new_data_loc ${ROOT}/data/${dataset}/dim10/ctr-fc/thr0/all/data \
+        --import_data_loc ${TORCH_ROOT}/data/data_${dataset}_fgr-${fgr}_rh.pq.all \
+        --new_data_loc ${ROOT}/data/${dataset}/fgr-${fgr}/thr0/all/data \
         --bar_description "importing base ${dataset}" --method import \
         ${debug}
 done
+done
 
-############################### PREP ALL (DIM20) ################################
+############################### PREP ALL (FGR) ################################
 
 echo ""
 echo "STARTING DATA PREPARATION"
 echo ""
 
+for fgr in ${fingers[@]}; do
 for dataset in ${datasets[@]}; do
     ${ROOT}/scripts/grid_search.py \
-        --data_files ${ROOT}/data/${dataset}/dim10/ctr-fc/thr0/all/data \
-        --prepare_data_only --prepare_data_all ${debug}
+        --data_files ${ROOT}/data/${dataset}/fgr-${fgr}/thr0/all/data \
+        --prepare_data_only --prepare_data_all ${debug} ${warning}
+done
 done
 
 ################################################## !!!! 
+
+# ############################## IMPORT ALL (DIM10) ###############################
+# 
+# echo ""
+# echo "STARTING IMPORT"
+# echo ""
+# 
+# for dataset in ${datasets[@]}; do
+#     ${ROOT}/scripts/modify_data.py \
+#         --import_data_loc ${TORCH_ROOT}/data/data_${dataset}_ctr-fc_rh.pq.all \
+#         --new_data_loc ${ROOT}/data/${dataset}/dim10/ctr-fc/thr0/all/data \
+#         --bar_description "importing base ${dataset}" --method import \
+#         ${debug}
+# done
+# 
+# ############################### PREP ALL (DIM10) ################################
+# 
+# echo ""
+# echo "STARTING DATA PREPARATION"
+# echo ""
+# 
+# for dataset in ${datasets[@]}; do
+#     ${ROOT}/scripts/grid_search.py \
+#         --data_files ${ROOT}/data/${dataset}/dim10/ctr-fc/thr0/all/data \
+#         --prepare_data_only --prepare_data_all ${debug}
+# done
+# 
+# ################################################## !!!! 
 
 # ############################## IMPORT ALL (DIM20) ###############################
 # 

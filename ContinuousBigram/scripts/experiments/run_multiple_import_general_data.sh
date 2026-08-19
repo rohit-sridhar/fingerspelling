@@ -9,26 +9,27 @@ set_vars $1
 typeset -a data_groups=(general pt-split)
 set_slurm_subsets_if_exists datasets data_groups data_splits seeds
 
-############################## IMPORT MULTIPLE (DIM10) ##############################
+############################## IMPORT MULTIPLE (FGR) ##############################
 
 echo ""
 echo "STARTING IMPORT"
 echo ""
 
+for fgr in ${fingers[@]}; do
 pid=()
 for dataset in ${datasets[@]}; do
 for data_split in ${data_splits[@]}; do
 for data_group in ${data_groups[@]}; do
 for seed in "${seeds[@]}"; do
     if [[ ${data_group} == "general" ]]; then
-        import_data_loc=${TORCH_ROOT}/data/data_${dataset}_sd${seed}_ctr-fc_rh.pq.${data_split}
+        import_data_loc=${TORCH_ROOT}/data/data_${dataset}_sd${seed}_fgr-${fgr}_rh.pq.${data_split}
     else
-        import_data_loc=${TORCH_ROOT}/data/data_${dataset}_sd${seed}_${data_group}_ctr-fc_rh.pq.${data_split}
+        import_data_loc=${TORCH_ROOT}/data/data_${dataset}_sd${seed}_${data_group}_fgr-${fgr}_rh.pq.${data_split}
     fi
 
     ${ROOT}/scripts/modify_data.py \
         --import_data_loc ${import_data_loc} \
-        --new_data_loc ${ROOT}/data/${dataset}/dim10/ctr-fc/thr0/${data_split}/${data_group}/sd${seed}/data \
+        --new_data_loc ${ROOT}/data/${dataset}/fgr-${fgr}/thr0/${data_split}/${data_group}/sd${seed}/data \
         --method import &
     pid+=("$!")
 done
@@ -36,25 +37,74 @@ done
 done
 done
 wait "${pid[@]}"
+done
 
-############################### prep all (dim10) (train,val,test) ################################
+############################### prep all (FGR) (train,val,test) ################################
 
 echo ""
 echo "STARTING DATA PREPARATION"
 echo ""
 
+for fgr in ${fingers[@]}; do
 for dataset in "${datasets[@]}"; do
 for data_split in "${data_splits[@]}"; do
 for data_group in ${data_groups[@]}; do
 for seed in "${seeds[@]}"; do
     ${ROOT}/scripts/grid_search.py \
-        --data_files ${ROOT}/data/${dataset}/dim10/ctr-fc/thr0/${data_split}/${data_group}/sd${seed}/data \
-        --prepare_data_only
+        --data_files ${ROOT}/data/${dataset}/fgr-${fgr}/thr0/${data_split}/${data_group}/sd${seed}/data \
+        --prepare_data_only ${warning}
+done
 done
 done
 done
 done
 
+# ############################## IMPORT MULTIPLE (DIM10) ##############################
+# 
+# echo ""
+# echo "STARTING IMPORT"
+# echo ""
+# 
+# pid=()
+# for dataset in ${datasets[@]}; do
+# for data_split in ${data_splits[@]}; do
+# for data_group in ${data_groups[@]}; do
+# for seed in "${seeds[@]}"; do
+#     if [[ ${data_group} == "general" ]]; then
+#         import_data_loc=${TORCH_ROOT}/data/data_${dataset}_sd${seed}_ctr-fc_rh.pq.${data_split}
+#     else
+#         import_data_loc=${TORCH_ROOT}/data/data_${dataset}_sd${seed}_${data_group}_ctr-fc_rh.pq.${data_split}
+#     fi
+# 
+#     ${ROOT}/scripts/modify_data.py \
+#         --import_data_loc ${import_data_loc} \
+#         --new_data_loc ${ROOT}/data/${dataset}/dim10/ctr-fc/thr0/${data_split}/${data_group}/sd${seed}/data \
+#         --method import &
+#     pid+=("$!")
+# done
+# done
+# done
+# done
+# wait "${pid[@]}"
+# 
+# ############################### prep all (dim10) (train,val,test) ################################
+# 
+# echo ""
+# echo "STARTING DATA PREPARATION"
+# echo ""
+# 
+# for dataset in "${datasets[@]}"; do
+# for data_split in "${data_splits[@]}"; do
+# for data_group in ${data_groups[@]}; do
+# for seed in "${seeds[@]}"; do
+#     ${ROOT}/scripts/grid_search.py \
+#         --data_files ${ROOT}/data/${dataset}/dim10/ctr-fc/thr0/${data_split}/${data_group}/sd${seed}/data \
+#         --prepare_data_only ${warning}
+# done
+# done
+# done
+# done
+# 
 # ############################## IMPORT MULTIPLE (DIM20) ##############################
 # 
 # echo ""

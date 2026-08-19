@@ -415,7 +415,11 @@ def get_hedfile2_info(subdirs):
 
 def get_vector_dim(subdirs):
     vector_dim_str = subdirs.split(os.path.sep)[1]
-    vector_dim = int(re.search(r"[0-9]+", vector_dim_str).group())
+    logging.debug(f"{vector_dim_str=}")
+    if vector_dim_str.startswith("dim"):
+        vector_dim = int(re.search(r"[0-9]+", vector_dim_str).group())
+    elif vector_dim_str.startswith("fgr"):
+        vector_dim = 2
     return vector_dim
 
 # Returns appropriate values for all bool args. Does not

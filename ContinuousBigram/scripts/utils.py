@@ -502,8 +502,8 @@ def flush_buffer(fh):
 def setup_logger(log_file, flush=False, log_level=logging.INFO, mode="w"):
     """Configure logging to a file and flush any buffered logs.
 
-    log_file must be a valid file path. logger should be a module logger.
-    log_level should be an int logging level. Buffered logs (from init_buffering_logger)
+    log_file must be a valid file path. log_level should
+    be an int logging level. Buffered logs (from init_buffering_logger)
     will be flushed to an existing FileHandler on the module logger if present;
     otherwise they will be flushed to the new root FileHandler created here.
 
