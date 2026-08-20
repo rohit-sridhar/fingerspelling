@@ -297,6 +297,10 @@ fi
 ###############################################################################
 
 # get the last iteration using the counters (tri iters and single iter)
+# tri_iters_count counts the number of times to train TRI_ITERATIONS times
+# (this occurs after HHEd, full cov, etc.). Single Iter Count tracks the
+# number of times a single iteration must be called. As these are called,
+# the counters are decremented and last_iteration gets closed to NUM_HMM_DIR.
 function get_last_iteration {
     if [[ -z $tri_iters_count ]] || [[ -z $single_iter_count ]]; then
         echo "tri_iters_count and single_iter_counts must be defined before calling get_last_iteration"
@@ -619,6 +623,11 @@ if [[ $TRILETTER = "yes" ]] || [[ $TRILETTER = "1" ]]; then
 fi
 
 echo "After initialization hmm_count: ${hmm_count}"
+
+next_dir=$((hmm_count+1))
+HHEd -A -T $TRACE_LEVEL $HMM_LOAD_OPT $HMM_TRAINING.$hmm_count/$HMM_MACRO -M $HMM_TRAINING.$next_dir ${HEDFILE0} ${TOKENS_ORIGINAL}
+increment_hmm_count rmprev
+
 run_orig_herest_until ${last_iteration}
 echo "After uniletter: ${hmm_count}"
 

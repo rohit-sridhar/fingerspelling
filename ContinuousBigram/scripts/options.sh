@@ -236,6 +236,7 @@ LM_DIR=${PRJ}/lang_models
 FILE_UNIQ_STR=tmp
 N_STATES=1state
 
+HEDFILE0=${PRJ}/instr/mkskip.${N_STATES}.hed
 HEDFILE1=${PRJ}/instr/mktri1_silsp.${FILE_UNIQ_STR}.hed
 HEDFILE2=${PRJ}/instr/mktri2_tc.${N_STATES}.${FILE_UNIQ_STR}.hed
 HEDFILE3=${PRJ}/instr/mkgmm_mu.${N_STATES}.hed
