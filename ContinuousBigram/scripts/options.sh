@@ -50,10 +50,10 @@ PRUNING_THRESHOLD="50 50 500" #Threshold for alpha-beta pruning, of form "start 
 HMM_TOPOLOGY_DIR=${PRJ}/hmmdefs
 
 # general HMM_TOPOLOGIES
-HMM_LOCATION=$HMM_TOPOLOGY_DIR/6state-pca10-gmm2
+HMM_LOCATION=$HMM_TOPOLOGY_DIR/6state-dim10-gmm2
 HMM_ALL=$HMM_LOCATION
-HMM_SIL=$HMM_TOPOLOGY_DIR/3state-pca10-sil-skip-loop
-HMM_SP=$HMM_TOPOLOGY_DIR/1state-pca10-sp
+HMM_SIL=$HMM_TOPOLOGY_DIR/3state-dim10
+HMM_SP=$HMM_TOPOLOGY_DIR/1state-dim10
 
 ENTER="sil0"
 EXIT="sil1"
@@ -86,6 +86,7 @@ EXPORT_MLF=no # Use to export MLF for use outside project
 # WHOLE_WORD=yes
 
 NUM_HMM_DIR=20 # number of hmm dirs to generate, has a direct relation to number of times HERest is called
+FINAL_ITERATIONS=10 # number of HERest calls to make at the end (after all HHEd calls)
 TRI_ITERATIONS=5 # number of HERest calls to make for triletter stages
 
 TRAIN_TEST_VALIDATION="TEST_ON_TRAIN"

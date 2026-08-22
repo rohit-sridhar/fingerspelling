@@ -306,7 +306,9 @@ function get_last_iteration {
         echo "tri_iters_count and single_iter_counts must be defined before calling get_last_iteration"
         exit 1
     fi
-    last_iteration=$((NUM_HMM_DIR-(tri_iters_count*TRI_ITERATIONS)-single_iter_count-1))
+    last_iteration=$(( NUM_HMM_DIR-(tri_iters_count*TRI_ITERATIONS) ))
+    last_iteration=$(( last_iteration-single_iter_count-1 ))
+    last_iteration=$(( last_iteration-(final_iters_count*FINAL_ITERATIONS) ))
     if [[ ${last_iteration} -lt 5 ]]; then
         echo "Increase NUM_HMM_DIR (set by num_its in grid_search). It is too small for training."
         exit 1
@@ -394,7 +396,8 @@ function run_hhed_and_herest {
 function increment_hmm_count {
     arg1=${1:-}
     if [[ ${arg1} == "rmprev" ]]; then
-        rm -rf $HMM_TRAINING.$hmm_count
+    #     rm -rf $HMM_TRAINING.$hmm_count
+        echo "removed $HMM_TRAINING.$hmm_count"
     fi
     hmm_count=$((hmm_count+1))
 }
@@ -604,27 +607,32 @@ fi
 ## is stored in a directory $HMM_TRAINING.# where # corresponds to the 
 ## training iteration.  HERest will be called on hmm.n and stored in hmm.n+1
 hmm_count=3
-
-last_iteration=$((NUM_HMM_DIR-1))
 if [[ $TRILETTER = "yes" ]] || [[ $TRILETTER = "1" ]]; then
     # Define the two variables below to represent:
     #   tri_iters_count is the number of times HERest is repeated for tri_iters times
     #   single_iter_count is the number of times HHEd or another single iter of training is called
-    ##      in general it would HHEd n times and HERest once (to generate $STATS)
+    ##      in general it tracks calling HHEd n times and HERest once (to generate $STATS)
     #   Both variables get decremented before the iter(s) start(s).
+    final_iters_count=1
     if [[ $FULL_COV == "1" ]] || [[ $FULL_COV == "yes" ]]; then
         tri_iters_count=4
-        single_iter_count=5
+        single_iter_count=6
     elif [[ $FULL_COV == "0" ]] || [[ $FULL_COV == "no" ]]; then
         tri_iters_count=3
-        single_iter_count=4
+        single_iter_count=5
     fi
-    last_iteration=$(get_last_iteration)
+else
+    final_iters_count=0
+    tri_iters_count=0
+    single_iter_count=0
 fi
+last_iteration=$(get_last_iteration)
 
 echo "After initialization hmm_count: ${hmm_count}"
 
+# Single HHEd pass to generate skip states
 next_dir=$((hmm_count+1))
+single_iter_count=$((single_iter_count-1))
 HHEd -A -T $TRACE_LEVEL $HMM_LOAD_OPT $HMM_TRAINING.$hmm_count/$HMM_MACRO -M $HMM_TRAINING.$next_dir ${HEDFILE0} ${TOKENS_ORIGINAL}
 increment_hmm_count rmprev
 
@@ -638,8 +646,9 @@ echo "After uniletter: ${hmm_count}"
 if [[ $TRILETTER = "yes" ]] || [[ $TRILETTER = "1" ]]; then
     run_hhed_and_herest ${HEDFILE1} ${TOKENS_ORIGINAL}
     echo "After hedfile1: ${hmm_count}"
-
+    
     # Again, don't call run_herest_iter due to unique flag for generating STATS file
+    # Instead call it here and decrement single_iter_count manually.
     single_iter_count=$((single_iter_count-1))
     next_dir=$((hmm_count+1))
     if [[ $MULTI_PROCESS = "yes" ]]; then
@@ -668,7 +677,7 @@ if [[ $TRILETTER = "yes" ]] || [[ $TRILETTER = "1" ]]; then
     fi
     increment_hmm_count rmprev
     echo "After single herest: ${hmm_count}"
-
+    
     run_hhed_and_herest ${HEDFILE2} ${TOKENS}
     echo "After hedfile2: ${hmm_count}"
     # Force-align MLFs
@@ -680,15 +689,19 @@ if [[ $TRILETTER = "yes" ]] || [[ $TRILETTER = "1" ]]; then
             sed 's/.rec/.lab/g' ${MLF_LOCATION} > ${MLF_LOCATION}_temp
             mv ${MLF_LOCATION}_temp ${MLF_LOCATION}
     fi
-
+    
     run_hhed_and_herest ${HEDFILE3} ${TOKENS}
     echo "After hedfile3: ${hmm_count}"
-
+    
     if [[ $FULL_COV == "yes" ]] || [[ $FULL_COV == "0" ]]; then
         run_hhed_and_herest ${HEDFILE4} ${TOKENS}
         echo "After hedfile4: ${hmm_count}"
     fi
-
+    
+    final_iters_count=$((final_iters_count-1))
+    last_iteration=$(get_last_iteration)
+    run_tri_herest_until ${last_iteration}
+    
     if [[ $EXPORT_MLF = "yes" ]] || [[ $EXPORT_MLF = "1" ]]; then
             ${HTKBIN}HVite -p $INSERT_PENALTY -s $GRAMMAR_SCALE_FACTOR -m -o SWX -A -T $TRACE_LEVEL \
                 $HMM_LOAD_OPT $HMM_TRAINING.$next_dir/$HMM_MACRO \

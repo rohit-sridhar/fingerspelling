@@ -24,8 +24,14 @@ REQUIRED_ARGS = {
     "best_model": {"-gp"},
     "plot_scores": {},
 }
+
+PLOT_CATS = ["n_states", "num_its", "final_its", "tri_its", "train_type"]
+
 HMMDEF_POS = 1
-TRAIN_TYPE_POS = 5
+NUM_ITS_POS = 2
+NUM_FINAL_ITS_POS = 3
+NUM_TRI_ITS_POS = 4
+TRAIN_TYPE_POS = 6
 
 def is_required(arg):
     for i,arg_passed in enumerate(sys.argv):
@@ -177,15 +183,18 @@ def add_analysis_cols(row):
     logger.debug(hyperparams)
 
     hmmdef = hyperparams[HMMDEF_POS]
+    num_its = hyperparams[NUM_ITS_POS]
+    num_final_its = hyperparams[NUM_FINAL_ITS_POS]
+    num_tri_its = hyperparams[NUM_TRI_ITS_POS]
     n_states = "".join(takewhile(str.isdigit, hmmdef))
     
     train_type = "default"
     if TRAIN_TYPE_POS < len(hyperparams):
         train_type = hyperparams[TRAIN_TYPE_POS]
 
-    return n_states, train_type
+    return n_states, num_its, num_final_its, num_tri_its, train_type
 
-def plot_col_by_cat(column, category):
+def plot_col_by_cat(df, column, category):
     df.boxplot(column=column, by=category)
     plt.title(f"{column} by {category} Boxplot")
     plt.suptitle("")
@@ -202,14 +211,13 @@ def analyze_scores(df):
         logger.info("Model Exists Count:")
         logger.info(model_exists_by_group.value_counts())
     
-    plot_col_by_cat("letter_acc", "n_states")
-    plot_col_by_cat("word_acc", "n_states")
-    plot_col_by_cat("sent_corr", "n_states")
+    df = df[df["model_exists"]]
+    logger.info(df)
+    for cat in PLOT_CATS:
+        plot_col_by_cat(df, "letter_acc", cat)
+        plot_col_by_cat(df, "word_acc", cat)
+        plot_col_by_cat(df, "sent_corr", cat)
 
-    plot_col_by_cat("letter_acc", "train_type")
-    plot_col_by_cat("word_acc", "train_type")
-    plot_col_by_cat("sent_corr", "train_type")
-    
     plt.close()
 
 if __name__ == "__main__":
@@ -229,7 +237,7 @@ if __name__ == "__main__":
         write_json(df)
     elif args.analysis_type == "plot_scores":
         # df = df.drop("grp_by", axis=1)
-        df[["n_states", "train_type"]] = df.apply(
+        df[PLOT_CATS] = df.apply(
             add_analysis_cols,
             axis=1,
             result_type="expand",

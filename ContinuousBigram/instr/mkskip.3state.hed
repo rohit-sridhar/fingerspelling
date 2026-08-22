@@ -1,4 +1,11 @@
-AT 1 3 0.1 {(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z).transP}
-AT 2 4 0.1 {(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z).transP}
-AT 3 5 0.1 {(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z).transP}
+AT 1 3 0.2 {(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z).transP}
+AT 2 4 0.2 {(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z).transP}
+AT 3 5 0.2 {(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z).transP}
+
+AT 2 4 0.2 {(sil0,sil1).transp}
+AT 4 2 0.2 {(sil0,sil1).transp}
+
+TI silst1 {(sil0,sil1).state[1]}
+TI silst2 {(sil0,sil1).state[2]}
+TI silst3 {(sil0,sil1).state[3],_.state[2]}
 

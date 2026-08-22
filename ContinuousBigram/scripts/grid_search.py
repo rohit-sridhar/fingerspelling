@@ -58,7 +58,7 @@ def _parse_args():
         "--hmmdefs",
         type=str,
         nargs='+',
-        default=['6state-pca20-gmm2'],
+        default=['6state-dim10'],
         help="HMM Def files to test on."
     )
 
@@ -100,6 +100,14 @@ def _parse_args():
         nargs='+',
         default=[40],
         help="Number of standard training iterations."
+    )
+
+    parser.add_argument(
+        "--num_final_its",
+        type=int,
+        nargs='+',
+        default=[10],
+        help="Number of final training iterations (after all HHEd calls)."
     )
     
     parser.add_argument(
@@ -271,13 +279,13 @@ def get_ip_ext(ip):
         return f"{ip_int}ip" 
 
 # Get the name extension for the results/output file
-def get_name_ext(tc, num_its, num_tri_its, hmmdef, trace_value=None):
+def get_name_ext(tc, num_its, num_final_its, num_tri_its, hmmdef, trace_value=None):
     name_ext = ""
 
     if args.test_model_path is not None:
         name_ext += os.path.basename(args.test_model_path)[len(MODEL_MACROS_FILE) + 1:]
     else:
-        name_ext += "_".join([f"{hmmdef}", f"{num_its}its", f"{num_tri_its}tri-its", f"tc{tc}"])
+        name_ext += "_".join([f"{hmmdef}", f"{num_its}its", f"{num_final_its}fnl-its", f"{num_tri_its}tri-its", f"tc{tc}"])
 
         if args.cross_word:
             name_ext += "_cross"
@@ -493,8 +501,8 @@ def make_triletter_changes(subdirs):
     
 
 # Edit options file with all new hyperparams (calls helper above)
-def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_value=None):
-    name_ext = get_name_ext(tc, num_its, num_tri_its, hmmdef) # We leave trace_value out in this call.
+def edit_options(ip, tc, num_its, num_final_its, num_tri_its, hmmdef, subdirs, ngram, trace_value=None):
+    name_ext = get_name_ext(tc, num_its, num_final_its, num_tri_its, hmmdef) # We leave trace_value out in this call.
     letter_results_file, word_results_file = get_hresults_prj_filepaths(name_ext, subdirs, ip)
     
     _, cross_word, whole_word, use_phrase, force_align, full_cov, bootstrap = get_bool_arg_info()
@@ -505,8 +513,8 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     ip_search = IP_VARNAME + r"\s*=\s*-?[0-9]+(\.[0-9]+)*"
     ip_repl = IP_VARNAME + f"={ip}"
 
-    # tc_search = "^TC [0-9]+"
-    # tc_repl = f"TC {tc}"
+    num_final_its_search = NUM_FINAL_ITS_VARNAME + r"\s*=\s*[0-9]+"
+    num_final_its_repl = NUM_FINAL_ITS_VARNAME + f"={num_final_its}"
 
     num_its_search = NUM_ITS_VARNAME + r"\s*=\s*[0-9]+"
     num_its_repl = NUM_ITS_VARNAME + f"={num_its}"
@@ -568,6 +576,7 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     ## currently unnecessary and interfere with multiprocessing on PACE
     edit_file(ip_search, ip_repl, options_file)
     edit_file(num_its_search, num_its_repl, options_file)
+    edit_file(num_final_its_search, num_final_its_repl, options_file)
     edit_file(num_tri_its_search, num_tri_its_repl, options_file)
     edit_file(hmmdef_search, hmmdef_repl, options_file)
     edit_file(n_states_search, n_states_repl, options_file)
@@ -586,6 +595,7 @@ def edit_options(ip, tc, num_its, num_tri_its, hmmdef, subdirs, ngram, trace_val
     logger.info("##### Hyperparameters #####")
     run_subprocess(["grep", "^" + IP_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + NUM_ITS_VARNAME + r"\s*=\s*", options_file], logger=logger)
+    run_subprocess(["grep", "^" + NUM_FINAL_ITS_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + NUM_TRI_ITS_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + HMMDEF_VARNAME + r"\s*=\s*", options_file], logger=logger)
     run_subprocess(["grep", "^" + N_STATES_VARNAME + r"\s*=\s*", options_file], logger=logger)
@@ -644,11 +654,11 @@ def edit_htk_root_file_options(subdirs):
     file_uniq_search = FILE_UNIQ_STR_VARNAME + r"\s*=\s*.+"
     file_uniq_repl = FILE_UNIQ_STR_VARNAME + f"={file_uniq_str}"
 
-    hmmsil_search = HMMSIL_VARNAME + r"\s*=\s*\$HMM_TOPOLOGY_DIR\/3state-pca.+"
-    hmmsil_repl = HMMSIL_VARNAME + f"=$HMM_TOPOLOGY_DIR/3state-pca{vector_dim}-sil-skip-loop"
+    hmmsil_search = HMMSIL_VARNAME + r"\s*=\s*\$HMM_TOPOLOGY_DIR\/3state-dim.+"
+    hmmsil_repl = HMMSIL_VARNAME + f"=$HMM_TOPOLOGY_DIR/3state-dim{vector_dim}"
 
-    hmmsp_search = HMMSP_VARNAME + r"\s*=\s*\$HMM_TOPOLOGY_DIR\/1state-pca.+"
-    hmmsp_repl = HMMSP_VARNAME + f"=$HMM_TOPOLOGY_DIR/1state-pca{vector_dim}-sp"
+    hmmsp_search = HMMSP_VARNAME + r"\s*=\s*\$HMM_TOPOLOGY_DIR\/1state-dim.+"
+    hmmsp_repl = HMMSP_VARNAME + f"=$HMM_TOPOLOGY_DIR/1state-dim{vector_dim}"
 
     vector_length_search = VECTOR_LENGTH_VARNAME + r"\s*=\s*[0-9]+"
     vector_length_repl = VECTOR_LENGTH_VARNAME + f"={vector_dim}"
@@ -709,8 +719,8 @@ def edit_htk_root_file_options(subdirs):
     logger.info("#####\n")
 
 
-def test_model(tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
-    name_ext = get_name_ext(tc, num_its, num_tri_its, hmmdef, trace_value=trace_value)
+def test_model(tc, num_its, num_final_its, num_tri_its, hmmdef, subdirs, trace_value):
+    name_ext = get_name_ext(tc, num_its, num_final_its, num_tri_its, hmmdef, trace_value=trace_value)
     # log_dir = os.path.join(LOG_ROOT, subdirs)
     # make_dir(log_dir)
     log_file = get_log_file(subdirs, name_ext, mode="test")
@@ -748,8 +758,8 @@ def test_model(tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
     logger.info("#####\n")
 
 # Runs the train model script
-def train_model(tc, num_its, num_tri_its, hmmdef, subdirs, trace_value):
-    name_ext = get_name_ext(tc, num_its, num_tri_its, hmmdef, trace_value=trace_value)
+def train_model(tc, num_its, num_final_its, num_tri_its, hmmdef, subdirs, trace_value):
+    name_ext = get_name_ext(tc, num_its, num_final_its, num_tri_its, hmmdef, trace_value=trace_value)
     # log_dir = os.path.join(LOG_ROOT, subdirs)
     # make_dir(log_dir)
     # logger.info("#####\n")
@@ -806,22 +816,19 @@ def get_results(results_file, letter_results=True):
         logger.warning("No word/letter results found. Check results file for error.")
     return results
 
-def add_results_to_csv(ip, tc, num_its, num_tri_its, hmmdef, subdirs):
-    name_ext = get_name_ext(tc, num_its, num_tri_its, hmmdef)
+def add_results_to_csv(ip, tc, num_its, num_final_its, num_tri_its, hmmdef, subdirs):
+    name_ext = get_name_ext(tc, num_its, num_final_its, num_tri_its, hmmdef)
     letter_results_file, word_results_file = get_hresults_prj_filepaths(name_ext, subdirs, ip)
     
     letter_results_file = swap_prj_to_root(letter_results_file)
     word_results_file = swap_prj_to_root(word_results_file)
-    # letter_results_file = os.path.join(ROOT, *letter_results_file.split("/")[1:])
-    # word_results_file = os.path.join(ROOT, *word_results_file.split("/")[1:])
     
     letter_results = get_results(letter_results_file, letter_results=True)
     word_results = get_results(word_results_file, letter_results=False)
     
     # prepend timestamp in format YYYY-MM-DD HH:MM:SS
-    # now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     now_str = get_now_str()
-
+    
     results = [now_str, letter_results_file]
     if letter_results is not None:
         results += letter_results
@@ -832,7 +839,7 @@ def add_results_to_csv(ip, tc, num_its, num_tri_its, hmmdef, subdirs):
         results += word_results
     else:
         results += ["NA","NA","NA"]
-
+    
     if os.path.exists(args.results_csv):
         with open(args.results_csv, 'a', newline='') as f:
             csvwriter = csv.writer(
@@ -857,8 +864,8 @@ def get_model_path(subdirs, hmmdef):
 
 # gets the saved model path (after grid_search a single model is saved). This
 # is the path to that model (after fixing the hyperparams)
-def get_saved_model_path(subdirs, tc, num_its, num_tri_its, hmmdef):
-    name_ext = get_name_ext(tc, num_its, num_tri_its, hmmdef)
+def get_saved_model_path(subdirs, tc, num_its, num_final_its, num_tri_its, hmmdef):
+    name_ext = get_name_ext(tc, num_its, num_final_its, num_tri_its, hmmdef)
 
     saved_model_dir = os.path.dirname(get_model_path(subdirs, hmmdef))
     saved_model_file = '_'.join([MODEL_MACROS_FILE, name_ext])
@@ -866,10 +873,10 @@ def get_saved_model_path(subdirs, tc, num_its, num_tri_its, hmmdef):
 
     return saved_model_dir, saved_model_path
 
-def save_model(tc, num_its, num_tri_its, hmmdef, subdirs):
+def save_model(tc, num_its, num_final_its, num_tri_its, hmmdef, subdirs):
     curr_model_path = os.path.join(get_model_path(subdirs, hmmdef), f"hmm0.{num_its-1}", MODEL_MACROS_FILE)
     
-    new_model_dir, new_model_path = get_saved_model_path(subdirs, tc, num_its, num_tri_its, hmmdef)
+    new_model_dir, new_model_path = get_saved_model_path(subdirs, tc, num_its, num_final_its, num_tri_its, hmmdef)
     make_dir(new_model_dir)
     
     logger.info(f"Current Model Dir: {curr_model_path}")
@@ -911,8 +918,8 @@ def prepare_data(data_file, label_file, subdirs):
     logger.info("#####\n")
 
 # def clear_results_files(ip, tc, num_its, num_tri_its, hmmdef, subdirs, grammar_type):
-def clear_results_files(ip, tc, num_its, num_tri_its, hmmdef, subdirs):
-    name_ext = get_name_ext(tc, num_its, num_tri_its, hmmdef)
+def clear_results_files(ip, tc, num_its, num_final_its, num_tri_its, hmmdef, subdirs):
+    name_ext = get_name_ext(tc, num_its, num_final_its, num_tri_its, hmmdef)
     letter_results_file, word_results_file = get_hresults_prj_filepaths(name_ext, subdirs, ip)
     
     letter_results_file = swap_prj_to_root(letter_results_file)
@@ -982,12 +989,13 @@ def train_on_tup(arg_tup, subdirs):
     hmmdef = arg_tup[1]
     tc = arg_tup[2]
     num_its = arg_tup[3]
-    num_tri_its = arg_tup[4]
-    trace_value = arg_tup[5]
-    ngram = arg_tup[6]
+    num_final_its = arg_tup[4]
+    num_tri_its = arg_tup[5]
+    trace_value = arg_tup[6]
+    ngram = arg_tup[7]
 
     # Attach a grid-search-level log file for this hyperparam setting
-    name_ext = get_name_ext(tc, num_its, num_tri_its, hmmdef, trace_value=trace_value)
+    name_ext = get_name_ext(tc, num_its, num_final_its, num_tri_its, hmmdef, trace_value=trace_value)
     grid_log = get_log_file(subdirs, name_ext, mode="grid_search")
     print(f"{grid_log=}", flush=True)
 
@@ -1006,6 +1014,7 @@ def train_on_tup(arg_tup, subdirs):
         ip,
         tc,
         num_its,
+        num_final_its,
         num_tri_its,
         hmmdef,
         subdirs,
@@ -1018,6 +1027,7 @@ def train_on_tup(arg_tup, subdirs):
             ip,
             tc,
             num_its,
+            num_final_its,
             num_tri_its,
             hmmdef,
             subdirs,
@@ -1027,6 +1037,7 @@ def train_on_tup(arg_tup, subdirs):
         test_model(
             tc,
             num_its,
+            num_final_its,
             num_tri_its,
             hmmdef,
             subdirs,
@@ -1036,6 +1047,7 @@ def train_on_tup(arg_tup, subdirs):
         train_model(
             tc,
             num_its,
+            num_final_its,
             num_tri_its,
             hmmdef,
             subdirs,
@@ -1045,6 +1057,7 @@ def train_on_tup(arg_tup, subdirs):
         save_model(
             tc,
             num_its,
+            num_final_its,
             num_tri_its,
             hmmdef,
             subdirs,
@@ -1055,6 +1068,7 @@ def train_on_tup(arg_tup, subdirs):
             ip,
             tc,
             num_its,
+            num_final_its,
             num_tri_its,
             hmmdef,
             subdirs,
@@ -1072,6 +1086,7 @@ def _main():
         args.hmmdefs,
         args.tc,
         args.num_its,
+        args.num_final_its,
         args.num_tri_its,
         args.trace_values,
         args.ngrams

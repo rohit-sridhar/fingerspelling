@@ -26,6 +26,3 @@ TI T_x {(*-x+*,x+*,*-x).transP}
 TI T_y {(*-y+*,y+*,*-y).transP}
 TI T_z {(*-z+*,z+*,*-z).transP}
 TI T_sp {(*-_+*,_+*,*-_).transP}
-TI silst1 {sil0.state[1],sil1.state[1]}
-TI silst2 {sil0.state[2],sil1.state[2]}
-TI silst3 {sil0.state[3],sil1.state[3],_.state[2]}

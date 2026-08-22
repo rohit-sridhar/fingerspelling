@@ -1,0 +1,11 @@
+QS "L_UP"        { b-*,d-*,f-*,r-*,u-*,v-*,w-*,x-* }
+QS "L_DOWN"      { p-*,q-* }
+QS "L_RIGHT"     { c-*,g-*,h-*,k-* }
+QS "L_CLOSED"    { a-*,e-*,i-*,m-*,n-*,o-*,s-*,t-*,y-*,l-* }
+QS "L_MOVE"      { j-*,z-* }
+
+QS "R_UP"        { *+b,*+d,*+f,*+r,*+u,*+v,*+w,*+x }
+QS "R_DOWN"      { *+p,*+q }
+QS "R_RIGHT"     { *+c,*+g,*+h,*+k }
+QS "R_CLOSED"    { *+a,*+e,*+i,*+m,*+n,*+o,*+s,*+t,*+y,*+l }
+QS "R_MOVE"      { *+j,*+z }
